@@ -5,6 +5,8 @@ import { getReferences, getWorkHistory } from "@/lib/db";
 import CandidateWizard from "./CandidateWizard";
 import RecruiterWizard from "./RecruiterWizard";
 
+// Enrichment runs post-response via after(); give the function time to finish it.
+export const maxDuration = 60;
 export default async function OnboardingPage() {
   const user = await requireUser();
   if (user.onboarding_complete) redirect(homeFor(user));

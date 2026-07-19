@@ -5,6 +5,8 @@ import SettingsShell from "../SettingsShell";
 import ProfileSettingsForm from "./ProfileSettingsForm";
 import RecruiterPrefsForm from "./RecruiterPrefsForm";
 
+// Enrichment runs post-response via after(); give the function time to finish it.
+export const maxDuration = 60;
 export default async function ProfileSettingsPage() {
   const user = await requireUser();
 

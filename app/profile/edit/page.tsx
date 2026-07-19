@@ -2,6 +2,8 @@ import { requireCandidate } from "@/lib/auth";
 import { getReferences, getWorkHistory } from "@/lib/db";
 import CandidateWizard from "@/app/onboarding/CandidateWizard";
 
+// Enrichment runs post-response via after(); give the function time to finish it.
+export const maxDuration = 60;
 export default async function ProfileEditPage() {
   const user = await requireCandidate();
   const [work, references] = await Promise.all([
