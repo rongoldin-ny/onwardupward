@@ -1,26 +1,101 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg-page: #101012;
+  --surface-1: #17171a;
+  --surface-2: #1e1e22;
+  --surface-disabled: #1a1a1d;
+  --border-1: #2e2e34;
+  --border-2: #3a3a40;
+  --text-primary: #efe9dd;
+  --text-body: #dcd5c5;
+  --text-body-2: #c9c2b2;
+  --text-secondary: #8d8677;
+  --text-muted: #6e6a5e;
+  --gold: #e8c987;
+  --gold-deep: #c9a35c;
+  --gold-border: rgba(232, 201, 135, 0.35);
+  --gold-active: rgba(232, 201, 135, 0.5);
+  --gold-tint: rgba(232, 201, 135, 0.08);
+  --success: #9db78a;
+  --on-gold: #17130a;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-page: var(--bg-page);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-disabled: var(--surface-disabled);
+  --color-border-1: var(--border-1);
+  --color-border-2: var(--border-2);
+  --color-cream: var(--text-primary);
+  --color-body: var(--text-body);
+  --color-body-2: var(--text-body-2);
+  --color-secondary: var(--text-secondary);
+  --color-muted: var(--text-muted);
+  --color-gold: var(--gold);
+  --color-gold-deep: var(--gold-deep);
+  --color-gold-border: var(--gold-border);
+  --color-gold-active: var(--gold-active);
+  --color-gold-tint: var(--gold-tint);
+  --color-success: var(--success);
+  --color-on-gold: var(--on-gold);
+  --font-sans: var(--font-schibsted);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: var(--font-schibsted), sans-serif;
+}
+
+@layer base {
+  a {
+    color: var(--gold);
+  }
+}
+
+@utility gold-gradient {
+  background: linear-gradient(135deg, #e8c987, #c9a35c);
+}
+
+@utility cta-glow {
+  box-shadow: 0 8px 32px rgba(210, 170, 95, 0.25);
+}
+
+@utility avatar-halo {
+  box-shadow: 0 0 0 6px rgba(232, 201, 135, 0.08);
+}
+
+@utility hero-glow {
+  position: absolute;
+  top: -120px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 480px;
+  height: 380px;
+  background: radial-gradient(
+    closest-side,
+    rgba(232, 201, 135, 0.16),
+    transparent
+  );
+  pointer-events: none;
+}
+
+@utility stripe-placeholder {
+  background: repeating-linear-gradient(
+    45deg,
+    #26262b,
+    #26262b 10px,
+    #2c2c31 10px,
+    #2c2c31 20px
+  );
+}
+
+@utility eyebrow {
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }

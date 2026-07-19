@@ -1,0 +1,438 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useCallback, useRef, useState, useTransition } from "react";
+import { ImagePlus, X } from "lucide-react";
+import { saveFullProfile } from "@/app/actions/settings";
+import { Cta, Eyebrow } from "@/components/ui";
+import {
+  CAREER_STAGES,
+  COUNTRIES,
+  ROLE_TYPES,
+  SelectField,
+  TextArea,
+  TextField,
+} from "@/components/fields";
+import { INDUSTRIES } from "@/lib/taxonomy";
+import type { PortfolioImage, Profile, ReferenceRow, WorkHistoryRow } from "@/lib/db";
+
+type WorkImageItem = {
+  url?: string;
+  file?: File;
+  preview: string;
+  company: string;
+  caption: string;
+  year: string;
+};
+
+/** Mirrors a File[] held in React state into the form via a hidden input's FileList. */
+function FileListInput({ files, name }: { files: File[]; name: string }) {
+  const ref = useCallback(
+    (node: HTMLInputElement | null) => {
+      if (!node) return;
+      const dt = new DataTransfer();
+      for (const f of files) dt.items.add(f);
+      node.files = dt.files;
+    },
+    [files],
+  );
+  return <input ref={ref} type="file" name={name} multiple className="hidden" />;
+}
+
+export default function ProfileSettingsForm({
+  profile,
+  work,
+  references,
+}: {
+  profile: Profile;
+  work: WorkHistoryRow[];
+  references: ReferenceRow[];
+}) {
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
+  const [pending, startTransition] = useTransition();
+
+  const [industries, setIndustries] = useState<string[]>(profile.industries);
+  const [customIndustry, setCustomIndustry] = useState("");
+  const [pref, setPref] = useState(profile.contact_preference);
+  const [items, setItems] = useState<WorkImageItem[]>(
+    profile.portfolio_images.map((img) => ({
+      url: img.url,
+      preview: img.url,
+      company: img.company ?? "",
+      caption: img.caption ?? "",
+      year: img.year ?? "",
+    })),
+  );
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  function commitCustomIndustry() {
+    const value = customIndustry.trim();
+    if (value && !industries.some((i) => i.toLowerCase() === value.toLowerCase())) {
+      setIndustries([...industries, value]);
+    }
+    setCustomIndustry("");
+  }
+  const industryChips = [...new Set([...industries, ...INDUSTRIES])];
+
+  const keptItems = items.filter((i) => i.url);
+  const newItems = items.filter((i) => i.file);
+  const meta = [...keptItems, ...newItems].map(({ company, caption, year }) => ({
+    company,
+    caption,
+    year,
+  }));
+  const patch = (index: number, changes: Partial<WorkImageItem>) =>
+    setItems(items.map((item, i) => (i === index ? { ...item, ...changes } : item)));
+
+  function submit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    setError(null);
+    setSaved(false);
+    startTransition(async () => {
+      const result = await saveFullProfile(formData);
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setSaved(true);
+        router.refresh();
+        setTimeout(() => setSaved(false), 2600);
+      }
+    });
+  }
+
+  const inputSmall =
+    "h-[42px] min-w-0 rounded-full border border-border-1 bg-surface-1 px-4 text-[13px] text-cream placeholder:text-muted focus:border-gold-active focus:outline-none";
+
+  return (
+    <form onSubmit={submit} className="space-y-9 pb-4">
+      <section className="space-y-4">
+        <Eyebrow>The basics</Eyebrow>
+        <TextField name="name" placeholder="Full name" defaultValue={profile.name ?? ""} />
+        <SelectField
+          name="role_type"
+          placeholder="Role"
+          options={ROLE_TYPES}
+          defaultValue={profile.role_type ?? ""}
+        />
+        <SelectField
+          name="career_stage"
+          placeholder="Career stage"
+          options={CAREER_STAGES}
+          defaultValue={profile.career_stage ?? ""}
+        />
+        <TextField
+          name="linkedin_url"
+          placeholder="linkedin.com/in/…"
+          defaultValue={profile.linkedin_url ?? ""}
+        />
+        <SelectField
+          name="country"
+          placeholder="Country"
+          options={COUNTRIES}
+          defaultValue={profile.location_country ?? ""}
+        />
+        <div className="flex gap-3.5">
+          <TextField
+            name="state"
+            placeholder="State / province"
+            defaultValue={profile.location_state ?? ""}
+            className="min-w-0 flex-1"
+          />
+          <TextField
+            name="city"
+            placeholder="City"
+            defaultValue={profile.location_city ?? ""}
+            className="min-w-0 flex-1"
+          />
+        </div>
+        <TextField
+          name="years_experience"
+          type="number"
+          min={0}
+          max={60}
+          placeholder="Years of experience"
+          defaultValue={profile.years_experience ?? ""}
+        />
+      </section>
+
+      <section>
+        <Eyebrow>Industries</Eyebrow>
+        <div className="mt-4 flex flex-wrap gap-2.5">
+          {industryChips.map((industry) => {
+            const selected = industries.includes(industry);
+            return (
+              <button
+                key={industry}
+                type="button"
+                onClick={() =>
+                  setIndustries(
+                    selected
+                      ? industries.filter((i) => i !== industry)
+                      : [...industries, industry],
+                  )
+                }
+                className={`rounded-full border px-4 py-2.5 text-[13px] ${
+                  selected
+                    ? "border-gold-active font-bold text-gold"
+                    : "border-border-2 text-body-2"
+                }`}
+              >
+                {industry}
+              </button>
+            );
+          })}
+        </div>
+        <input
+          value={customIndustry}
+          onChange={(e) => setCustomIndustry(e.target.value)}
+          onBlur={commitCustomIndustry}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === ",") {
+              e.preventDefault();
+              commitCustomIndustry();
+            }
+          }}
+          placeholder="Add your own — press enter"
+          className="mt-4 h-[46px] w-full rounded-full border border-border-1 bg-surface-2 px-5 text-[13px] text-cream placeholder:text-muted focus:border-gold-active focus:outline-none"
+        />
+        {industries.map((industry) => (
+          <input key={industry} type="hidden" name="industries" value={industry} />
+        ))}
+      </section>
+
+      <section className="space-y-4">
+        <Eyebrow>Your story</Eyebrow>
+        <TextArea
+          name="bio"
+          rows={4}
+          placeholder="Describe yourself and your superpowers…"
+          defaultValue={profile.bio ?? ""}
+        />
+        <div>
+          <p className="text-[13px] text-secondary">Last three jobs</p>
+          <div className="mt-3 space-y-3">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="flex gap-3">
+                <TextField
+                  name={`job_title_${i}`}
+                  placeholder="Job title"
+                  defaultValue={work[i]?.title ?? ""}
+                  className="min-w-0 flex-1"
+                />
+                <TextField
+                  name={`job_company_${i}`}
+                  placeholder="Company"
+                  defaultValue={work[i]?.company ?? ""}
+                  className="min-w-0 flex-1"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+        <TextArea
+          name="last_role_text"
+          rows={3}
+          placeholder="Your most recent role — what are you most proud of?"
+          defaultValue={profile.last_role_text ?? ""}
+        />
+        <TextArea
+          name="dream_job"
+          rows={3}
+          placeholder="Describe your ideal next role…"
+          defaultValue={profile.dream_job ?? ""}
+        />
+        <div>
+          <p className="text-[13px] text-secondary">Humblebrags — your five biggest highlights</p>
+          <div className="mt-3 space-y-3">
+            {[1, 2, 3, 4, 5].map((n) => (
+              <div key={n} className="flex items-center gap-4">
+                <span className="w-3 shrink-0 text-[15px] font-bold text-gold">{n}</span>
+                <TextField
+                  name={`brag_${n}`}
+                  placeholder="A career highlight"
+                  defaultValue={profile.brags[n - 1] ?? ""}
+                  className="min-w-0 flex-1"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <Eyebrow>Your work</Eyebrow>
+        <TextField
+          name="portfolio_url"
+          placeholder="Portfolio URL"
+          defaultValue={profile.portfolio_url ?? ""}
+        />
+        <TextField
+          name="portfolio_password"
+          placeholder="Portfolio password (optional)"
+          defaultValue={profile.portfolio_password ?? ""}
+        />
+        <div className="space-y-4">
+          {items.map((item, i) => (
+            <div
+              key={item.url ?? `new-${i}-${item.file?.name}`}
+              className="rounded-[20px] border border-border-1 bg-surface-2 p-4"
+            >
+              <div className="flex gap-4">
+                <div className="relative shrink-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={item.preview}
+                    alt=""
+                    className="h-[104px] w-[104px] rounded-xl object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setItems(items.filter((_, j) => j !== i))}
+                    aria-label="Remove image"
+                    className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full border border-border-2 bg-surface-1 text-secondary"
+                  >
+                    <X size={12} strokeWidth={2} />
+                  </button>
+                </div>
+                <div className="min-w-0 flex-1 space-y-2.5">
+                  <div className="flex gap-2.5">
+                    <input
+                      value={item.company}
+                      onChange={(e) => patch(i, { company: e.target.value })}
+                      placeholder="Company"
+                      className={`${inputSmall} flex-1`}
+                    />
+                    <input
+                      value={item.year}
+                      onChange={(e) =>
+                        patch(i, { year: e.target.value.replace(/\D/g, "").slice(0, 4) })
+                      }
+                      placeholder="Year"
+                      inputMode="numeric"
+                      className={`${inputSmall} w-[76px] shrink-0`}
+                    />
+                  </div>
+                  <input
+                    value={item.caption}
+                    onChange={(e) => patch(i, { caption: e.target.value })}
+                    placeholder="Caption — what is this?"
+                    className={`${inputSmall} w-full`}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+          {items.length < 10 && (
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className="flex h-[64px] w-full items-center justify-center gap-3 rounded-[20px] border border-dashed border-border-2 text-[14px] text-secondary"
+            >
+              <ImagePlus size={18} strokeWidth={1.5} />
+              Add images
+            </button>
+          )}
+        </div>
+        {keptItems.map((item) => (
+          <input key={item.url} type="hidden" name="existing_images" value={item.url} />
+        ))}
+        <input type="hidden" name="images_meta" value={JSON.stringify(meta)} />
+        <FileListInput files={newItems.map((i) => i.file!)} name="images" />
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={(e) => {
+            const files = Array.from(e.target.files ?? []);
+            const room = 10 - items.length;
+            setItems([
+              ...items,
+              ...files.slice(0, room).map((file) => ({
+                file,
+                preview: URL.createObjectURL(file),
+                company: "",
+                caption: "",
+                year: "",
+              })),
+            ]);
+            e.target.value = "";
+          }}
+        />
+      </section>
+
+      <section className="space-y-4">
+        <Eyebrow>References</Eyebrow>
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="space-y-3">
+            <p className="text-[13px] text-secondary">Reference {i + 1}</p>
+            <TextField
+              name={`ref_name_${i}`}
+              placeholder="Full name"
+              defaultValue={references[i]?.full_name ?? ""}
+            />
+            <TextField
+              name={`ref_title_${i}`}
+              placeholder="Current title"
+              defaultValue={references[i]?.current_title ?? ""}
+            />
+            <TextField
+              name={`ref_linkedin_${i}`}
+              placeholder="linkedin.com/in/…"
+              defaultValue={references[i]?.linkedin_url ?? ""}
+            />
+          </div>
+        ))}
+      </section>
+
+      <section className="space-y-4">
+        <Eyebrow>Getting in touch</Eyebrow>
+        {(
+          [
+            { value: "email", label: "Email me directly" },
+            { value: "linkedin", label: "LinkedIn only" },
+          ] as const
+        ).map((option) => {
+          const selected = pref === option.value;
+          return (
+            <label
+              key={option.value}
+              className={`flex cursor-pointer items-center justify-between rounded-[20px] border bg-surface-2 p-5 ${
+                selected ? "border-gold-active" : "border-border-1"
+              }`}
+            >
+              <input
+                type="radio"
+                name="contact_preference"
+                value={option.value}
+                checked={selected}
+                onChange={() => setPref(option.value)}
+                className="hidden"
+              />
+              <span className="text-[15px] font-bold text-cream">{option.label}</span>
+              <span
+                className={`h-5 w-5 rounded-full border ${
+                  selected ? "gold-gradient border-transparent" : "border-border-2"
+                }`}
+              />
+            </label>
+          );
+        })}
+      </section>
+
+      {error && <p className="text-[14px] text-gold">{error}</p>}
+      {saved && (
+        <p className="rounded-[16px] border border-gold-border bg-gold-tint px-5 py-4 text-[13px] text-gold">
+          Saved ✓ — your profile is up to date.
+        </p>
+      )}
+      <Cta type="submit" disabled={pending}>
+        {pending ? "Saving…" : "Save changes"}
+      </Cta>
+    </form>
+  );
+}
