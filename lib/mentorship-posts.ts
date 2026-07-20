@@ -10,9 +10,14 @@ export type MentorshipPost = {
   url: string;
   publication: string;
   publishedAt: Date;
+  house?: boolean;
 };
 
+/** The house newsletter — its freshest post gets a pinned slot. */
+const HOUSE_FEED = "https://rongoldin.substack.com/feed";
+
 const FEEDS: string[] = [
+  HOUSE_FEED, // Formative — product, design & AI
   "https://davidhoang.substack.com/feed", // Proof of Concept — design leadership
   "https://newsletter.weskao.com/feed", // Wes Kao — career growth, managing up
   "https://www.lennysnewsletter.com/feed", // Lenny — product careers
@@ -52,7 +57,7 @@ export async function getMentorshipPosts(limit = 3): Promise<MentorshipPost[]> {
         next: { revalidate: 3600 },
       });
       if (!res.ok) return [] as MentorshipPost[];
-      return parseFeed(await res.text());
+      return parseFeed(await res.text()).map((p) => ({ ...p, house: url === HOUSE_FEED }));
     }),
   );
 
@@ -80,6 +85,11 @@ export async function getMentorshipPosts(limit = 3): Promise<MentorshipPost[]> {
       picks.push(p);
       seenPubs.add(p.publication);
     }
+  }
+  // Pin the freshest house post into the lineup if relevance didn't pick it.
+  const house = fresh.find((p) => p.house);
+  if (house && !picks.some((p) => p.url === house.url)) {
+    picks.unshift(house);
   }
   return picks.slice(0, limit);
 }
