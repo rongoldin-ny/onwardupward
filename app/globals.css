@@ -99,3 +99,34 @@ body {
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
+
+/* ---- onward/upward logo lockup: ONWARD ↗ UPWARD ---------------------- */
+@keyframes arrow-ascend {
+  0%   { transform: translate(0, 0);        opacity: 1; }
+  45%  { transform: translate(10px, -10px); opacity: 0; }
+  50%  { transform: translate(-10px, 10px); opacity: 0; }
+  100% { transform: translate(0, 0);        opacity: 1; }
+}
+.ou-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.24em; /* 7px at the reference 29px size */
+  white-space: nowrap;
+}
+.ou-logo .ou-arrow {
+  width: 0.83em;
+  height: 0.83em;
+  flex: none;
+}
+/* Desktop: arrow ascends on hover. */
+@media (hover: hover) {
+  .ou-logo:hover .ou-arrow { animation: arrow-ascend 0.7s ease; }
+}
+/* Touch: no hover state — play the ascent once on page load instead. */
+@media (hover: none) {
+  .ou-logo .ou-arrow { animation: arrow-ascend 0.7s ease 0.5s; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ou-logo .ou-arrow,
+  .ou-logo:hover .ou-arrow { animation: none !important; }
+}
