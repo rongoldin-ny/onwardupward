@@ -3,6 +3,20 @@ import { getReferences, getWorkHistory, type Profile, type ReferenceRow, type Wo
 import { supabaseAdmin } from "./supabase/server";
 import { labelForRoleType } from "./taxonomy";
 
+/** Company chips: each employer once (case-insensitive), first spelling wins. */
+export function uniqueCompanies(names: (string | null | undefined)[], limit = 3): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const name of names) {
+    const trimmed = name?.trim();
+    if (!trimmed || seen.has(trimmed.toLowerCase())) continue;
+    seen.add(trimmed.toLowerCase());
+    out.push(trimmed);
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+
 export async function toCandidateView(
   profile: Profile,
   opts: { admin?: boolean } = {},
@@ -44,10 +58,7 @@ export async function toCandidateView(
     dreamJob: profile.dream_job,
     lastRole: profile.last_role_text,
     brags: profile.brags,
-    companies: work
-      .map((w) => w.company)
-      .filter(Boolean)
-      .slice(0, 3) as string[],
+    companies: uniqueCompanies(work.map((w) => w.company)),
     references: references.map((r) => ({
       name: r.full_name ?? "",
       title: r.current_title ?? "",

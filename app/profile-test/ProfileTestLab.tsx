@@ -7,6 +7,7 @@ import type { AiFillResult } from "@/lib/ai-fill";
 import CandidateProfileView, { type CandidateView } from "@/components/CandidateProfileView";
 import { TextField } from "@/components/fields";
 import { Cta, Eyebrow, Logo, PageFrame } from "@/components/ui";
+import { uniqueCompanies } from "@/lib/candidate-view";
 import { labelForRoleType } from "@/lib/taxonomy";
 
 /** Build a throwaway CandidateView straight from an AI fill — no DB rows. */
@@ -25,7 +26,7 @@ function fillToView(fill: AiFillResult, portfolioUrl: string | null): CandidateV
     dreamJob: null,
     lastRole: fill.last_role_text,
     brags: fill.brags,
-    companies: fill.work.map((w) => w.company).filter(Boolean).slice(0, 3),
+    companies: uniqueCompanies(fill.work.map((w) => w.company)),
     references: fill.references.map((r) => ({
       name: r.full_name,
       title: r.current_title ?? "",

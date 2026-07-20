@@ -1,5 +1,6 @@
 import { supabaseServer } from "./supabase/server";
 import { getWorkHistory, type Profile } from "./db";
+import { uniqueCompanies } from "./candidate-view";
 import { labelForRoleType } from "./taxonomy";
 
 export type SearchFilters = {
@@ -65,10 +66,7 @@ export async function searchCandidates(filters: SearchFilters): Promise<ResultCa
       city: p.location_city ?? "Anywhere",
       isSupporter: p.is_supporter ?? false,
       bio: p.bio ?? "",
-      companies: (await getWorkHistory(p.id))
-        .map((w) => w.company)
-        .filter(Boolean)
-        .slice(0, 3) as string[],
+      companies: uniqueCompanies((await getWorkHistory(p.id)).map((w) => w.company)),
     })),
   );
 }
