@@ -16,7 +16,7 @@ function fillToView(fill: AiFillResult): CandidateView {
   return {
     id: "profile-test",
     name,
-    photoUrl: null,
+    photoUrl: fill.photo_url,
     roleLabel: labelForRoleType(fill.role_type),
     city: fill.location_city ?? "Anywhere",
     firstName,

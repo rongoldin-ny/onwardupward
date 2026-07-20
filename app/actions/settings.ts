@@ -6,6 +6,7 @@ import { aiFillFromSources, type AiFillResult } from "@/lib/ai-fill";
 import type { PortfolioImage } from "@/lib/db";
 import { triggerEnrichment } from "@/lib/enrich";
 import { normalizeUrl } from "@/lib/extract";
+import { saveImageFromUrl } from "@/lib/uploads";
 import {
   saveBasics,
   saveReferences,
@@ -107,6 +108,13 @@ export async function fillProfileWithAI(formData: FormData): Promise<{
         event_type: "element_click",
         metadata: { element: "ai_fill" },
       });
+      // Found a headshot and they don't have one yet? Mirror and set it.
+      if (result.fill.photo_url && !user.photo_url) {
+        const mirrored = await saveImageFromUrl(result.fill.photo_url, user.id);
+        if (mirrored) {
+          await admin.from("profiles").update({ photo_url: mirrored }).eq("id", user.id);
+        }
+      }
     }
     return result;
   } catch (e) {

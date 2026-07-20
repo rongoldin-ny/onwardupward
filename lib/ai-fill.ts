@@ -47,6 +47,12 @@ const AiFill = z.object({
     .array(z.object({ title: z.string(), company: z.string() }))
     .max(3)
     .describe("Their last three jobs, most recent first"),
+  photo_url: z
+    .string()
+    .nullable()
+    .describe(
+      "The candidate's own headshot or portrait photo — must be a url copied exactly from the numbered image list; null if none is clearly them",
+    ),
   images: z
     .array(
       z.object({
@@ -135,6 +141,26 @@ function collectImages(
   return out;
 }
 
+/** Find likely about/bio subpage urls on the candidate's own site. */
+function aboutPageUrls(html: string, baseUrl: string): string[] {
+  const out: string[] = [];
+  const base = new URL(baseUrl);
+  for (const m of html.matchAll(/<a\b[^>]*href=["']([^"'#?]+)["']/gi)) {
+    let href: URL;
+    try {
+      href = new URL(m[1], baseUrl);
+    } catch {
+      continue;
+    }
+    if (href.hostname !== base.hostname) continue;
+    if (!/\/(about|about-me|bio|info|profile)\/?$/i.test(href.pathname)) continue;
+    if (href.href === base.href) continue;
+    if (!out.includes(href.href)) out.push(href.href);
+    if (out.length >= 2) break;
+  }
+  return out;
+}
+
 export async function aiFillFromSources(sources: {
   linkedinUrl: string | null;
   portfolioUrl: string | null;
@@ -151,7 +177,7 @@ export async function aiFillFromSources(sources: {
     sources.linkedinUrl ? fetchPortfolioHtml(sources.linkedinUrl) : Promise.resolve(null),
   ]);
 
-  const portfolioText = portfolioHtml ? visibleText(portfolioHtml) : null;
+  let portfolioText = portfolioHtml ? visibleText(portfolioHtml) : null;
   const linkedinText = usableLinkedInText(linkedinHtml);
   if (!portfolioText && !linkedinText) {
     return {
@@ -162,6 +188,21 @@ export async function aiFillFromSources(sources: {
 
   const images =
     portfolioHtml && sources.portfolioUrl ? collectImages(portfolioHtml, sources.portfolioUrl) : [];
+
+  // Headshots and bio copy often live on an about page rather than the home
+  // page — pull in up to two likely subpages from the same site.
+  if (portfolioHtml && sources.portfolioUrl) {
+    for (const url of aboutPageUrls(portfolioHtml, sources.portfolioUrl)) {
+      const sub = await fetchPortfolioHtml(url, sources.portfolioPassword);
+      if (!sub) continue;
+      portfolioText = `${portfolioText}\n\n### Subpage ${url}\n${visibleText(sub).slice(0, 8000)}`;
+      const have = new Set(images.map((i) => i.url));
+      for (const img of collectImages(sub, url)) {
+        if (images.length >= 40) break;
+        if (!have.has(img.url)) images.push(img);
+      }
+    }
+  }
 
   const material = [
     portfolioText ? `## Portfolio site (${sources.portfolioUrl})\n${portfolioText}` : null,
@@ -206,7 +247,9 @@ export async function aiFillFromSources(sources: {
       "UX/UI work — screens, shipped product, polished visual design — favoring editorial, bold " +
       "imagery where available. Skip process shots (whiteboards, sticky notes, wireframe walls, " +
       "workshop photos) unless process is all the portfolio offers; the goal is final product " +
-      "design. Skip headshots, logos, and decorative graphics.\n\n" +
+      "design. Skip headshots, logos, and decorative graphics in the work images — but do put " +
+      "the candidate's own headshot in photo_url when one appears in the image list (its nearby " +
+      "text or alt usually names them, or it sits beside their intro).\n\n" +
       "Humblebrags — look for major releases and launches. Lead with those, and state the " +
       "metric or business outcome (growth, revenue, conversion, scale, awards) whenever the " +
       "material provides one. Concrete beats vague.\n\n" +
@@ -225,6 +268,7 @@ export async function aiFillFromSources(sources: {
   // Guard against invented urls: only keep picks from the harvested list.
   const allowed = new Set(images.map((i) => i.url));
   fill.images = fill.images.filter((img) => allowed.has(img.url));
+  if (fill.photo_url && !allowed.has(fill.photo_url)) fill.photo_url = null;
 
   return { fill };
 }
