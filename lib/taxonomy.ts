@@ -59,3 +59,17 @@ export function labelForRoleType(value: string | null): string {
 export function labelForCareerStage(value: string | null): string {
   return CAREER_STAGES.find((s) => s.value === value)?.label ?? "";
 }
+
+/** Company chips: each employer once (case-insensitive), first spelling wins. */
+export function uniqueCompanies(names: (string | null | undefined)[], limit = 3): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const name of names) {
+    const trimmed = name?.trim();
+    if (!trimmed || seen.has(trimmed.toLowerCase())) continue;
+    seen.add(trimmed.toLowerCase());
+    out.push(trimmed);
+    if (out.length >= limit) break;
+  }
+  return out;
+}

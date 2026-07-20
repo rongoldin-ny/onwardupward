@@ -1,21 +1,8 @@
 import type { CandidateView } from "@/components/CandidateProfileView";
 import { getReferences, getWorkHistory, type Profile, type ReferenceRow, type WorkHistoryRow } from "./db";
 import { supabaseAdmin } from "./supabase/server";
-import { labelForRoleType } from "./taxonomy";
+import { labelForRoleType, uniqueCompanies } from "./taxonomy";
 
-/** Company chips: each employer once (case-insensitive), first spelling wins. */
-export function uniqueCompanies(names: (string | null | undefined)[], limit = 3): string[] {
-  const seen = new Set<string>();
-  const out: string[] = [];
-  for (const name of names) {
-    const trimmed = name?.trim();
-    if (!trimmed || seen.has(trimmed.toLowerCase())) continue;
-    seen.add(trimmed.toLowerCase());
-    out.push(trimmed);
-    if (out.length >= limit) break;
-  }
-  return out;
-}
 
 export async function toCandidateView(
   profile: Profile,

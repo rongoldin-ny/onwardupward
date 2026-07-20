@@ -7,8 +7,7 @@ import type { AiFillResult } from "@/lib/ai-fill";
 import CandidateProfileView, { type CandidateView } from "@/components/CandidateProfileView";
 import { TextField } from "@/components/fields";
 import { Cta, Eyebrow, Logo, PageFrame } from "@/components/ui";
-import { uniqueCompanies } from "@/lib/candidate-view";
-import { labelForRoleType } from "@/lib/taxonomy";
+import { labelForRoleType, uniqueCompanies } from "@/lib/taxonomy";
 
 /** Build a throwaway CandidateView straight from an AI fill — no DB rows. */
 function fillToView(fill: AiFillResult, portfolioUrl: string | null): CandidateView {

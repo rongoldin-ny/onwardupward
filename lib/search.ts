@@ -1,7 +1,6 @@
 import { supabaseServer } from "./supabase/server";
 import { getWorkHistory, type Profile } from "./db";
-import { uniqueCompanies } from "./candidate-view";
-import { labelForRoleType } from "./taxonomy";
+import { labelForRoleType, uniqueCompanies } from "./taxonomy";
 
 export type SearchFilters = {
   role: string;
