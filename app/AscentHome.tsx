@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef } from "react";
-import { LogoMark } from "@/components/ui";
+import { CollapsingLogoMark, LogoMark } from "@/components/logo";
 import "./ascent.css";
 
 const MARQUEE =
@@ -77,7 +77,7 @@ export default function AscentHome() {
       </svg>
 
       <nav className="nav">
-        <span className="logo ou-logo"><LogoMark /></span>
+        <span className="logo ou-logo"><CollapsingLogoMark /></span>
         <div className="nav-right">
           <Link className="nav-signin" href="/signin">Sign in</Link>
           <a className="btn btn-sm" href="#join">Join</a>

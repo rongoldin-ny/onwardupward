@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
+import { CollapsingLogoMark } from "./logo";
 
 type FrameSize = "narrow" | "wide" | "modal";
 
@@ -43,25 +44,6 @@ export function PageFrame({
   );
 }
 
-/** The lockup's inner content — reusable wherever the logo appears. */
-export function LogoMark() {
-  return (
-    <>
-      <span>ONWARD</span>
-      <svg className="ou-arrow" viewBox="0 0 96 96" fill="none" aria-hidden="true">
-        <path
-          d="M 12 84 L 84 12 M 84 12 L 84 58 M 84 12 L 38 12"
-          stroke="#E8C987"
-          strokeWidth="11"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-      <span>UPWARD</span>
-    </>
-  );
-}
-
 export function Logo() {
   return (
     <Link
@@ -69,7 +51,7 @@ export function Logo() {
       aria-label="onward/upward — home"
       className="ou-logo text-[19px] font-black tracking-[-0.02em] text-cream hover:text-cream"
     >
-      <LogoMark />
+      <CollapsingLogoMark />
     </Link>
   );
 }
