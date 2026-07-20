@@ -29,6 +29,11 @@ export function PageFrame({
     <div
       className={`mx-auto flex min-h-dvh w-full max-w-[430px] flex-col sm:my-6 sm:min-h-[calc(100dvh-3rem)] md:my-8 md:min-h-0 md:px-6 lg:my-10 ${frameWidth[size]}`}
     >
+      {/* Desktop chrome: logo at the top-left of the browser, outside the card.
+          In-card logos carry md:hidden so mobile keeps its inline logo. */}
+      <div className="fixed top-6 left-7 z-40 hidden md:block">
+        <Logo />
+      </div>
       <div
         className={`relative flex w-full flex-1 flex-col overflow-hidden bg-surface-1 sm:rounded-[28px] md:flex-none md:rounded-[32px] md:border md:border-border-1 md:shadow-[0_30px_90px_rgba(0,0,0,0.55)] ${className}`}
       >

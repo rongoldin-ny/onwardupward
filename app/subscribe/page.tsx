@@ -20,7 +20,7 @@ export default async function Subscribe() {
     <div className="flex flex-1 flex-col px-7 pt-8 pb-8">
       <div className="hero-glow" />
       <header>
-        <Logo />
+        <span className="md:hidden"><Logo /></span>
       </header>
 
       <main className="mt-14 flex flex-col items-center text-center">

@@ -105,7 +105,7 @@ export default function ProfileTestLab() {
     <PageFrame size="narrow">
       <div className="flex flex-1 flex-col px-7 pt-8 pb-8">
         <header>
-          <Logo />
+          <span className="md:hidden"><Logo /></span>
         </header>
         <main className="mt-12">
           <Eyebrow>Secret test lab</Eyebrow>

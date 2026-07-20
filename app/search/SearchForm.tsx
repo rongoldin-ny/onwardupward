@@ -48,7 +48,7 @@ export default function SearchForm({
     <PageFrame size="narrow">
     <div className="flex flex-1 flex-col px-7 pt-8 pb-8">
       <header className="flex items-center justify-between">
-        <Logo />
+        <span className="md:hidden"><Logo /></span>
         <div className="relative">
           <button
             type="button"

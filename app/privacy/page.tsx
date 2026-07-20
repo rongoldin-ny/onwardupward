@@ -7,7 +7,7 @@ export default function PrivacyPage() {
     <PageFrame size="narrow">
       <div className="flex flex-1 flex-col px-7 pt-8 pb-10">
         <header className="flex items-center justify-between">
-          <Logo />
+          <span className="md:hidden"><Logo /></span>
         </header>
         <main className="mt-14">
           <h1 className="text-[32px] leading-[1.1] font-black tracking-[-0.02em] text-cream">

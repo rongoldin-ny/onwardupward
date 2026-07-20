@@ -48,7 +48,7 @@ export default async function SettingsPage() {
     <PageFrame size="narrow">
       <div className="flex flex-1 flex-col px-7 pt-8 pb-8">
         <header>
-          <Logo />
+          <span className="md:hidden"><Logo /></span>
         </header>
 
         <main className="mt-9">

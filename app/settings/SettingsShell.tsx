@@ -20,7 +20,7 @@ export default function SettingsShell({
             <Link href="/settings" aria-label="Back to settings" className="text-cream">
               <ArrowLeft size={20} strokeWidth={1.5} />
             </Link>
-            <span className="[&_a]:text-[17px]">
+            <span className="md:hidden [&_a]:text-[17px]">
               <Logo />
             </span>
           </div>

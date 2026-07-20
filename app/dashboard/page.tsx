@@ -24,7 +24,7 @@ export default async function Dashboard() {
     <PageFrame size="wide">
     <div className="flex flex-1 flex-col px-7 pt-8 pb-8 lg:px-10 lg:pb-10">
       <header className="flex items-center justify-between">
-        <Logo />
+        <span className="md:hidden"><Logo /></span>
         <Link href="/settings" aria-label="Settings">
           <Avatar id={user.id} src={user.photo_url} size={40} />
         </Link>

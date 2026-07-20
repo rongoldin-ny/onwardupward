@@ -51,7 +51,7 @@ export default async function Results({
     <PageFrame size="wide">
     <div className="flex flex-1 flex-col">
       <header className="flex items-center gap-4 border-b border-border-1 px-6 py-5 lg:px-10">
-        <span className="shrink-0 [&_a]:text-[17px]">
+        <span className="shrink-0 md:hidden [&_a]:text-[17px]">
           <Logo />
         </span>
         <Link href={editHref} aria-label="Back" className="text-cream">

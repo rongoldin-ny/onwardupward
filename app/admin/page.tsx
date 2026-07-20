@@ -39,7 +39,7 @@ export default async function AdminPage() {
     <PageFrame size="wide">
     <div className="flex flex-1 flex-col px-6 pt-8 pb-8 lg:px-10 lg:pb-10">
       <header className="flex items-center justify-between">
-        <Logo />
+        <span className="md:hidden"><Logo /></span>
         <form action={signOut}>
           <button type="submit" className="text-[13px] text-muted">
             Sign out
