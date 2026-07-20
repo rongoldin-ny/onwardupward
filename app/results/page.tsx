@@ -4,7 +4,7 @@ import { requirePaidRecruiter } from "@/lib/auth";
 import { trackEvent } from "@/lib/db";
 import { searchCandidates } from "@/lib/search";
 import { labelForCareerStage, labelForRoleType } from "@/lib/taxonomy";
-import { Avatar, Eyebrow, PageFrame, Tag } from "@/components/ui";
+import { Avatar, Eyebrow, Logo, PageFrame, Tag } from "@/components/ui";
 
 export default async function Results({
   searchParams,
@@ -51,6 +51,9 @@ export default async function Results({
     <PageFrame size="wide">
     <div className="flex flex-1 flex-col">
       <header className="flex items-center gap-4 border-b border-border-1 px-6 py-5 lg:px-10">
+        <span className="shrink-0 [&_a]:text-[17px]">
+          <Logo />
+        </span>
         <Link href={editHref} aria-label="Back" className="text-cream">
           <ArrowLeft size={20} strokeWidth={1.5} />
         </Link>

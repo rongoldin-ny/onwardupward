@@ -1,18 +1,36 @@
 import type { CandidateView } from "@/components/CandidateProfileView";
-import { getReferences, getWorkHistory, type Profile } from "./db";
+import { getReferences, getWorkHistory, type Profile, type ReferenceRow, type WorkHistoryRow } from "./db";
+import { supabaseAdmin } from "./supabase/server";
 import { labelForRoleType } from "./taxonomy";
 
-export async function toCandidateView(profile: Profile): Promise<CandidateView> {
+export async function toCandidateView(
+  profile: Profile,
+  opts: { admin?: boolean } = {},
+): Promise<CandidateView> {
   const firstName = (profile.name ?? "them").split(" ")[0];
   const contactNote =
     profile.contact_preference === "linkedin"
       ? `${firstName} prefers LinkedIn — connect there.`
       : `${firstName} prefers email — replies within a few days.`;
 
-  const [work, references] = await Promise.all([
-    getWorkHistory(profile.id),
-    getReferences(profile.id),
-  ]);
+  // Public share pages have no signed-in viewer, so RLS-scoped reads come
+  // back empty — those callers fetch with the admin client instead.
+  const [work, references] = opts.admin
+    ? await Promise.all([
+        supabaseAdmin()
+          .from("work_history")
+          .select("*")
+          .eq("candidate_id", profile.id)
+          .order("sort_order")
+          .then(({ data }) => (data ?? []) as WorkHistoryRow[]),
+        supabaseAdmin()
+          .from("refs")
+          .select("*")
+          .eq("candidate_id", profile.id)
+          .order("sort_order")
+          .then(({ data }) => (data ?? []) as ReferenceRow[]),
+      ])
+    : await Promise.all([getWorkHistory(profile.id), getReferences(profile.id)]);
 
   return {
     id: profile.id,

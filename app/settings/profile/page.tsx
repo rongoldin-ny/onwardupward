@@ -35,7 +35,7 @@ export default async function ProfileSettingsPage() {
   return (
     <SettingsShell
       title="Edit profile."
-      subtitle="Everything on one page — recruiters see it the moment you save."
+      subtitle="Profiles are visible to recruiters, coaches and anyone you share your public link with."
     >
       <ProfileSettingsForm profile={user} work={work} references={references} />
     </SettingsShell>

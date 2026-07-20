@@ -40,9 +40,12 @@ export function PageFrame({
 
 export function Logo() {
   return (
-    <span className="text-[22px] font-black tracking-tight text-cream">
+    <Link
+      href="/"
+      className="text-[22px] font-black tracking-tight text-cream hover:text-cream"
+    >
       onward/upward
-    </span>
+    </Link>
   );
 }
 

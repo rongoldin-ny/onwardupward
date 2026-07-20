@@ -3,6 +3,7 @@
 import { requireUser } from "@/lib/auth";
 import { supabaseAdmin, supabaseServer } from "@/lib/supabase/server";
 import { aiFillFromSources, type AiFillResult } from "@/lib/ai-fill";
+import type { PortfolioImage } from "@/lib/db";
 import { triggerEnrichment } from "@/lib/enrich";
 import { normalizeUrl } from "@/lib/extract";
 import {
@@ -17,7 +18,10 @@ import {
  * collects, so we reuse the wizard's own save actions against one FormData,
  * then re-trigger AI enrichment per PRD §7.9.
  */
-export async function saveFullProfile(formData: FormData): Promise<{ error?: string }> {
+export async function saveFullProfile(formData: FormData): Promise<{
+  error?: string;
+  images?: PortfolioImage[];
+}> {
   const user = await requireUser();
 
   const basics = await saveBasics(formData);
@@ -28,10 +32,25 @@ export async function saveFullProfile(formData: FormData): Promise<{ error?: str
 
   const pref = String(formData.get("contact_preference") ?? "") === "linkedin" ? "linkedin" : "email";
   const supabase = await supabaseServer();
-  await supabase.from("profiles").update({ contact_preference: pref }).eq("id", user.id);
+  const { data: fresh } = await supabase
+    .from("profiles")
+    .update({ contact_preference: pref })
+    .eq("id", user.id)
+    .select("portfolio_images")
+    .single();
 
+  // Autosaves fire on every pause in typing — re-enriching each one would
+  // hammer the API. The client calls reenrichProfile once editing settles.
+  if (formData.get("autosave") !== "1") triggerEnrichment(user.id);
+  // Returning the stored images lets the client swap freshly-uploaded File
+  // items for their storage urls, so the next autosave doesn't re-upload.
+  return { images: (fresh?.portfolio_images ?? []) as PortfolioImage[] };
+}
+
+/** Deferred enrichment kick for autosaved edits — called when editing settles. */
+export async function reenrichProfile(): Promise<void> {
+  const user = await requireUser();
   triggerEnrichment(user.id);
-  return {};
 }
 
 /** Unlimited AI fills for the house account; everyone else gets exactly one. */

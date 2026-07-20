@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowUpRight, X } from "lucide-react";
 import { sendMessage, trackElementClick } from "@/app/actions/engage";
-import { Avatar, Card, Cta, Eyebrow, PageFrame, Tag } from "@/components/ui";
+import { Avatar, Card, Cta, CtaLink, Eyebrow, PageFrame, Tag } from "@/components/ui";
 import type { PortfolioImage } from "@/lib/db";
 
 export type CandidateView = {
@@ -85,7 +85,7 @@ export default function CandidateProfileView({
   mode,
 }: {
   candidate: CandidateView;
-  mode: "recruiter" | "preview";
+  mode: "recruiter" | "preview" | "public";
 }) {
   const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -125,6 +125,19 @@ export default function CandidateProfileView({
           This is how recruiters see your profile.
         </div>
       )}
+      {mode === "public" && (
+        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-b border-gold-border bg-gold-tint px-6 py-4">
+          <p className="text-[14px] font-bold text-gold">
+            onward/upward — a private growth network for designers.
+          </p>
+          <Link
+            href="/signup"
+            className="gold-gradient cta-glow shrink-0 rounded-full px-5 py-2.5 text-[14px] font-bold text-on-gold"
+          >
+            Sign up to join the network
+          </Link>
+        </div>
+      )}
 
       <div
         className={`flex flex-1 flex-col px-6 pt-6 pb-8 transition-[filter,opacity] duration-300 lg:px-10 lg:pb-10 ${
@@ -132,16 +145,18 @@ export default function CandidateProfileView({
         }`}
       >
         <div className="hero-glow" />
-        <header className="flex justify-end">
-          <button
-            type="button"
-            aria-label="Close"
-            onClick={() => router.back()}
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-border-2"
-          >
-            <X size={16} strokeWidth={1.5} className="text-secondary" />
-          </button>
-        </header>
+        {mode !== "public" && (
+          <header className="flex justify-end">
+            <button
+              type="button"
+              aria-label="Close"
+              onClick={() => router.back()}
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-border-2"
+            >
+              <X size={16} strokeWidth={1.5} className="text-secondary" />
+            </button>
+          </header>
+        )}
 
         <main className="mt-4 lg:mt-6 lg:grid lg:grid-cols-[260px_1fr] lg:items-start lg:gap-12">
           <div className="flex flex-col items-center text-center lg:sticky lg:top-2 lg:items-start lg:text-left">
@@ -182,6 +197,8 @@ export default function CandidateProfileView({
                 >
                   Get in touch
                 </Cta>
+              ) : mode === "public" ? (
+                <CtaLink href="/signup">Join the network</CtaLink>
               ) : (
                 <Link
                   href="/settings/profile"
@@ -290,7 +307,7 @@ export default function CandidateProfileView({
                   >
                     {candidate.portfolioUrl.replace(/^https?:\/\//, "")}
                   </a>{" "}
-                  {candidate.portfolioPassword && (
+                  {candidate.portfolioPassword && mode !== "public" && (
                     <span className="text-muted">
                       · password: {candidate.portfolioPassword}
                     </span>
@@ -331,6 +348,8 @@ export default function CandidateProfileView({
             >
               Get in touch
             </Cta>
+          ) : mode === "public" ? (
+            <CtaLink href="/signup">Join the network</CtaLink>
           ) : (
             <Link
               href="/settings/profile"
