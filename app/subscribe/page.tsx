@@ -28,7 +28,7 @@ export default async function Subscribe() {
           <Sparkle size={34} strokeWidth={0} fill="#17130A" className="text-on-gold" />
         </span>
         <h1 className="mt-9 text-[36px] leading-[1.1] font-black tracking-[-0.02em] text-cream">
-          Access O&amp;U&apos;s talent network
+          Access onward/upward&apos;s talent network
         </h1>
         <p className="mt-4 max-w-[300px] text-[17px] leading-[1.5] text-secondary">
           Every profile is vetted. Every search reads between the lines.

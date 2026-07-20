@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Logo, PageFrame } from "@/components/ui";
 
-export const metadata = { title: "Privacy — O&U" };
+export const metadata = { title: "Privacy — onward/upward" };
 
 export default function PrivacyPage() {
   return (
@@ -18,7 +18,7 @@ export default function PrivacyPage() {
           </h1>
           <p className="mt-6 text-[16px] leading-[1.6] text-secondary">
             Your profile is visible only to vetted members of the network —
-            never indexed, never sold, never shared outside O&amp;U. You can
+            never indexed, never sold, never shared outside onward/upward. You can
             edit or delete your information at any time from settings.
           </p>
           <p className="mt-4 text-[16px] leading-[1.6] text-secondary">

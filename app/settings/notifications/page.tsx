@@ -5,7 +5,7 @@ import SettingsShell from "../SettingsShell";
 const upcoming = [
   { label: "New message alerts", note: "Know the moment a company writes to you." },
   { label: "Weekly profile digest", note: "Views, ranking, and who's been looking." },
-  { label: "Product updates", note: "Occasional news from O&U. No noise." },
+  { label: "Product updates", note: "Occasional news from onward/upward. No noise." },
 ];
 
 export default async function NotificationsSettingsPage() {

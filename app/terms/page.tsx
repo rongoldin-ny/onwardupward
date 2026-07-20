@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Logo, PageFrame } from "@/components/ui";
 
-export const metadata = { title: "Terms — O&U" };
+export const metadata = { title: "Terms — onward/upward" };
 
 export default function TermsPage() {
   return (
@@ -17,7 +17,8 @@ export default function TermsPage() {
             Terms of service.
           </h1>
           <p className="mt-6 text-[16px] leading-[1.6] text-secondary">
-            O&amp;U is a private, invite-led network. By using it you agree to
+            onward/upward is a private, invite-led network. By using it you agree
+            to
             keep member information confidential, represent yourself
             truthfully, and use the network for its intended purpose —
             connecting design talent, coaches, and hiring teams.

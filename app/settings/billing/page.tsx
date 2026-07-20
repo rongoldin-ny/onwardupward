@@ -29,7 +29,7 @@ export default async function BillingSettingsPage() {
           Free preview
         </h2>
         <p className="mt-1.5 text-[13px] text-secondary">
-          Everything included while O&amp;U is in preview. Paid plans arrive later —
+          Everything included while onward/upward is in preview. Paid plans arrive later —
           you&apos;ll choose before anything changes.
         </p>
         <hr className="my-5 border-border-1" />

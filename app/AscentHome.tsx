@@ -73,7 +73,7 @@ export default function AscentHome() {
       </svg>
 
       <nav className="nav">
-        <span className="logo">O&amp;U</span>
+        <span className="logo">onward/upward</span>
         <div className="nav-right">
           <Link className="nav-signin" href="/signin">Sign in</Link>
           <a className="btn btn-sm" href="#join">Join</a>
@@ -206,7 +206,7 @@ export default function AscentHome() {
       </main>
 
       <footer>
-        <span className="logo" style={{ fontSize: 15 }}>O&amp;U</span>
+        <span className="logo" style={{ fontSize: 15 }}>onward/upward</span>
         <div className="links">
           <Link href="/terms">Terms</Link>
           <Link href="/privacy">Privacy</Link>

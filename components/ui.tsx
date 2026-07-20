@@ -41,7 +41,7 @@ export function PageFrame({
 export function Logo() {
   return (
     <span className="text-[22px] font-black tracking-tight text-cream">
-      O&amp;U
+      onward/upward
     </span>
   );
 }

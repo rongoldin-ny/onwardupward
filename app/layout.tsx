@@ -9,7 +9,7 @@ const schibsted = Schibsted_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "O&U — A private talent network",
+  title: "onward/upward — A private talent network",
   description: "Vetted product designers, found by taste — not keywords.",
 };
 
