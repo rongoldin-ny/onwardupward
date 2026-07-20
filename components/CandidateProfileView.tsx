@@ -5,12 +5,13 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowUpRight, Link2, X } from "lucide-react";
 import { sendMessage, trackElementClick } from "@/app/actions/engage";
-import { Avatar, Card, Cta, CtaLink, Eyebrow, PageFrame, Tag } from "@/components/ui";
+import { Avatar, Card, Cta, CtaLink, Eyebrow, PageFrame, SupporterBadge, Tag } from "@/components/ui";
 import type { PortfolioImage } from "@/lib/db";
 
 export type CandidateView = {
   id: string;
   name: string;
+  isSupporter: boolean;
   photoUrl: string | null;
   roleLabel: string;
   city: string;
@@ -180,8 +181,9 @@ export default function CandidateProfileView({
         <main className="mt-4 lg:mt-6 lg:grid lg:grid-cols-[260px_1fr] lg:items-start lg:gap-12">
           <div className="flex flex-col items-center text-center lg:sticky lg:top-2 lg:items-start lg:text-left">
             <Avatar id={candidate.id} src={candidate.photoUrl} size={132} halo />
-            <h1 className="mt-7 text-[30px] leading-[1.1] font-black tracking-[-0.02em] text-cream">
+            <h1 className="mt-7 flex flex-wrap items-center justify-center gap-2.5 text-[30px] leading-[1.1] font-black tracking-[-0.02em] text-cream lg:justify-start">
               {candidate.name}
+              {candidate.isSupporter && <SupporterBadge />}
             </h1>
             <p className="mt-2.5 text-[16px] text-secondary">
               {candidate.roleLabel} — {candidate.city}

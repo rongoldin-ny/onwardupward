@@ -13,6 +13,12 @@ export type PortfolioImage = {
   year: string;
 };
 
+export type NotificationPrefs = {
+  messages: boolean;
+  weekly_digest: boolean;
+  product_updates: boolean;
+};
+
 export type Profile = {
   id: string;
   role: "candidate" | "recruiter" | "coach" | "admin";
@@ -37,6 +43,8 @@ export type Profile = {
   industries: string[];
   contact_preference: "email" | "linkedin";
   is_paid: boolean;
+  is_supporter: boolean;
+  notification_prefs: NotificationPrefs;
   onboarding_complete: boolean;
   vetting_status: "pending" | "approved";
   last_sign_in_at: string | null;

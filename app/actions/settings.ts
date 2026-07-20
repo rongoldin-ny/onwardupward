@@ -152,6 +152,26 @@ export async function testProfileFill(formData: FormData): Promise<{
   }
 }
 
+/** Persist the three notification toggles. */
+export async function saveNotificationPrefs(prefs: {
+  messages: boolean;
+  weekly_digest: boolean;
+  product_updates: boolean;
+}): Promise<{ error?: string }> {
+  const user = await requireUser();
+  const clean = {
+    messages: !!prefs.messages,
+    weekly_digest: !!prefs.weekly_digest,
+    product_updates: !!prefs.product_updates,
+  };
+  const supabase = await supabaseServer();
+  const { error } = await supabase
+    .from("profiles")
+    .update({ notification_prefs: clean })
+    .eq("id", user.id);
+  return error ? { error: "Couldn't save — try again." } : {};
+}
+
 /** Recruiter settings variant of the onboarding step — saves without redirecting. */
 export async function saveRecruiterPrefs(formData: FormData): Promise<{ error?: string }> {
   const user = await requireUser();

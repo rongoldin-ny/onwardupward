@@ -1,36 +1,46 @@
-import { Check, Sparkle } from "lucide-react";
+import Link from "next/link";
+import { Check, Sparkle, Star } from "lucide-react";
 import { requireUser } from "@/lib/auth";
-import { Card, ComingSoonPill, Eyebrow } from "@/components/ui";
+import { cancelSupporter } from "@/app/actions/supporter";
+import { Card, Eyebrow, SupporterBadge } from "@/components/ui";
 import SettingsShell from "../SettingsShell";
-
-const upcoming = [
-  "Upgrade or downgrade plans",
-  "Pause or cancel your subscription",
-  "View billing history",
-];
 
 export default async function BillingSettingsPage() {
   const user = await requireUser();
+  const supporter = user.role === "candidate" && user.is_supporter;
   const included =
     user.role === "recruiter"
       ? ["Unlimited AI-powered search", "Full profiles, portfolios & references", "Direct contact with candidates"]
-      : ["A profile that gets you found", "Weekly view stats & ranking", "Direct messages from companies"];
+      : supporter
+        ? [
+            "Gold Supporter badge next to your name",
+            "Prioritized ranking in recruiter searches",
+            "First in line for hot opportunities",
+            "Early access to new features",
+          ]
+        : ["A profile that gets you found", "Weekly view stats & ranking", "Direct messages from companies"];
 
   return (
-    <SettingsShell title="Billing." subtitle="Where you are today, and what's coming.">
+    <SettingsShell title="Billing." subtitle="Your plan, and where it can go.">
       <Card highlighted className="p-6">
         <div className="flex items-center justify-between">
           <Eyebrow>Current plan</Eyebrow>
           <span className="gold-gradient flex h-9 w-9 items-center justify-center rounded-full">
-            <Sparkle size={16} strokeWidth={0} fill="#17130A" />
+            {supporter ? (
+              <Star size={16} strokeWidth={0} fill="#17130A" />
+            ) : (
+              <Sparkle size={16} strokeWidth={0} fill="#17130A" />
+            )}
           </span>
         </div>
-        <h2 className="mt-3 text-[24px] font-black tracking-[-0.02em] text-cream">
-          Free preview
+        <h2 className="mt-3 flex items-center gap-3 text-[24px] font-black tracking-[-0.02em] text-cream">
+          {supporter ? "Supporter" : "Free preview"}
+          {supporter && <SupporterBadge />}
         </h2>
         <p className="mt-1.5 text-[13px] text-secondary">
-          Everything included while onward/upward is in preview. Paid plans arrive later —
-          you&apos;ll choose before anything changes.
+          {supporter
+            ? "$4.99 / month — thank you for backing the network."
+            : "Everything included while onward/upward is in preview."}
         </p>
         <hr className="my-5 border-border-1" />
         <ul className="space-y-3">
@@ -41,20 +51,33 @@ export default async function BillingSettingsPage() {
             </li>
           ))}
         </ul>
+        {supporter && (
+          <form action={cancelSupporter} className="mt-6">
+            <button type="submit" className="text-[13px] text-muted underline-offset-2 hover:underline">
+              Cancel Supporter
+            </button>
+          </form>
+        )}
       </Card>
 
-      <Eyebrow className="mt-8">Coming with paid plans</Eyebrow>
-      <div className="mt-3 space-y-3">
-        {upcoming.map((item) => (
-          <div
-            key={item}
-            className="flex items-center justify-between gap-4 rounded-[20px] border border-dashed border-border-1 bg-surface-disabled px-5 py-4 opacity-65"
-          >
-            <p className="text-[14px] font-medium text-secondary">{item}</p>
-            <ComingSoonPill />
-          </div>
-        ))}
-      </div>
+      {user.role === "candidate" && !supporter && (
+        <Link href="/supporter" className="mt-4 block">
+          <Card className="border-gold-border">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h2 className="flex items-center gap-2.5 text-[18px] font-bold tracking-[-0.02em] text-cream">
+                  Become a Supporter <SupporterBadge size="sm" />
+                </h2>
+                <p className="mt-1.5 text-[13px] leading-[1.5] text-secondary">
+                  $4.99/mo — a gold badge, priority in recruiter searches, first
+                  crack at hot opportunities, early access to new features.
+                </p>
+              </div>
+              <span className="text-[20px] text-gold">→</span>
+            </div>
+          </Card>
+        </Link>
+      )}
     </SettingsShell>
   );
 }

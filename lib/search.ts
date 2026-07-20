@@ -15,6 +15,7 @@ export type ResultCard = {
   photoUrl: string | null;
   roleLabel: string;
   city: string;
+  isSupporter: boolean;
   bio: string;
   companies: string[];
 };
@@ -50,7 +51,10 @@ export async function searchCandidates(filters: SearchFilters): Promise<ResultCa
         .some((text) => text!.toLowerCase().includes(q)),
     );
   }
-  rows = rows.slice(0, 50);
+  // Supporters rank first; recency breaks ties within each group.
+  rows = rows
+    .sort((a, b) => Number(b.is_supporter) - Number(a.is_supporter))
+    .slice(0, 50);
 
   return Promise.all(
     rows.map(async (p) => ({
@@ -59,6 +63,7 @@ export async function searchCandidates(filters: SearchFilters): Promise<ResultCa
       photoUrl: p.photo_url,
       roleLabel: labelForRoleType(p.role_type),
       city: p.location_city ?? "Anywhere",
+      isSupporter: p.is_supporter ?? false,
       bio: p.bio ?? "",
       companies: (await getWorkHistory(p.id))
         .map((w) => w.company)
