@@ -115,6 +115,35 @@ export async function fillProfileWithAI(formData: FormData): Promise<{
   }
 }
 
+/**
+ * /profile-test: run the AI fill pipeline against arbitrary links and return
+ * the raw proposal — no cap, no logging, nothing saved. Allowlisted only.
+ */
+export async function testProfileFill(formData: FormData): Promise<{
+  fill?: AiFillResult;
+  error?: string;
+}> {
+  const user = await requireUser();
+  const allowed =
+    AI_FILL_UNLIMITED.has((user.email ?? "").toLowerCase()) ||
+    process.env.NODE_ENV !== "production";
+  if (!allowed) return { error: "Not available." };
+  const linkedin = String(formData.get("linkedin_url") ?? "").trim();
+  const portfolio = String(formData.get("portfolio_url") ?? "").trim();
+  const password = String(formData.get("portfolio_password") ?? "").trim() || null;
+  if (!linkedin && !portfolio) return { error: "Add a portfolio or LinkedIn URL." };
+  try {
+    return await aiFillFromSources({
+      linkedinUrl: linkedin ? normalizeUrl(linkedin) : null,
+      portfolioUrl: portfolio ? normalizeUrl(portfolio) : null,
+      portfolioPassword: password,
+    });
+  } catch (e) {
+    console.error("test fill failed:", e);
+    return { error: "Fill hit a snag — try again in a minute." };
+  }
+}
+
 /** Recruiter settings variant of the onboarding step — saves without redirecting. */
 export async function saveRecruiterPrefs(formData: FormData): Promise<{ error?: string }> {
   const user = await requireUser();
