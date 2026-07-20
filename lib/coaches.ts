@@ -22,6 +22,32 @@ export type Coach = {
 
 const STORAGE = "https://ziaylaegutxikckewwnq.supabase.co/storage/v1/object/public/profile-assets/coaches";
 
+/** Smart facets, derived from each coach's own copy rather than hand-tagged. */
+export function coachLevels(c: Coach): string[] {
+  const text = `${c.bestFor} ${c.offerings} ${c.bio}`;
+  const out: string[] = [];
+  if (/cxo|vp\b|executive|director|cdo/i.test(text)) out.push("Directors & execs");
+  if (/manager|management|people-leader|leads\b|head of/i.test(text)) out.push("Managers & leads");
+  if (/\bic\b|ics\b|senior designer|craft/i.test(text)) out.push("Senior ICs");
+  if (/early|junior|career chang|grads|students|first role|aspiring/i.test(text))
+    out.push("Early career");
+  return out;
+}
+
+export function coachFormats(c: Coach): string[] {
+  const text = `${c.offerings} ${c.price}`;
+  const out: string[] = [];
+  if (/1:1|one-on-one|sessions/i.test(text)) out.push("1:1 coaching");
+  if (/cohort|group|mastermind|peer/i.test(text)) out.push("Groups & cohorts");
+  if (/masterclass|course|program|workshop|training|curriculum|retreat/i.test(text))
+    out.push("Programs & courses");
+  return out;
+}
+
+export function coachPricing(c: Coach): string {
+  return /[$£€]\s?\d|\d+\s?(per|\/)\s?session/i.test(c.price) ? "Published pricing" : "Inquire";
+}
+
 export const COACHES: Coach[] = [
   {
     slug: "ron-goldin",

@@ -2,13 +2,14 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { COACHES } from "@/lib/coaches";
-import { Card, Eyebrow, Logo, PageFrame, Tag } from "@/components/ui";
+import { Eyebrow, Logo, PageFrame } from "@/components/ui";
+import CoachesDirectory from "./CoachesDirectory";
 
 export const metadata = { title: "Coaches — onward/upward" };
 
 /**
- * Coach directory. Every listing is currently unclaimed — these coaches
- * haven't joined the network yet, so no direct contact routes are shown.
+ * Coach directory with search + smart filters. Unclaimed listings show no
+ * direct contact routes; claimed coaches are bookable.
  */
 export default async function CoachesPage() {
   await requireUser();
@@ -36,69 +37,7 @@ export default async function CoachesPage() {
             once they do.
           </p>
 
-          <div className="mt-9 grid gap-4 lg:grid-cols-2">
-            {COACHES.map((coach) => (
-              <Card key={coach.slug} className="flex flex-col">
-                <div className="flex items-center gap-4">
-                  {coach.photoUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={coach.photoUrl}
-                      alt={coach.name}
-                      className="h-[64px] w-[64px] shrink-0 rounded-full object-cover"
-                    />
-                  ) : (
-                    <span className="flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-full border border-border-2 bg-surface-2 text-[20px] font-black text-secondary">
-                      {coach.name
-                        .split(" ")
-                        .map((w) => w[0])
-                        .slice(0, 2)
-                        .join("")}
-                    </span>
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <h2 className="truncate text-[19px] font-black tracking-[-0.02em] text-cream">
-                        {coach.name}
-                      </h2>
-                      <span
-                        className={`eyebrow shrink-0 rounded-full border px-3 py-1.5 ${
-                          coach.status === "claimed"
-                            ? "border-gold-border text-gold"
-                            : "border-border-2 text-muted"
-                        }`}
-                      >
-                        {coach.status === "claimed" ? "Claimed" : "Unclaimed"}
-                      </span>
-                    </div>
-                    <p className="mt-1 truncate text-[13px] text-secondary">{coach.org}</p>
-                  </div>
-                </div>
-                <p className="mt-4 line-clamp-3 text-[14px] leading-[1.55] text-body-2">
-                  {coach.bio}
-                </p>
-                <p className="mt-3 line-clamp-3 text-[13px] leading-[1.55] text-secondary">
-                  {coach.offerings}
-                </p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <Tag>{coach.price}</Tag>
-                </div>
-                <p className="mt-4 border-t border-border-1 pt-3.5 text-[13px] leading-[1.5] text-secondary">
-                  <span className="font-bold text-gold">Best for:</span> {coach.bestFor}
-                </p>
-                {coach.status === "claimed" && (
-                  <a
-                    href={coach.contact}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="gold-gradient cta-glow mt-4 rounded-full px-6 py-3 text-center text-[14px] font-bold text-on-gold"
-                  >
-                    Book a session
-                  </a>
-                )}
-              </Card>
-            ))}
-          </div>
+          <CoachesDirectory coaches={COACHES} />
 
           <p className="mt-8 text-[12px] text-muted">
             Unclaimed coaches can&apos;t be contacted through onward/upward yet.

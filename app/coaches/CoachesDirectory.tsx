@@ -1,0 +1,179 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { Search } from "lucide-react";
+import {
+  coachFormats,
+  coachLevels,
+  coachPricing,
+  type Coach,
+} from "@/lib/coaches";
+import { Card, Tag } from "@/components/ui";
+
+const LEVELS = ["Directors & execs", "Managers & leads", "Senior ICs", "Early career"];
+const FORMATS = ["1:1 coaching", "Groups & cohorts", "Programs & courses"];
+const PRICING = ["Published pricing", "Inquire"];
+
+function Chip({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-full border px-4 py-2 text-[13px] ${
+        active ? "border-gold-active font-bold text-gold" : "border-border-2 text-body-2"
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
+export default function CoachesDirectory({ coaches }: { coaches: Coach[] }) {
+  const [q, setQ] = useState("");
+  const [levels, setLevels] = useState<string[]>([]);
+  const [formats, setFormats] = useState<string[]>([]);
+  const [pricing, setPricing] = useState<string[]>([]);
+
+  const toggle = (setter: React.Dispatch<React.SetStateAction<string[]>>, value: string) =>
+    setter((cur) => (cur.includes(value) ? cur.filter((v) => v !== value) : [...cur, value]));
+
+  const filtered = useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    return coaches.filter((c) => {
+      if (
+        needle &&
+        ![c.name, c.org, c.bio, c.offerings, c.bestFor, c.price]
+          .join(" ")
+          .toLowerCase()
+          .includes(needle)
+      )
+        return false;
+      if (levels.length > 0 && !coachLevels(c).some((l) => levels.includes(l))) return false;
+      if (formats.length > 0 && !coachFormats(c).some((f) => formats.includes(f))) return false;
+      if (pricing.length > 0 && !pricing.includes(coachPricing(c))) return false;
+      return true;
+    });
+  }, [coaches, q, levels, formats, pricing]);
+
+  return (
+    <div>
+      <div className="relative mt-8">
+        <Search
+          size={16}
+          strokeWidth={1.5}
+          className="pointer-events-none absolute top-1/2 left-5 -translate-y-1/2 text-muted"
+        />
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search coaches — name, focus, background…"
+          className="h-[52px] w-full rounded-full border border-border-1 bg-surface-2 pl-12 pr-6 text-[14px] text-cream placeholder:text-muted focus:border-gold-active focus:outline-none"
+        />
+      </div>
+
+      <div className="mt-5 space-y-3">
+        {(
+          [
+            ["Level", LEVELS, levels, setLevels],
+            ["Format", FORMATS, formats, setFormats],
+            ["Pricing", PRICING, pricing, setPricing],
+          ] as const
+        ).map(([label, options, active, setter]) => (
+          <div key={label} className="flex flex-wrap items-center gap-2">
+            <span className="eyebrow w-[52px] shrink-0 text-muted">{label}</span>
+            {options.map((option) => (
+              <Chip
+                key={option}
+                label={option}
+                active={active.includes(option)}
+                onClick={() => toggle(setter, option)}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+
+      <p className="mt-6 text-[12px] text-secondary">
+        {filtered.length} {filtered.length === 1 ? "coach" : "coaches"}
+      </p>
+
+      <div className="mt-3 grid gap-4 lg:grid-cols-2">
+        {filtered.map((coach) => (
+          <Card key={coach.slug} className="flex flex-col">
+            <div className="flex items-center gap-4">
+              {coach.photoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={coach.photoUrl}
+                  alt={coach.name}
+                  className="h-[64px] w-[64px] shrink-0 rounded-full object-cover"
+                />
+              ) : (
+                <span className="flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-full border border-border-2 bg-surface-2 text-[20px] font-black text-secondary">
+                  {coach.name
+                    .split(" ")
+                    .map((w) => w[0])
+                    .slice(0, 2)
+                    .join("")}
+                </span>
+              )}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-2">
+                  <h2 className="truncate text-[19px] font-black tracking-[-0.02em] text-cream">
+                    {coach.name}
+                  </h2>
+                  <span
+                    className={`eyebrow shrink-0 rounded-full border px-3 py-1.5 ${
+                      coach.status === "claimed"
+                        ? "border-gold-border text-gold"
+                        : "border-border-2 text-muted"
+                    }`}
+                  >
+                    {coach.status === "claimed" ? "Claimed" : "Unclaimed"}
+                  </span>
+                </div>
+                <p className="mt-1 truncate text-[13px] text-secondary">{coach.org}</p>
+              </div>
+            </div>
+            <p className="mt-4 line-clamp-3 text-[14px] leading-[1.55] text-body-2">{coach.bio}</p>
+            <p className="mt-3 line-clamp-3 text-[13px] leading-[1.55] text-secondary">
+              {coach.offerings}
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Tag>{coach.price}</Tag>
+              {coachLevels(coach).map((l) => (
+                <Tag key={l}>{l}</Tag>
+              ))}
+            </div>
+            <p className="mt-4 border-t border-border-1 pt-3.5 text-[13px] leading-[1.5] text-secondary">
+              <span className="font-bold text-gold">Best for:</span> {coach.bestFor}
+            </p>
+            {coach.status === "claimed" && (
+              <a
+                href={coach.contact}
+                target="_blank"
+                rel="noreferrer"
+                className="gold-gradient cta-glow mt-4 rounded-full px-6 py-3 text-center text-[14px] font-bold text-on-gold"
+              >
+                Book a session
+              </a>
+            )}
+          </Card>
+        ))}
+      </div>
+      {filtered.length === 0 && (
+        <p className="mt-6 rounded-[20px] border border-dashed border-border-2 px-5 py-8 text-center text-[14px] text-secondary">
+          No coaches match — try loosening the filters.
+        </p>
+      )}
+    </div>
+  );
+}
