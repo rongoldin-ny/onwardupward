@@ -5,7 +5,10 @@ import { useEffect, useRef } from "react";
 import "./ascent.css";
 
 const MARQUEE =
-  "TALENT & COACHES FROM  STRIPE  ✦  LINEAR  ✦  LOOM  ✦  FIGMA  ✦  ATLASSIAN  ✦  MONZO  ✦  CANVA  ✦  ARC  ✦  NOTION  ✦ ";
+  "TALENT & COACHES FROM  META  ✦  GOOGLE  ✦  UBER  ✦  DOORDASH  ✦  ANTHROPIC  ✦  SHOPIFY  ✦ ";
+
+// Social Proof UI — suppressed until the stats are interesting enough to show.
+const SHOW_SOCIAL_PROOF = false;
 
 export default function AscentHome() {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -120,9 +123,9 @@ export default function AscentHome() {
               <div className="level-tag">LEVEL ONE — CHART YOUR PATH</div>
               <h2>Where you are. Where you&rsquo;re headed.</h2>
               <p>
-                Dream job, humblebrags, real work — ten minutes, no résumé
-                theatre. Smart matching reads the gap between your today and
-                your next level, and plots the route.
+                Generate your designer player&rsquo;s card in two clicks and
+                zero seconds. Smart matching reads the gap between your today
+                and your next level, and plots the route.
               </p>
             </div>
           </div>
@@ -132,9 +135,10 @@ export default function AscentHome() {
               <div className="level-tag">LEVEL TWO — TRAIN WITH THE BEST</div>
               <h2>Coaches who&rsquo;ve made the climb.</h2>
               <p>
-                Get matched with the industry&rsquo;s best design coaches —
-                leaders who&rsquo;ve built the teams you want to join. Portfolio
-                reviews, leveling plans, straight talk.
+                Discover ways to work with the industry&rsquo;s best design
+                coaches — leaders who&rsquo;ve built the teams you want to
+                join. Portfolio reviews, leveling plans, straight talk without
+                the hard sales pitch.
               </p>
             </div>
           </div>
@@ -144,9 +148,10 @@ export default function AscentHome() {
               <div className="level-tag">LEVEL THREE — GET FOUND</div>
               <h2>Hiring managers, searching for exactly you.</h2>
               <p>
-                Founders and design leaders search in plain language —
-                &ldquo;systems thinker who leads without a title&rdquo; — and
-                land on your door, right when you&rsquo;re ready.
+                Founders, recruiters and design leaders most easily sift
+                through the noise and proactively land on your door, right when
+                you&rsquo;re ready. Confidential to your peers and no
+                #opentowork badge.
               </p>
             </div>
           </div>
@@ -156,8 +161,9 @@ export default function AscentHome() {
               <div className="level-tag">LEVEL NINETY-NINE — ASCEND</div>
               <h2>Skip the queue. Take the meeting.</h2>
               <p>
-                No applications, no ATS black hole. Direct intros to roles that
-                match your trajectory — or a polite pass, on your terms.
+                No applications, no ATS black hole. Direct intros to roles and
+                freelance opportunities that match your trajectory — or a
+                polite pass, on your terms.
               </p>
             </div>
           </div>
@@ -178,19 +184,22 @@ export default function AscentHome() {
 
         <section className="manifesto reveal">
           <p>
-            Job boards reward whoever refreshes fastest.{" "}
-            <span className="lit">We reward growth.</span> Every profile vetted,
-            every match read for intent,{" "}
-            <span className="gold">every coach hand-picked.</span>
+            Onward/Upward is not about jobs —{" "}
+            <span className="lit">it&rsquo;s about growth.</span> Growth through
+            under-the-radar opportunities and{" "}
+            <span className="gold">the best mentors out there</span> to prepare
+            you.
           </p>
         </section>
 
-        <section className="stats">
-          <div className="stat reveal"><div className="n">1,200+</div><div className="l">vetted designers, invite-only</div></div>
-          <div className="stat reveal d1"><div className="n">85</div><div className="l">hand-picked industry coaches</div></div>
-          <div className="stat reveal d2"><div className="n">6 days</div><div className="l">median search → first intro</div></div>
-          <div className="stat reveal d3"><div className="n gold">0</div><div className="l">applications submitted, ever</div></div>
-        </section>
+        {SHOW_SOCIAL_PROOF && (
+          <section className="stats">
+            <div className="stat reveal"><div className="n">1,200+</div><div className="l">vetted designers, invite-only</div></div>
+            <div className="stat reveal d1"><div className="n">85</div><div className="l">hand-picked industry coaches</div></div>
+            <div className="stat reveal d2"><div className="n">6 days</div><div className="l">median search → first intro</div></div>
+            <div className="stat reveal d3"><div className="n gold">0</div><div className="l">applications submitted, ever</div></div>
+          </section>
+        )}
 
         <section className="cta" id="join">
           <div className="glow-bottom" />
