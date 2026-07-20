@@ -82,12 +82,27 @@ function usableLinkedInText(html: string | null): string | null {
   return text.length > 1500 ? text : null;
 }
 
-/** Pull candidate <img> urls (+ alt text) out of the portfolio for Claude to choose from. */
-function collectImages(html: string, baseUrl: string): { url: string; alt: string }[] {
-  const out: { url: string; alt: string }[] = [];
+/**
+ * Pull candidate <img> urls out of the portfolio for Claude to choose from.
+ * Urls are often opaque hashes (Framer, Squarespace…) with empty alt text, so
+ * each image also carries the visible text around it in the document — that
+ * context is what lets the model match an image to the right project.
+ */
+function collectImages(
+  html: string,
+  baseUrl: string,
+): { url: string; alt: string; context: string }[] {
+  const out: { url: string; alt: string; context: string }[] = [];
   const seen = new Set<string>();
-  const tags = html.match(/<img\b[^>]*>/gi) ?? [];
-  for (const tag of tags) {
+  // Strip script/style blocks up front — a context window sliced mid-block
+  // would otherwise leak raw CSS/JS into the "nearby text".
+  const doc = html
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ");
+  const re = /<img\b[^>]*>/gi;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(doc)) !== null) {
+    const tag = m[0];
     const rawSrc = tag.match(/\bsrc=["']([^"']+)["']/i)?.[1];
     if (!rawSrc || rawSrc.startsWith("data:")) continue;
     // Attribute values HTML-encode ampersands; decode so the url is fetchable
@@ -103,7 +118,18 @@ function collectImages(html: string, baseUrl: string): { url: string; alt: strin
     if (/\.(svg|ico)(\?|$)/i.test(abs)) continue; // logos and favicons, not work
     if (seen.has(abs)) continue;
     seen.add(abs);
-    out.push({ url: abs, alt: tag.match(/\balt=["']([^"']*)["']/i)?.[1] ?? "" });
+    // Markup-heavy builders (Framer etc.) need a wide slice to yield any
+    // text. Trim the window to tag boundaries so partial tags at the edges
+    // don't leak attribute soup into the extracted text.
+    let before = doc.slice(Math.max(0, m.index - 2500), m.index);
+    before = before.slice(before.indexOf(">") + 1);
+    // Card layouts often put the project name/description well after the
+    // image in source order — a long trailing window catches it.
+    let after = doc.slice(m.index + tag.length, m.index + tag.length + 8000);
+    const lastLt = after.lastIndexOf("<");
+    if (lastLt !== -1 && after.indexOf(">", lastLt) === -1) after = after.slice(0, lastLt);
+    const context = visibleText(`${before} ⟪this image⟫ ${after}`).trim().slice(0, 300);
+    out.push({ url: abs, alt: tag.match(/\balt=["']([^"']*)["']/i)?.[1] ?? "", context });
     if (out.length >= 40) break;
   }
   return out;
@@ -141,7 +167,12 @@ export async function aiFillFromSources(sources: {
     portfolioText ? `## Portfolio site (${sources.portfolioUrl})\n${portfolioText}` : null,
     images.length > 0
       ? `## Images found on the portfolio (pick from these urls only)\n${images
-          .map((img, i) => `${i + 1}. ${img.url}${img.alt ? ` — alt: "${img.alt}"` : ""}`)
+          .map(
+            (img, i) =>
+              `${i + 1}. ${img.url}${img.alt ? `\n   alt: "${img.alt}"` : ""}${
+                img.context ? `\n   nearby text: "${img.context}"` : ""
+              }`,
+          )
           .join("\n")}`
       : null,
     linkedinText ? `## LinkedIn (${sources.linkedinUrl})\n${linkedinText}` : null,
@@ -167,8 +198,11 @@ export async function aiFillFromSources(sources: {
       "an empty array) when the material doesn't say. Never invent employers, titles, dates, " +
       "metrics, people, or accomplishments. Write bio and last_role_text in the candidate's " +
       "first-person voice, staying close to how they describe themselves.\n\n" +
-      "Images — prioritize the most recent projects, and capture the company and project year " +
-      "for each pick (from captions, urls, or surrounding copy). Choose images that show actual " +
+      "Images — prioritize the most recent projects. Determine each pick's company and year " +
+      "ONLY from that image's own alt text and 'nearby text' — the urls are opaque, so never " +
+      "assign a company by list position or general vibes; if an image's nearby text doesn't " +
+      "identify its project, leave company empty and keep the caption purely descriptive. " +
+      "Choose images that show actual " +
       "UX/UI work — screens, shipped product, polished visual design — favoring editorial, bold " +
       "imagery where available. Skip process shots (whiteboards, sticky notes, wireframe walls, " +
       "workshop photos) unless process is all the portfolio offers; the goal is final product " +
