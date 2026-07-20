@@ -44,6 +44,16 @@ export function PageFrame({
   );
 }
 
+/**
+ * Fixed top-right browser chrome (avatar, menus) on md+ — the counterpart
+ * to the fixed top-left logo, so signed-in controls sit outside the cards.
+ */
+export function FixedChrome({ children }: { children: ReactNode }) {
+  return (
+    <div className="fixed top-5 right-7 z-40 hidden items-center gap-3 md:flex">{children}</div>
+  );
+}
+
 export function Logo() {
   return (
     <Link

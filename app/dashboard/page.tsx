@@ -5,13 +5,13 @@ import { COACHES } from "@/lib/coaches";
 import { getMentorshipPosts } from "@/lib/mentorship-posts";
 import { candidateStats, profileIncomplete } from "@/lib/stats";
 import { greeting } from "@/lib/greeting";
-import { signOut } from "@/app/actions/auth";
 import DashboardMenu from "./DashboardMenu";
 import {
   Avatar,
   Card,
   CtaLink,
   Eyebrow,
+  FixedChrome,
   Logo,
   PageFrame,
 } from "@/components/ui";
@@ -30,8 +30,10 @@ export default async function Dashboard() {
   return (
     <PageFrame size="wide">
     <div className="flex flex-1 flex-col px-7 pt-8 pb-8 lg:px-10 lg:pb-10">
-      <header className="flex items-center justify-between">
-        <span className="md:hidden"><Logo /></span>
+      {/* Mobile: logo + controls in the card header. Desktop: controls live
+          in the fixed browser chrome, level with the top-left logo. */}
+      <header className="flex items-center justify-between md:hidden">
+        <Logo />
         <div className="ml-auto flex items-center gap-3">
           <Link href="/settings" aria-label="Settings">
             <Avatar id={user.id} src={user.photo_url} size={40} />
@@ -39,15 +41,21 @@ export default async function Dashboard() {
           <DashboardMenu />
         </div>
       </header>
+      <FixedChrome>
+        <Link href="/settings" aria-label="Settings">
+          <Avatar id={user.id} src={user.photo_url} size={40} />
+        </Link>
+        <DashboardMenu />
+      </FixedChrome>
 
-      <main className="mt-12 lg:grid lg:grid-cols-[1fr_320px] lg:items-start lg:gap-10">
+      <h1 className="mt-10 text-[38px] leading-[1.15] font-black tracking-[-0.02em] text-cream md:mt-0">
+        {greeting()},<br />
+        <span className="text-secondary">{firstName}.</span>
+      </h1>
+
+      <main className="mt-9 lg:grid lg:grid-cols-[1fr_320px] lg:items-start lg:gap-10">
         <div>
-          <h1 className="text-[38px] leading-[1.15] font-black tracking-[-0.02em] text-cream">
-            {greeting()},<br />
-            <span className="text-secondary">{firstName}.</span>
-          </h1>
-
-          <Card className="mt-9 p-6">
+          <Card className="p-6">
             <Eyebrow>Your profile, this week</Eyebrow>
             <div className="mt-4 flex items-end gap-3">
               <span className="text-[56px] leading-none font-black tracking-[-0.02em] text-cream">
@@ -130,9 +138,13 @@ export default async function Dashboard() {
           )}
         </div>
 
-        <div className="mt-9 lg:mt-0">
-          <Eyebrow>Recommended coaches</Eyebrow>
-          <div className="mt-4 space-y-3">
+        <div className="mt-9 lg:relative lg:mt-0">
+          {/* Floats above the column on lg so the first coach card top-aligns
+              with the stats card across the grid. */}
+          <span className="lg:absolute lg:-top-8">
+            <Eyebrow>Recommended coaches</Eyebrow>
+          </span>
+          <div className="mt-4 space-y-3 lg:mt-0">
             {coaches.map((coach) => (
               <Link
                 key={coach.slug}
@@ -173,13 +185,6 @@ export default async function Dashboard() {
         </div>
       </main>
 
-      <footer className="mt-auto pt-10 text-center lg:text-left">
-        <form action={signOut}>
-          <button type="submit" className="text-[13px] text-muted">
-            Sign out
-          </button>
-        </form>
-      </footer>
     </div>
     </PageFrame>
   );

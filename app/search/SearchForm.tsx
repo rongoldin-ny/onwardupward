@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { AlignJustify } from "lucide-react";
 import { signOut } from "@/app/actions/auth";
-import { Cta, Logo, PageFrame } from "@/components/ui";
+import { Cta, Logo, PageFrame, FixedChrome } from "@/components/ui";
 import { SelectField, textareaClass } from "@/components/fields";
 import { ROLE_TYPES } from "@/lib/taxonomy";
 
@@ -47,8 +47,8 @@ export default function SearchForm({
   return (
     <PageFrame size="narrow">
     <div className="flex flex-1 flex-col px-7 pt-8 pb-8">
-      <header className="flex items-center justify-between">
-        <span className="md:hidden"><Logo /></span>
+      <header className="flex items-center justify-between md:hidden">
+        <Logo />
         <div className="relative">
           <button
             type="button"
@@ -77,6 +77,36 @@ export default function SearchForm({
           )}
         </div>
       </header>
+      {/* Desktop: the menu lives in the fixed browser chrome, level with the logo. */}
+      <FixedChrome>
+        <div className="relative">
+          <button
+            type="button"
+            aria-label="Menu"
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-border-2"
+          >
+            <AlignJustify size={16} strokeWidth={1.5} className="text-secondary" />
+          </button>
+          {menuOpen && (
+            <div className="absolute top-12 right-0 z-10 w-40 rounded-[16px] border border-border-1 bg-surface-2 py-2">
+              <a
+                href="/settings"
+                className="block w-full px-5 py-2.5 text-left text-[14px] text-body"
+              >
+                Settings
+              </a>
+              <button
+                type="button"
+                onClick={() => signOut()}
+                className="block w-full px-5 py-2.5 text-left text-[14px] text-body"
+              >
+                Sign out
+              </button>
+            </div>
+          )}
+        </div>
+      </FixedChrome>
 
       <main className="mt-[18%]">
         <h1 className="text-[38px] leading-[1.15] font-black tracking-[-0.02em] text-cream">
