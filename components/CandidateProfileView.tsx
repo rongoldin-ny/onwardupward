@@ -311,37 +311,39 @@ export default function CandidateProfileView({
             </Card>
           )}
 
-          {(candidate.portfolioUrl || candidate.portfolioImages.length > 0) && (
-            <section className="mt-9">
-              {candidate.portfolioUrl && (
-                <div className="-mx-6 flex flex-col items-center gap-3.5 lg:-mx-10">
-                  <a
-                    href={candidate.portfolioUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    onClick={() => track("portfolio")}
-                    className="gold-gradient cta-glow rounded-full px-12 py-[18px] text-[16px] font-bold text-on-gold"
-                  >
-                    Portfolio
-                  </a>
-                  {candidate.portfolioPassword && mode !== "public" && (
-                    <p className="text-[13px] text-secondary">
-                      password: {candidate.portfolioPassword}
-                    </p>
-                  )}
-                </div>
-              )}
-              {candidate.portfolioImages.length > 0 && (
-                <div className="mt-10 -mx-6 space-y-10 lg:-mx-10">
-                  {candidate.portfolioImages.map((image) => (
-                    <WorkImage key={image.url} image={image} />
-                  ))}
-                </div>
-              )}
-            </section>
-          )}
           </div>
         </main>
+
+        {/* Work spans the full card width, outside the sidebar/content grid. */}
+        {(candidate.portfolioUrl || candidate.portfolioImages.length > 0) && (
+          <section className="mt-9 lg:mt-14">
+            {candidate.portfolioUrl && (
+              <div className="flex flex-col items-center gap-3.5">
+                <a
+                  href={candidate.portfolioUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => track("portfolio")}
+                  className="gold-gradient cta-glow rounded-full px-12 py-[18px] text-[16px] font-bold text-on-gold"
+                >
+                  Portfolio
+                </a>
+                {candidate.portfolioPassword && mode !== "public" && (
+                  <p className="text-[13px] text-secondary">
+                    password: {candidate.portfolioPassword}
+                  </p>
+                )}
+              </div>
+            )}
+            {candidate.portfolioImages.length > 0 && (
+              <div className="mt-10 -mx-6 space-y-10 lg:-mx-10">
+                {candidate.portfolioImages.map((image) => (
+                  <WorkImage key={image.url} image={image} />
+                ))}
+              </div>
+            )}
+          </section>
+        )}
 
         <footer className="mt-auto pt-8 lg:hidden">
           {mode === "recruiter" ? (
