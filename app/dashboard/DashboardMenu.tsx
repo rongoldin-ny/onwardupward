@@ -33,6 +33,12 @@ export default function DashboardMenu() {
           >
             Preview profile
           </Link>
+          <Link
+            href="/coaches"
+            className="block w-full px-5 py-2.5 text-left text-[14px] text-body"
+          >
+            Coaches
+          </Link>
           <button
             type="button"
             onClick={() => signOut()}
