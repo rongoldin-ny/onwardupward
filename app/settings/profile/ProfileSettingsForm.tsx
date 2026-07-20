@@ -18,6 +18,7 @@ import type { PortfolioImage, Profile, ReferenceRow, WorkHistoryRow } from "@/li
 
 type WorkImageItem = {
   url?: string;
+  remoteUrl?: string; // AI-picked image still on the candidate's own site
   file?: File;
   preview: string;
   company: string;
@@ -58,6 +59,7 @@ export default function ProfileSettingsForm({
   const formRef = useRef<HTMLFormElement>(null);
   const [p, setP] = useState(profile);
   const [wk, setWk] = useState(work);
+  const [rf, setRf] = useState(references);
   const [ver, setVer] = useState(0);
   const [aiNotice, setAiNotice] = useState<string | null>(null);
   const [aiPending, startAiFill] = useTransition();
@@ -86,7 +88,7 @@ export default function ProfileSettingsForm({
         years_experience: f.years_experience ?? prev.years_experience,
         bio: f.bio ?? prev.bio,
         last_role_text: f.last_role_text ?? prev.last_role_text,
-        dream_job: f.dream_job ?? prev.dream_job,
+        // dream_job is deliberately never AI-filled — that one stays theirs.
         brags: f.brags.length > 0 ? f.brags : prev.brags,
       }));
       if (f.work.length > 0) {
@@ -96,6 +98,38 @@ export default function ProfileSettingsForm({
       }
       if (f.industries.length > 0) {
         setIndustries((prev) => [...new Set([...prev, ...f.industries])]);
+      }
+      if (f.references.length > 0) {
+        // Fill empty reference slots only — never displace someone they chose.
+        setRf((prev) => {
+          const next = [...prev];
+          for (const candidate of f.references) {
+            if (next.filter(Boolean).length >= 3) break;
+            if (next.some((r) => r?.full_name === candidate.full_name)) continue;
+            next.push({
+              full_name: candidate.full_name,
+              current_title: candidate.current_title ?? "",
+              linkedin_url: candidate.linkedin_url ?? "",
+            } as ReferenceRow);
+          }
+          return next.slice(0, 3);
+        });
+      }
+      if (f.images.length > 0) {
+        setItems((prev) => {
+          const have = new Set(prev.map((i) => i.remoteUrl ?? i.url));
+          const additions = f.images
+            .filter((img) => !have.has(img.url))
+            .slice(0, Math.max(0, 10 - prev.length))
+            .map((img) => ({
+              remoteUrl: img.url,
+              preview: img.url,
+              company: img.company,
+              caption: img.caption,
+              year: (img.year ?? "").replace(/\D/g, "").slice(0, 4),
+            }));
+          return [...prev, ...additions];
+        });
       }
       setVer((v) => v + 1);
       setAiNotice(
@@ -128,8 +162,9 @@ export default function ProfileSettingsForm({
   const industryChips = [...new Set([...industries, ...INDUSTRIES])];
 
   const keptItems = items.filter((i) => i.url);
+  const remoteItems = items.filter((i) => i.remoteUrl);
   const newItems = items.filter((i) => i.file);
-  const meta = [...keptItems, ...newItems].map(({ company, caption, year }) => ({
+  const meta = [...keptItems, ...remoteItems, ...newItems].map(({ company, caption, year }) => ({
     company,
     caption,
     year,
@@ -390,6 +425,9 @@ export default function ProfileSettingsForm({
         {keptItems.map((item) => (
           <input key={item.url} type="hidden" name="existing_images" value={item.url} />
         ))}
+        {remoteItems.map((item) => (
+          <input key={item.remoteUrl} type="hidden" name="remote_images" value={item.remoteUrl} />
+        ))}
         <input type="hidden" name="images_meta" value={JSON.stringify(meta)} />
         <FileListInput files={newItems.map((i) => i.file!)} name="images" />
         <input
@@ -416,7 +454,7 @@ export default function ProfileSettingsForm({
         />
       </section>
 
-      <section className="space-y-4">
+      <section key={`refs-${ver}`} className="space-y-4">
         <Eyebrow>References</Eyebrow>
         {[0, 1, 2].map((i) => (
           <div key={i} className="space-y-3">
@@ -424,17 +462,17 @@ export default function ProfileSettingsForm({
             <TextField
               name={`ref_name_${i}`}
               placeholder="Full name"
-              defaultValue={references[i]?.full_name ?? ""}
+              defaultValue={rf[i]?.full_name ?? ""}
             />
             <TextField
               name={`ref_title_${i}`}
               placeholder="Current title"
-              defaultValue={references[i]?.current_title ?? ""}
+              defaultValue={rf[i]?.current_title ?? ""}
             />
             <TextField
               name={`ref_linkedin_${i}`}
               placeholder="linkedin.com/in/…"
-              defaultValue={references[i]?.linkedin_url ?? ""}
+              defaultValue={rf[i]?.linkedin_url ?? ""}
             />
           </div>
         ))}

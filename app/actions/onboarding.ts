@@ -6,7 +6,7 @@ import { supabaseServer, supabaseAdmin } from "@/lib/supabase/server";
 import { getWorkHistory, type PortfolioImage, type Profile, type WorkHistoryRow } from "@/lib/db";
 import { triggerEnrichment } from "@/lib/enrich";
 import { extractProfile, fetchPortfolioHtml, normalizeUrl } from "@/lib/extract";
-import { saveImage } from "@/lib/uploads";
+import { saveImage, saveImageFromUrl } from "@/lib/uploads";
 
 function str(formData: FormData, key: string): string | null {
   const v = String(formData.get(key) ?? "").trim();
@@ -171,9 +171,11 @@ export async function saveWork(formData: FormData) {
   const supabase = await supabaseServer();
   const existingByUrl = new Map(user.portfolio_images.map((img) => [img.url, img]));
 
-  // The client sends kept urls (in display order), new files, and one metadata
-  // array covering kept-then-new in that same order.
+  // The client sends kept urls, AI-picked remote urls, and new files (in
+  // display order), plus one metadata array covering kept-then-remote-then-new
+  // in that same order.
   const kept = formData.getAll("existing_images").map(String);
+  const remote = formData.getAll("remote_images").map(String);
   let meta: { company?: string; caption?: string; year?: string }[] = [];
   try {
     meta = JSON.parse(String(formData.get("images_meta") ?? "[]"));
@@ -185,6 +187,15 @@ export async function saveWork(formData: FormData) {
   for (const url of kept) {
     if (!existingByUrl.has(url)) continue; // only urls this candidate already owns
     images.push({ url, company: "", caption: "", year: "" });
+  }
+  for (const remoteUrl of remote) {
+    if (images.length >= 10) break;
+    // Mirror AI-picked portfolio images into our storage (SSRF-guarded) so
+    // profiles never hotlink external sites. Failures drop their meta slot
+    // too, keeping the metadata array aligned with what survived.
+    const url = await saveImageFromUrl(remoteUrl, user.id);
+    if (url) images.push({ url, company: "", caption: "", year: "" });
+    else meta.splice(images.length, 1);
   }
   for (const entry of formData.getAll("images")) {
     if (images.length >= 10) break;

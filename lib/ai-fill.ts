@@ -9,6 +9,9 @@ import { CAREER_STAGES, COUNTRIES, ROLE_TYPES } from "./taxonomy";
  * it's publicly reachable) and proposes values for every profile field.
  * Nothing is written to the database here; the settings form shows the
  * proposal for review and the normal Save persists it.
+ *
+ * Deliberately never proposes dream_job — the ideal-next-role prompt is the
+ * candidate's own voice, not something to infer.
  */
 
 const roleValues = ROLE_TYPES.map((r) => r.value) as [string, ...string[]];
@@ -34,18 +37,39 @@ const AiFill = z.object({
     .string()
     .nullable()
     .describe("2-3 first-person sentences about their most recent role and what they're proud of"),
-  dream_job: z
-    .string()
-    .nullable()
-    .describe("Their ideal next role, ONLY if the site states what they're looking for"),
   brags: z
     .array(z.string())
     .max(5)
-    .describe("Up to five concrete career highlights found in the material"),
+    .describe(
+      "Up to five concrete career highlights. Prioritize major releases and launches; state the metric or business outcome whenever the material gives one",
+    ),
   work: z
     .array(z.object({ title: z.string(), company: z.string() }))
     .max(3)
     .describe("Their last three jobs, most recent first"),
+  images: z
+    .array(
+      z.object({
+        url: z.string().describe("Must be a url copied exactly from the numbered image list"),
+        company: z.string().describe("The company or client the project was for"),
+        year: z.string().nullable().describe("4-digit year of the project, if determinable"),
+        caption: z.string().describe("One short line: what this shows and why it matters"),
+      }),
+    )
+    .max(6)
+    .describe("The strongest portfolio images, best first"),
+  references: z
+    .array(
+      z.object({
+        full_name: z.string(),
+        current_title: z.string().nullable(),
+        linkedin_url: z.string().nullable(),
+      }),
+    )
+    .max(3)
+    .describe(
+      "People who vouch for the candidate — ONLY from LinkedIn recommendations or explicit testimonials with a named author; never guessed",
+    ),
 });
 
 export type AiFillResult = z.infer<typeof AiFill>;
@@ -56,6 +80,33 @@ function usableLinkedInText(html: string | null): string | null {
   if (/authwall|join linkedin|sign in to view/i.test(html.slice(0, 5000))) return null;
   const text = visibleText(html);
   return text.length > 1500 ? text : null;
+}
+
+/** Pull candidate <img> urls (+ alt text) out of the portfolio for Claude to choose from. */
+function collectImages(html: string, baseUrl: string): { url: string; alt: string }[] {
+  const out: { url: string; alt: string }[] = [];
+  const seen = new Set<string>();
+  const tags = html.match(/<img\b[^>]*>/gi) ?? [];
+  for (const tag of tags) {
+    const rawSrc = tag.match(/\bsrc=["']([^"']+)["']/i)?.[1];
+    if (!rawSrc || rawSrc.startsWith("data:")) continue;
+    // Attribute values HTML-encode ampersands; decode so the url is fetchable
+    // and matches how the model echoes it back.
+    const src = rawSrc.replace(/&amp;/g, "&").replace(/&#0?38;/g, "&");
+    let abs: string;
+    try {
+      abs = new URL(src, baseUrl).href;
+    } catch {
+      continue;
+    }
+    if (!/^https?:/.test(abs)) continue;
+    if (/\.(svg|ico)(\?|$)/i.test(abs)) continue; // logos and favicons, not work
+    if (seen.has(abs)) continue;
+    seen.add(abs);
+    out.push({ url: abs, alt: tag.match(/\balt=["']([^"']*)["']/i)?.[1] ?? "" });
+    if (out.length >= 40) break;
+  }
+  return out;
 }
 
 export async function aiFillFromSources(sources: {
@@ -83,8 +134,16 @@ export async function aiFillFromSources(sources: {
     };
   }
 
+  const images =
+    portfolioHtml && sources.portfolioUrl ? collectImages(portfolioHtml, sources.portfolioUrl) : [];
+
   const material = [
     portfolioText ? `## Portfolio site (${sources.portfolioUrl})\n${portfolioText}` : null,
+    images.length > 0
+      ? `## Images found on the portfolio (pick from these urls only)\n${images
+          .map((img, i) => `${i + 1}. ${img.url}${img.alt ? ` — alt: "${img.alt}"` : ""}`)
+          .join("\n")}`
+      : null,
     linkedinText ? `## LinkedIn (${sources.linkedinUrl})\n${linkedinText}` : null,
     !linkedinText && sources.linkedinUrl
       ? `## LinkedIn\nURL on file (page not publicly readable): ${sources.linkedinUrl}`
@@ -105,17 +164,33 @@ export async function aiFillFromSources(sources: {
     system:
       "You extract structured profile data for a design-talent network from a candidate's own " +
       "website. Fill every field you can support with evidence from the material; use null (or " +
-      "an empty array) when the material doesn't say. Never invent employers, titles, dates, or " +
-      "accomplishments. Write bio, last_role_text, and dream_job in the candidate's first-person " +
-      "voice, staying close to how they describe themselves. For industries, prefer terms from " +
-      "this list when they apply, adding others only when clearly warranted: Fintech, Payments, " +
-      "B2B, SaaS, Consumer, E-commerce, Retail, Marketplaces, Food & Beverage, Hardware, " +
-      "Wearables, Search, AI, Healthcare, Fitness, Enterprise, Productivity, Developer Tools, " +
-      "Social, Media, Gaming, Music, Travel, Mobility.",
+      "an empty array) when the material doesn't say. Never invent employers, titles, dates, " +
+      "metrics, people, or accomplishments. Write bio and last_role_text in the candidate's " +
+      "first-person voice, staying close to how they describe themselves.\n\n" +
+      "Images — prioritize the most recent projects, and capture the company and project year " +
+      "for each pick (from captions, urls, or surrounding copy). Choose images that show actual " +
+      "UX/UI work — screens, shipped product, polished visual design — favoring editorial, bold " +
+      "imagery where available. Skip process shots (whiteboards, sticky notes, wireframe walls, " +
+      "workshop photos) unless process is all the portfolio offers; the goal is final product " +
+      "design. Skip headshots, logos, and decorative graphics.\n\n" +
+      "Humblebrags — look for major releases and launches. Lead with those, and state the " +
+      "metric or business outcome (growth, revenue, conversion, scale, awards) whenever the " +
+      "material provides one. Concrete beats vague.\n\n" +
+      "References — only from LinkedIn recommendations or clearly attributed testimonials with " +
+      "a real name; leave empty otherwise.\n\n" +
+      "For industries, prefer terms from this list when they apply, adding others only when " +
+      "clearly warranted: Fintech, Payments, B2B, SaaS, Consumer, E-commerce, Retail, " +
+      "Marketplaces, Food & Beverage, Hardware, Wearables, Search, AI, Healthcare, Fitness, " +
+      "Enterprise, Productivity, Developer Tools, Social, Media, Gaming, Music, Travel, Mobility.",
     messages: [{ role: "user", content: material }],
   });
 
   const fill = response.parsed_output;
   if (!fill) return { error: "AI fill came back malformed — please try again." };
+
+  // Guard against invented urls: only keep picks from the harvested list.
+  const allowed = new Set(images.map((i) => i.url));
+  fill.images = fill.images.filter((img) => allowed.has(img.url));
+
   return { fill };
 }

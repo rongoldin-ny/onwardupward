@@ -41,7 +41,7 @@ export function normalizeUrl(raw: string): string | null {
  * Redirects are followed manually so every hop is re-checked.
  * Localhost is allowed only outside production (demo pages live there in dev).
  */
-async function isSafeUrl(url: string): Promise<boolean> {
+export async function isSafeUrl(url: string): Promise<boolean> {
   let parsed: URL;
   try {
     parsed = new URL(url);
