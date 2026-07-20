@@ -21,6 +21,7 @@ export type CandidateView = {
   brags: string[];
   companies: string[];
   references: { name: string; title: string; linkedin: string | null }[];
+  linkedinUrl: string | null;
   portfolioUrl: string | null;
   portfolioPassword: string | null;
   portfolioImages: PortfolioImage[];
@@ -203,6 +204,18 @@ export default function CandidateProfileView({
                   <Tag key={company}>{company}</Tag>
                 ))}
               </div>
+            )}
+            {candidate.linkedinUrl && (
+              <a
+                href={candidate.linkedinUrl}
+                target="_blank"
+                rel="noreferrer"
+                onClick={() => track("linkedin")}
+                className="mt-4 inline-flex items-center gap-1.5 text-[14px] font-bold"
+              >
+                LinkedIn
+                <ArrowUpRight size={13} strokeWidth={2} />
+              </a>
             )}
             <div className="mt-8 hidden w-full lg:block">
               {mode === "recruiter" ? (
