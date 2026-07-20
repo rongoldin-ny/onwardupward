@@ -6,7 +6,7 @@ import { LogoMark } from "@/components/ui";
 import "./ascent.css";
 
 const MARQUEE =
-  "TALENT & COACHES FROM  META  ✦  GOOGLE  ✦  UBER  ✦  DOORDASH  ✦  ANTHROPIC  ✦  SHOPIFY  ✦ ";
+  "TALENT & COACHES FROM  META  ✦  GOOGLE  ✦  UBER  ✦  DOORDASH  ✦  ANTHROPIC  ✦  SHOPIFY  ✦  PINTEREST  ✦  AMAZON  ✦  SQUARE  ✦ ";
 
 // Social Proof UI — suppressed until the stats are interesting enough to show.
 const SHOW_SOCIAL_PROOF = false;

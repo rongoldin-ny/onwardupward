@@ -205,18 +205,4 @@ export const COACHES: Coach[] = [
     contact: "https://www.specter.coach/",
     source: "specter.coach",
   },
-  {
-    slug: "mentorcruise",
-    name: "MentorCruise",
-    org: "Marketplace",
-    status: "unclaimed",
-    photoUrl: null,
-    bio: "Vetted marketplace of product design, UX and design leadership coaches, including practitioners currently at Snap, Meta, Amazon and Microsoft. Average mentor rating reported as 4.9 out of 5.",
-    offerings:
-      "1:1 mentorship and coaching subscriptions, portfolio and resume review, career change support, design leadership, UX research, accessibility. Filterable by specialty and price.",
-    price: "Varies by coach; typically monthly subscriptions in the low hundreds USD",
-    bestFor: "Fast, low-commitment matching when you want a specific skill",
-    contact: "https://mentorcruise.com/coach/productdesign/",
-    source: "mentorcruise.com",
-  },
 ];
