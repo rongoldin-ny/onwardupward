@@ -313,27 +313,8 @@ export default function CandidateProfileView({
 
           {(candidate.portfolioUrl || candidate.portfolioImages.length > 0) && (
             <section className="mt-9">
-              <Eyebrow>My work</Eyebrow>
-              {candidate.portfolioImages.length > 0 ? (
-                <div className="mt-6 -mx-6 space-y-10 lg:-mx-10">
-                  {candidate.portfolioImages.map((image) => (
-                    <WorkImage key={image.url} image={image} />
-                  ))}
-                </div>
-              ) : (
-                <div className="mt-4 flex gap-3 overflow-x-auto">
-                  {[1, 2, 3].map((n) => (
-                    <div
-                      key={n}
-                      className="stripe-placeholder flex h-[104px] w-[148px] shrink-0 items-center justify-center rounded-xl"
-                    >
-                      <span className="font-mono text-[11px] text-muted">portfolio img</span>
-                    </div>
-                  ))}
-                </div>
-              )}
               {candidate.portfolioUrl && (
-                <div className="mt-10 flex flex-col items-center gap-3.5">
+                <div className="-mx-6 flex flex-col items-center gap-3.5 lg:-mx-10">
                   <a
                     href={candidate.portfolioUrl}
                     target="_blank"
@@ -341,13 +322,20 @@ export default function CandidateProfileView({
                     onClick={() => track("portfolio")}
                     className="gold-gradient cta-glow rounded-full px-12 py-[18px] text-[16px] font-bold text-on-gold"
                   >
-                    My portfolio
+                    Portfolio
                   </a>
                   {candidate.portfolioPassword && mode !== "public" && (
                     <p className="text-[13px] text-secondary">
                       password: {candidate.portfolioPassword}
                     </p>
                   )}
+                </div>
+              )}
+              {candidate.portfolioImages.length > 0 && (
+                <div className="mt-10 -mx-6 space-y-10 lg:-mx-10">
+                  {candidate.portfolioImages.map((image) => (
+                    <WorkImage key={image.url} image={image} />
+                  ))}
                 </div>
               )}
             </section>

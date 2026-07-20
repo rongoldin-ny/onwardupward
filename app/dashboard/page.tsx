@@ -4,6 +4,7 @@ import { requireCandidate } from "@/lib/auth";
 import { candidateStats, profileIncomplete } from "@/lib/stats";
 import { greeting } from "@/lib/greeting";
 import { signOut } from "@/app/actions/auth";
+import DashboardMenu from "./DashboardMenu";
 import {
   Avatar,
   Card,
@@ -25,9 +26,12 @@ export default async function Dashboard() {
     <div className="flex flex-1 flex-col px-7 pt-8 pb-8 lg:px-10 lg:pb-10">
       <header className="flex items-center justify-between">
         <span className="md:hidden"><Logo /></span>
-        <Link href="/settings" aria-label="Settings">
-          <Avatar id={user.id} src={user.photo_url} size={40} />
-        </Link>
+        <div className="ml-auto flex items-center gap-3">
+          <Link href="/settings" aria-label="Settings">
+            <Avatar id={user.id} src={user.photo_url} size={40} />
+          </Link>
+          <DashboardMenu />
+        </div>
       </header>
 
       <main className="mt-12 lg:grid lg:grid-cols-[1fr_320px] lg:items-start lg:gap-10">
