@@ -2,8 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useRef, useState, useTransition } from "react";
-import { ImagePlus, X } from "lucide-react";
-import { saveFullProfile } from "@/app/actions/settings";
+import { ImagePlus, Sparkles, X } from "lucide-react";
+import { fillProfileWithAI, saveFullProfile } from "@/app/actions/settings";
 import { Cta, Eyebrow } from "@/components/ui";
 import {
   CAREER_STAGES,
@@ -52,6 +52,57 @@ export default function ProfileSettingsForm({
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [pending, startTransition] = useTransition();
+
+  // "Fill with AI": p/wk drive the fillable defaults; bumping ver remounts
+  // those sections so the proposed values appear. Nothing persists until Save.
+  const formRef = useRef<HTMLFormElement>(null);
+  const [p, setP] = useState(profile);
+  const [wk, setWk] = useState(work);
+  const [ver, setVer] = useState(0);
+  const [aiNotice, setAiNotice] = useState<string | null>(null);
+  const [aiPending, startAiFill] = useTransition();
+
+  function handleAiFill() {
+    if (!formRef.current) return;
+    const formData = new FormData(formRef.current);
+    setError(null);
+    setSaved(false);
+    setAiNotice(null);
+    startAiFill(async () => {
+      const result = await fillProfileWithAI(formData);
+      if (result.error || !result.fill) {
+        setError(result.error ?? "AI fill came back empty — please try again.");
+        return;
+      }
+      const f = result.fill;
+      setP((prev) => ({
+        ...prev,
+        name: f.name ?? prev.name,
+        role_type: (f.role_type as Profile["role_type"]) ?? prev.role_type,
+        career_stage: (f.career_stage as Profile["career_stage"]) ?? prev.career_stage,
+        location_country: f.location_country ?? prev.location_country,
+        location_state: f.location_state ?? prev.location_state,
+        location_city: f.location_city ?? prev.location_city,
+        years_experience: f.years_experience ?? prev.years_experience,
+        bio: f.bio ?? prev.bio,
+        last_role_text: f.last_role_text ?? prev.last_role_text,
+        dream_job: f.dream_job ?? prev.dream_job,
+        brags: f.brags.length > 0 ? f.brags : prev.brags,
+      }));
+      if (f.work.length > 0) {
+        setWk((prev) =>
+          f.work.map((w, i) => ({ ...(prev[i] ?? {}), title: w.title, company: w.company }) as WorkHistoryRow),
+        );
+      }
+      if (f.industries.length > 0) {
+        setIndustries((prev) => [...new Set([...prev, ...f.industries])]);
+      }
+      setVer((v) => v + 1);
+      setAiNotice(
+        "Filled from your portfolio ✦ — review everything below, adjust what's off, then press Save changes to keep it.",
+      );
+    });
+  }
 
   const [industries, setIndustries] = useState<string[]>(profile.industries);
   const [customIndustry, setCustomIndustry] = useState("");
@@ -107,44 +158,44 @@ export default function ProfileSettingsForm({
     "h-[42px] min-w-0 rounded-full border border-border-1 bg-surface-1 px-4 text-[13px] text-cream placeholder:text-muted focus:border-gold-active focus:outline-none";
 
   return (
-    <form onSubmit={submit} className="space-y-9 pb-4">
-      <section className="space-y-4">
+    <form ref={formRef} onSubmit={submit} className="space-y-9 pb-4">
+      <section key={`basics-${ver}`} className="space-y-4">
         <Eyebrow>The basics</Eyebrow>
-        <TextField name="name" placeholder="Full name" defaultValue={profile.name ?? ""} />
+        <TextField name="name" placeholder="Full name" defaultValue={p.name ?? ""} />
         <SelectField
           name="role_type"
           placeholder="Role"
           options={ROLE_TYPES}
-          defaultValue={profile.role_type ?? ""}
+          defaultValue={p.role_type ?? ""}
         />
         <SelectField
           name="career_stage"
           placeholder="Career stage"
           options={CAREER_STAGES}
-          defaultValue={profile.career_stage ?? ""}
+          defaultValue={p.career_stage ?? ""}
         />
         <TextField
           name="linkedin_url"
           placeholder="linkedin.com/in/…"
-          defaultValue={profile.linkedin_url ?? ""}
+          defaultValue={p.linkedin_url ?? ""}
         />
         <SelectField
           name="country"
           placeholder="Country"
           options={COUNTRIES}
-          defaultValue={profile.location_country ?? ""}
+          defaultValue={p.location_country ?? ""}
         />
         <div className="flex gap-3.5">
           <TextField
             name="state"
             placeholder="State / province"
-            defaultValue={profile.location_state ?? ""}
+            defaultValue={p.location_state ?? ""}
             className="min-w-0 flex-1"
           />
           <TextField
             name="city"
             placeholder="City"
-            defaultValue={profile.location_city ?? ""}
+            defaultValue={p.location_city ?? ""}
             className="min-w-0 flex-1"
           />
         </div>
@@ -154,7 +205,7 @@ export default function ProfileSettingsForm({
           min={0}
           max={60}
           placeholder="Years of experience"
-          defaultValue={profile.years_experience ?? ""}
+          defaultValue={p.years_experience ?? ""}
         />
       </section>
 
@@ -203,13 +254,13 @@ export default function ProfileSettingsForm({
         ))}
       </section>
 
-      <section className="space-y-4">
+      <section key={`story-${ver}`} className="space-y-4">
         <Eyebrow>Your story</Eyebrow>
         <TextArea
           name="bio"
           rows={4}
           placeholder="Describe yourself and your superpowers…"
-          defaultValue={profile.bio ?? ""}
+          defaultValue={p.bio ?? ""}
         />
         <div>
           <p className="text-[13px] text-secondary">Last three jobs</p>
@@ -219,13 +270,13 @@ export default function ProfileSettingsForm({
                 <TextField
                   name={`job_title_${i}`}
                   placeholder="Job title"
-                  defaultValue={work[i]?.title ?? ""}
+                  defaultValue={wk[i]?.title ?? ""}
                   className="min-w-0 flex-1"
                 />
                 <TextField
                   name={`job_company_${i}`}
                   placeholder="Company"
-                  defaultValue={work[i]?.company ?? ""}
+                  defaultValue={wk[i]?.company ?? ""}
                   className="min-w-0 flex-1"
                 />
               </div>
@@ -236,13 +287,13 @@ export default function ProfileSettingsForm({
           name="last_role_text"
           rows={3}
           placeholder="Your most recent role — what are you most proud of?"
-          defaultValue={profile.last_role_text ?? ""}
+          defaultValue={p.last_role_text ?? ""}
         />
         <TextArea
           name="dream_job"
           rows={3}
           placeholder="Describe your ideal next role…"
-          defaultValue={profile.dream_job ?? ""}
+          defaultValue={p.dream_job ?? ""}
         />
         <div>
           <p className="text-[13px] text-secondary">Humblebrags — your five biggest highlights</p>
@@ -253,7 +304,7 @@ export default function ProfileSettingsForm({
                 <TextField
                   name={`brag_${n}`}
                   placeholder="A career highlight"
-                  defaultValue={profile.brags[n - 1] ?? ""}
+                  defaultValue={p.brags[n - 1] ?? ""}
                   className="min-w-0 flex-1"
                 />
               </div>
@@ -430,9 +481,25 @@ export default function ProfileSettingsForm({
           Saved ✓ — your profile is up to date.
         </p>
       )}
-      <Cta type="submit" disabled={pending}>
-        {pending ? "Saving…" : "Save changes"}
-      </Cta>
+      {aiNotice && (
+        <p className="rounded-[16px] border border-gold-border bg-gold-tint px-5 py-4 text-[13px] leading-[1.5] text-gold">
+          {aiNotice}
+        </p>
+      )}
+      <div className="flex flex-col gap-3 lg:flex-row-reverse lg:items-center">
+        <Cta type="submit" disabled={pending || aiPending} className="lg:flex-1">
+          {pending ? "Saving…" : "Save changes"}
+        </Cta>
+        <button
+          type="button"
+          onClick={handleAiFill}
+          disabled={pending || aiPending}
+          className="flex h-[54px] items-center justify-center gap-2.5 rounded-full border border-gold-border px-7 text-[15px] font-bold text-gold disabled:opacity-60 lg:shrink-0"
+        >
+          <Sparkles size={16} strokeWidth={1.75} />
+          {aiPending ? "Reading your portfolio…" : "Fill with AI"}
+        </button>
+      </div>
     </form>
   );
 }

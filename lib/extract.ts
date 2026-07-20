@@ -200,7 +200,7 @@ function decodeEntities(s: string): string {
     .replace(/&ndash;/g, "–");
 }
 
-function visibleText(html: string): string {
+export function visibleText(html: string): string {
   return decodeEntities(
     html
       .replace(/<script[\s\S]*?<\/script>/gi, " ")
