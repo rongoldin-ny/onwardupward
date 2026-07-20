@@ -61,8 +61,14 @@ export default async function CoachesPage() {
                       <h2 className="truncate text-[19px] font-black tracking-[-0.02em] text-cream">
                         {coach.name}
                       </h2>
-                      <span className="eyebrow shrink-0 rounded-full border border-border-2 px-3 py-1.5 text-muted">
-                        Unclaimed
+                      <span
+                        className={`eyebrow shrink-0 rounded-full border px-3 py-1.5 ${
+                          coach.status === "claimed"
+                            ? "border-gold-border text-gold"
+                            : "border-border-2 text-muted"
+                        }`}
+                      >
+                        {coach.status === "claimed" ? "Claimed" : "Unclaimed"}
                       </span>
                     </div>
                     <p className="mt-1 truncate text-[13px] text-secondary">{coach.org}</p>
@@ -80,6 +86,16 @@ export default async function CoachesPage() {
                 <p className="mt-4 border-t border-border-1 pt-3.5 text-[13px] leading-[1.5] text-secondary">
                   <span className="font-bold text-gold">Best for:</span> {coach.bestFor}
                 </p>
+                {coach.status === "claimed" && (
+                  <a
+                    href={coach.contact}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="gold-gradient cta-glow mt-4 rounded-full px-6 py-3 text-center text-[14px] font-bold text-on-gold"
+                  >
+                    Book a session
+                  </a>
+                )}
               </Card>
             ))}
           </div>

@@ -141,9 +141,14 @@ function collectImages(
   return out;
 }
 
-/** Find likely about/bio subpage urls on the candidate's own site. */
-function aboutPageUrls(html: string, baseUrl: string): string[] {
-  const out: string[] = [];
+/**
+ * Find worthwhile subpage urls on the candidate's own site: about/bio pages
+ * (headshots, bio copy) and project/case-study pages (the actual work — many
+ * portfolios keep the home page image-free).
+ */
+function subpageUrls(html: string, baseUrl: string): string[] {
+  const about: string[] = [];
+  const work: string[] = [];
   const base = new URL(baseUrl);
   for (const m of html.matchAll(/<a\b[^>]*href=["']([^"'#?]+)["']/gi)) {
     let href: URL;
@@ -153,12 +158,16 @@ function aboutPageUrls(html: string, baseUrl: string): string[] {
       continue;
     }
     if (href.hostname !== base.hostname) continue;
-    if (!/\/(about|about-me|bio|info|profile)\/?$/i.test(href.pathname)) continue;
     if (href.href === base.href) continue;
-    if (!out.includes(href.href)) out.push(href.href);
-    if (out.length >= 2) break;
+    const path = href.pathname;
+    if (/\/(about|about-me|bio|info|profile)\/?$/i.test(path)) {
+      if (about.length < 2 && !about.includes(href.href)) about.push(href.href);
+    } else if (/\/(portfolio|work|projects?|case-stud(y|ies))\/.+/i.test(path)) {
+      // Deep case-study pages, not the section index.
+      if (work.length < 4 && !work.includes(href.href)) work.push(href.href);
+    }
   }
-  return out;
+  return [...about, ...work];
 }
 
 export async function aiFillFromSources(sources: {
@@ -189,13 +198,13 @@ export async function aiFillFromSources(sources: {
   const images =
     portfolioHtml && sources.portfolioUrl ? collectImages(portfolioHtml, sources.portfolioUrl) : [];
 
-  // Headshots and bio copy often live on an about page rather than the home
-  // page — pull in up to two likely subpages from the same site.
+  // Headshots and bio copy usually live on an about page; the work itself
+  // often lives on case-study subpages — crawl both.
   if (portfolioHtml && sources.portfolioUrl) {
-    for (const url of aboutPageUrls(portfolioHtml, sources.portfolioUrl)) {
+    for (const url of subpageUrls(portfolioHtml, sources.portfolioUrl)) {
       const sub = await fetchPortfolioHtml(url, sources.portfolioPassword);
       if (!sub) continue;
-      portfolioText = `${portfolioText}\n\n### Subpage ${url}\n${visibleText(sub).slice(0, 8000)}`;
+      portfolioText = `${portfolioText}\n\n### Subpage ${url}\n${visibleText(sub).slice(0, 6000)}`;
       const have = new Set(images.map((i) => i.url));
       for (const img of collectImages(sub, url)) {
         if (images.length >= 40) break;
@@ -247,7 +256,11 @@ export async function aiFillFromSources(sources: {
       "UX/UI work — screens, shipped product, polished visual design — favoring editorial, bold " +
       "imagery where available. Skip process shots (whiteboards, sticky notes, wireframe walls, " +
       "workshop photos) unless process is all the portfolio offers; the goal is final product " +
-      "design. Skip headshots, logos, and decorative graphics in the work images — but do put " +
+      "design. NEVER include personal, family, lifestyle, or travel photos as work — images " +
+      "whose filename or nearby text suggests kids, family, pets, hobbies, or an about-me " +
+      "gallery are off-limits; when in doubt about whether an image shows product work, leave " +
+      "it out, and return an empty images array rather than padding it with non-work photos. " +
+      "Skip headshots, logos, and decorative graphics in the work images — but do put " +
       "the candidate's own headshot in photo_url when one appears in the image list (its nearby " +
       "text or alt usually names them, or it sits beside their intro).\n\n" +
       "Humblebrags — look for major releases and launches. Lead with those, and state the " +

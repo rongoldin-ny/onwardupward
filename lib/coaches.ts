@@ -24,6 +24,21 @@ const STORAGE = "https://ziaylaegutxikckewwnq.supabase.co/storage/v1/object/publ
 
 export const COACHES: Coach[] = [
   {
+    slug: "ron-goldin",
+    name: "Ron Goldin",
+    org: "Independent · via Intro",
+    status: "claimed",
+    photoUrl:
+      "https://ziaylaegutxikckewwnq.supabase.co/storage/v1/object/public/profile-assets/633e048e-2dd3-43f2-993f-0f22dd773e7a/45d8aff5-e9fb-477a-af56-62f9ecd6f8c0.jpg",
+    bio: "Hybrid product leader across product design, product management and user research — Consumer and Enterprise, with a focus in AI. One of the first designers at Uber (Rides) and Uber Eats, a Lead at Google pivoting Search to a more visual experience, led software and hardware design for next-gen wearables at Meta, and was a Director at the world's biggest retailer. Has worked with dozens of startups, many with successful exits.",
+    offerings:
+      "1:1 video consultations — building or iterating on digital products, gleaning user insights to grow your business, and career coaching in product and design at all career stages.",
+    price: "15–60 min video sessions, booked via Intro",
+    bestFor: "Designers and PMs at any stage wanting product, AI, or career guidance from a hands-on leader",
+    contact: "https://intro.co/rongoldin",
+    source: "intro.co/rongoldin",
+  },
+  {
     slug: "jesse-james-garrett",
     name: "Jesse James Garrett",
     org: "Intentional Associates",
