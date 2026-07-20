@@ -10,7 +10,7 @@ import { Cta, Eyebrow, Logo, PageFrame } from "@/components/ui";
 import { labelForRoleType } from "@/lib/taxonomy";
 
 /** Build a throwaway CandidateView straight from an AI fill — no DB rows. */
-function fillToView(fill: AiFillResult): CandidateView {
+function fillToView(fill: AiFillResult, portfolioUrl: string | null): CandidateView {
   const name = fill.name ?? "Unnamed candidate";
   const firstName = name.split(" ")[0];
   return {
@@ -30,7 +30,7 @@ function fillToView(fill: AiFillResult): CandidateView {
       title: r.current_title ?? "",
       linkedin: r.linkedin_url,
     })),
-    portfolioUrl: null,
+    portfolioUrl,
     portfolioPassword: null,
     portfolioImages: fill.images.map((img) => ({
       url: img.url,
@@ -48,11 +48,13 @@ export default function ProfileTestLab() {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fill, setFill] = useState<AiFillResult | null>(null);
+  const [testedUrl, setTestedUrl] = useState<string | null>(null);
   const [showJson, setShowJson] = useState(false);
 
   async function run(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    setTestedUrl(String(formData.get("portfolio_url") ?? "").trim() || null);
     setError(null);
     setPending(true);
     const result = await testProfileFill(formData);
@@ -96,7 +98,7 @@ export default function ProfileTestLab() {
             {JSON.stringify(fill, null, 2)}
           </pre>
         )}
-        <CandidateProfileView candidate={fillToView(fill)} mode="public" />
+        <CandidateProfileView candidate={fillToView(fill, testedUrl)} mode="public" />
       </div>
     );
   }

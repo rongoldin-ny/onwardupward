@@ -53,7 +53,7 @@ function WorkImage({ image }: { image: PortfolioImage }) {
   return (
     <figure ref={ref} className="m-0">
       <div
-        className={`overflow-hidden transition-all duration-700 ease-out lg:scale-100 lg:rounded-none lg:opacity-100 ${
+        className={`overflow-hidden transition-all duration-700 ease-out ${
           inView ? "scale-100 rounded-none opacity-100" : "scale-[0.94] rounded-[20px] opacity-70"
         }`}
       >
@@ -63,11 +63,11 @@ function WorkImage({ image }: { image: PortfolioImage }) {
           alt={image.caption || "Portfolio piece"}
           className={`block h-auto w-full transition-transform duration-700 ease-out ${
             inView ? "scale-100" : "scale-105"
-          } lg:scale-100`}
+          }`}
         />
       </div>
       {(metaLine || image.caption) && (
-        <figcaption className="px-6 pt-3 pb-1 lg:px-0">
+        <figcaption className="px-6 pt-3 pb-1 lg:px-10">
           {metaLine && <span className="eyebrow block text-gold">{metaLine}</span>}
           {image.caption && (
             <span className="mt-1.5 block text-[13px] leading-[1.5] text-secondary">
@@ -314,26 +314,8 @@ export default function CandidateProfileView({
           {(candidate.portfolioUrl || candidate.portfolioImages.length > 0) && (
             <section className="mt-9">
               <Eyebrow>My work</Eyebrow>
-              {candidate.portfolioUrl && (
-                <p className="mt-3 text-[14px]">
-                  <a
-                    href={candidate.portfolioUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    onClick={() => track("portfolio")}
-                    className="font-medium"
-                  >
-                    {candidate.portfolioUrl.replace(/^https?:\/\//, "")}
-                  </a>{" "}
-                  {candidate.portfolioPassword && mode !== "public" && (
-                    <span className="text-muted">
-                      · password: {candidate.portfolioPassword}
-                    </span>
-                  )}
-                </p>
-              )}
               {candidate.portfolioImages.length > 0 ? (
-                <div className="mt-6 -mx-6 space-y-10 lg:mx-0">
+                <div className="mt-6 -mx-6 space-y-10 lg:-mx-10">
                   {candidate.portfolioImages.map((image) => (
                     <WorkImage key={image.url} image={image} />
                   ))}
@@ -348,6 +330,24 @@ export default function CandidateProfileView({
                       <span className="font-mono text-[11px] text-muted">portfolio img</span>
                     </div>
                   ))}
+                </div>
+              )}
+              {candidate.portfolioUrl && (
+                <div className="mt-10 flex flex-col items-center gap-3.5">
+                  <a
+                    href={candidate.portfolioUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={() => track("portfolio")}
+                    className="gold-gradient cta-glow rounded-full px-12 py-[18px] text-[16px] font-bold text-on-gold"
+                  >
+                    My portfolio
+                  </a>
+                  {candidate.portfolioPassword && mode !== "public" && (
+                    <p className="text-[13px] text-secondary">
+                      password: {candidate.portfolioPassword}
+                    </p>
+                  )}
                 </div>
               )}
             </section>
