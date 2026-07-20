@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowUpRight, X } from "lucide-react";
+import { ArrowUpRight, Link2, X } from "lucide-react";
 import { sendMessage, trackElementClick } from "@/app/actions/engage";
 import { Avatar, Card, Cta, CtaLink, Eyebrow, PageFrame, Tag } from "@/components/ui";
 import type { PortfolioImage } from "@/lib/db";
@@ -146,7 +146,25 @@ export default function CandidateProfileView({
       >
         <div className="hero-glow" />
         {mode !== "public" && (
-          <header className="flex justify-end">
+          <header className="flex items-center justify-end gap-3">
+            {mode === "preview" && (
+              <button
+                type="button"
+                onClick={async () => {
+                  const url = `${window.location.origin}/p/${candidate.id}`;
+                  try {
+                    await navigator.clipboard.writeText(url);
+                    setToast("Public link copied ✓ — no sign-in needed to view");
+                  } catch {
+                    setToast(url);
+                  }
+                }}
+                className="flex h-11 items-center gap-2 rounded-full border border-gold-border px-5 text-[14px] font-bold text-gold"
+              >
+                <Link2 size={15} strokeWidth={1.75} />
+                Share
+              </button>
+            )}
             <button
               type="button"
               aria-label="Close"
