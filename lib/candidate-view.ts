@@ -52,6 +52,7 @@ export async function toCandidateView(
       title: r.current_title ?? "",
       linkedin: r.linkedin_url,
     })),
+    linkedinUrl: profile.linkedin_url,
     portfolioUrl: profile.portfolio_url,
     portfolioPassword: profile.portfolio_password,
     portfolioImages: profile.portfolio_images,

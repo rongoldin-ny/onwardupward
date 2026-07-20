@@ -73,6 +73,11 @@ export default async function Dashboard() {
                 <span className="font-bold text-gold">top {stats.topPct}%</span> of profiles
                 this week.
               </p>
+            ) : user.vetting_status === "pending" ? (
+              <p className="text-[15px] text-secondary">
+                Your profile is under review — we&apos;ll email you the moment
+                you&apos;re in.
+              </p>
             ) : (
               <p className="text-[15px] text-secondary">
                 Your profile is live — views will show up here.

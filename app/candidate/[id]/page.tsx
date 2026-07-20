@@ -18,6 +18,7 @@ export default async function CandidatePage({
     .select("*")
     .eq("id", id)
     .eq("role", "candidate")
+    .eq("vetting_status", "approved")
     .maybeSingle();
   if (!candidate) notFound();
 

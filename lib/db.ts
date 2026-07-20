@@ -38,6 +38,7 @@ export type Profile = {
   contact_preference: "email" | "linkedin";
   is_paid: boolean;
   onboarding_complete: boolean;
+  vetting_status: "pending" | "approved";
   last_sign_in_at: string | null;
   created_at: string;
   updated_at: string;

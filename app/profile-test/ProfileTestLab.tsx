@@ -30,6 +30,7 @@ function fillToView(fill: AiFillResult, portfolioUrl: string | null): CandidateV
       title: r.current_title ?? "",
       linkedin: r.linkedin_url,
     })),
+    linkedinUrl: null,
     portfolioUrl,
     portfolioPassword: null,
     portfolioImages: fill.images.map((img) => ({

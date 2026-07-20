@@ -31,6 +31,7 @@ export async function searchCandidates(filters: SearchFilters): Promise<ResultCa
     .select("*")
     .eq("role", "candidate")
     .eq("onboarding_complete", true)
+    .eq("vetting_status", "approved")
     .order("created_at", { ascending: false })
     .limit(200);
 

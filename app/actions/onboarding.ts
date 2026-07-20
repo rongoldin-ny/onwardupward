@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { requireUser, homeFor } from "@/lib/auth";
 import { supabaseServer, supabaseAdmin } from "@/lib/supabase/server";
 import { getWorkHistory, type PortfolioImage, type Profile, type WorkHistoryRow } from "@/lib/db";
+import { emailShell, sendEmail } from "@/lib/email";
 import { triggerEnrichment } from "@/lib/enrich";
 import { extractProfile, fetchPortfolioHtml, normalizeUrl } from "@/lib/extract";
 import { saveImage, saveImageFromUrl } from "@/lib/uploads";
@@ -265,6 +266,24 @@ export async function saveContactPreference(formData: FormData) {
     .update({ contact_preference: pref, onboarding_complete: true })
     .eq("id", user.id);
   triggerEnrichment(user.id); // async — does not block navigation
+
+  // First completion of a pending application → tell the vetting inbox.
+  if (user.vetting_status === "pending" && !user.onboarding_complete) {
+    await sendEmail({
+      to: "r@rongoldin.com",
+      subject: `New member application: ${user.name ?? user.email ?? "unnamed"}`,
+      html: emailShell(
+        "A new designer wants in.",
+        `<p><strong style="color:#efe9dd">${user.name ?? "An unnamed candidate"}</strong> (${
+          user.email ?? "no email"
+        }) just finished their profile and is waiting for review.</p>`,
+        {
+          label: "Review their profile",
+          url: `https://onwardupward.io/admin/vetting/${user.id}`,
+        },
+      ),
+    });
+  }
   redirect("/dashboard");
 }
 

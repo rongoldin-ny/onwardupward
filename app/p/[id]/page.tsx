@@ -21,6 +21,7 @@ export default async function PublicProfilePage({
     .select("*")
     .eq("id", id)
     .eq("role", "candidate")
+    .eq("vetting_status", "approved")
     .maybeSingle();
   if (!data || !data.onboarding_complete) notFound();
 
