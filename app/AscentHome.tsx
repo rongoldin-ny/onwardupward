@@ -148,7 +148,7 @@ export default function AscentHome() {
             <span className="level-num">03</span>
             <div className="level-body">
               <div className="level-tag">LEVEL THREE — GET FOUND</div>
-              <h2>Get serendipitously discovered for gigs and collaborations.</h2>
+              <h2>Get discovered for gigs and collaborations.</h2>
               <p>
                 Founders, recruiters and product and design leaders most easily sift
                 through the noise and proactively land on your door, right when
@@ -174,7 +174,7 @@ export default function AscentHome() {
         <section className="recruiter reveal">
           <div className="recruiter-body">
             <div className="level-tag">FOR RECRUITERS &amp; HIRING MANAGERS</div>
-            <h2>A more visual way to discover talent and connections.</h2>
+            <h2>A more visual way to discover talent and make connections.</h2>
             <p>
               Connect with self-aware, growth-oriented candidates that are on an
               upward trajectory.
