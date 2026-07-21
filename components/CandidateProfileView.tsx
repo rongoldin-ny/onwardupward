@@ -131,7 +131,7 @@ export default function CandidateProfileView({
       {mode === "public" && (
         <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-b border-gold-border bg-gold-tint px-6 py-4">
           <p className="text-[14px] font-bold text-gold">
-            onward/upward — a private growth network for designers.
+            onward/upward — a growth network for product designers and PMs.
           </p>
           <Link
             href="/signup"

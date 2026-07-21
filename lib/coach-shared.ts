@@ -40,6 +40,12 @@ export const DISCIPLINE_OPTIONS: { value: CoachDiscipline; label: string }[] = [
   { value: "both", label: "Both" },
 ];
 
+export const CLAIM_MAILTO = `mailto:r@rongoldin.com?subject=${encodeURIComponent(
+  "Claim a coach slot",
+)}&body=${encodeURIComponent(
+  "Hi there, I'd like to claim my coach spot so that people from the Onward/Upward community can easily connect with me.",
+)}`;
+
 export function disciplineLabel(d: CoachDiscipline | null): string {
   if (d === "design") return "Design coaching";
   if (d === "product") return "Product coaching";

@@ -171,7 +171,7 @@ export default async function Dashboard() {
             {coaches.map((coach) => (
               <Link
                 key={coach.id}
-                href="/coaches"
+                href={`/coaches/${coach.id}`}
                 className="block rounded-[20px] border border-border-1 bg-surface-2 p-4"
               >
                 <div className="flex items-center gap-3.5">

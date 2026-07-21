@@ -1,9 +1,11 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { trackCoachView } from "@/app/actions/track";
 import {
+  CLAIM_MAILTO,
   coachFormats,
   coachLevels,
   coachPricing,
@@ -19,19 +21,13 @@ const DISCIPLINES = ["Design", "Product", "Both"];
 
 function matchesDiscipline(coach: CoachRow, active: string[]): boolean {
   if (active.length === 0) return true;
-  const d = coach.disciplines;
-  if (!d) return active.includes("Both");
+  // No answer yet (curated seeds pre-migration) counts as "both".
+  const d = coach.disciplines ?? "both";
   const label = d === "design" ? "Design" : d === "product" ? "Product" : "Both";
   if (active.includes(label)) return true;
   // "Both" coaches also match a Design-only or Product-only filter.
   return d === "both" && (active.includes("Design") || active.includes("Product"));
 }
-
-const CLAIM_MAILTO = `mailto:r@rongoldin.com?subject=${encodeURIComponent(
-  "Claim a coach slot",
-)}&body=${encodeURIComponent(
-  "Hi there, I'd like to claim my coach spot so that people from the Onward/Upward community can easily connect with me.",
-)}`;
 
 function Chip({
   label,
@@ -56,6 +52,7 @@ function Chip({
 }
 
 export default function CoachesDirectory({ coaches }: { coaches: CoachRow[] }) {
+  const router = useRouter();
   const [q, setQ] = useState("");
   const [levels, setLevels] = useState<string[]>([]);
   const [formats, setFormats] = useState<string[]>([]);
@@ -111,7 +108,7 @@ export default function CoachesDirectory({ coaches }: { coaches: CoachRow[] }) {
           ] as const
         ).map(([label, options, active, setter]) => (
           <div key={label} className="flex flex-wrap items-center gap-2">
-            <span className="eyebrow w-[52px] shrink-0 text-muted">{label}</span>
+            <span className="eyebrow w-[86px] shrink-0 text-muted">{label}</span>
             {options.map((option) => (
               <Chip
                 key={option}
@@ -130,7 +127,17 @@ export default function CoachesDirectory({ coaches }: { coaches: CoachRow[] }) {
 
       <div className="mt-3 grid gap-4 lg:grid-cols-2">
         {filtered.map((coach) => (
-          <Card key={coach.id} className="flex flex-col">
+          <div
+            key={coach.id}
+            role="button"
+            tabIndex={0}
+            onClick={() => router.push(`/coaches/${coach.id}`)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") router.push(`/coaches/${coach.id}`);
+            }}
+            className="cursor-pointer"
+          >
+          <Card className="flex h-full flex-col">
             <div className="flex items-center gap-4">
               {coach.photo_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -160,7 +167,10 @@ export default function CoachesDirectory({ coaches }: { coaches: CoachRow[] }) {
                   ) : (
                     <a
                       href={CLAIM_MAILTO}
-                      onClick={() => void trackCoachView(coach.full_name, "claim")}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        void trackCoachView(coach.full_name, "claim");
+                      }}
                       title="This you? Claim your slot"
                       className="eyebrow shrink-0 rounded-full border border-border-2 px-3 py-1.5 text-muted hover:border-gold-border hover:text-gold"
                     >
@@ -200,13 +210,17 @@ export default function CoachesDirectory({ coaches }: { coaches: CoachRow[] }) {
                 href={coach.booking_url}
                 target={coach.booking_url.startsWith("mailto:") ? undefined : "_blank"}
                 rel="noreferrer"
-                onClick={() => void trackCoachView(coach.full_name, "book")}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  void trackCoachView(coach.full_name, "book");
+                }}
                 className="gold-gradient cta-glow mt-4 rounded-full px-6 py-3 text-center text-[14px] font-bold text-on-gold"
               >
                 Book a session
               </a>
             )}
           </Card>
+          </div>
         ))}
       </div>
       {filtered.length === 0 && (
