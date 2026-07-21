@@ -47,12 +47,19 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   redirect("/role");
 }
 
-export async function chooseRole(role: "candidate" | "recruiter") {
+export async function chooseRole(role: "candidate" | "recruiter" | "coach") {
   const user = await currentUser();
   if (!user) redirect("/signin");
   if (user.onboarding_complete) redirect(homeFor(user));
-  const supabase = await supabaseServer();
-  await supabase.from("profiles").update({ role }).eq("id", user.id);
+  if (role === "coach") {
+    // The privilege trigger only allows self-serve candidate/recruiter
+    // switches; the coach role is granted through the admin client.
+    const { supabaseAdmin } = await import("@/lib/supabase/server");
+    await supabaseAdmin().from("profiles").update({ role: "coach" }).eq("id", user.id);
+  } else {
+    const supabase = await supabaseServer();
+    await supabase.from("profiles").update({ role }).eq("id", user.id);
+  }
   redirect("/onboarding");
 }
 

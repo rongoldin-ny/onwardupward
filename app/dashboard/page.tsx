@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { requireCandidate } from "@/lib/auth";
-import { COACHES } from "@/lib/coaches";
+import { getCoachByProfileId, getDirectoryCoaches, type CoachRow } from "@/lib/coaches-db";
 import { getMentorshipPosts } from "@/lib/mentorship-posts";
 import { candidateStats, profileIncomplete } from "@/lib/stats";
 import { greeting } from "@/lib/greeting";
@@ -20,12 +20,19 @@ const RECOMMENDED_COACH_SLUGS = ["andy-polaine", "mia-blume", "judd-garratt"];
 
 export default async function Dashboard() {
   const user = await requireCandidate();
-  const [stats, posts] = await Promise.all([candidateStats(user.id), getMentorshipPosts()]);
+  const [stats, posts, mentorListing] = await Promise.all([
+    candidateStats(user.id),
+    getMentorshipPosts(),
+    getCoachByProfileId(user.id),
+  ]);
   const firstName = (user.name ?? "there").split(" ")[0];
   const incomplete = profileIncomplete(user);
-  const coaches = RECOMMENDED_COACH_SLUGS.map((s) => COACHES.find((c) => c.slug === s)!).filter(
-    Boolean,
-  );
+  const isVetter =
+    user.role === "admin" || (user.email ?? "").toLowerCase() === "r@rongoldin.com";
+  const directory = await getDirectoryCoaches();
+  const coaches = RECOMMENDED_COACH_SLUGS.map((s) => directory.find((c) => c.slug === s))
+    .filter(Boolean)
+    .slice(0, 3) as CoachRow[];
 
   return (
     <PageFrame size="wide">
@@ -38,14 +45,14 @@ export default async function Dashboard() {
           <Link href="/settings" aria-label="Settings">
             <Avatar id={user.id} src={user.photo_url} size={40} />
           </Link>
-          <DashboardMenu />
+          <DashboardMenu isVetter={isVetter} />
         </div>
       </header>
       <FixedChrome>
         <Link href="/settings" aria-label="Settings">
           <Avatar id={user.id} src={user.photo_url} size={40} />
         </Link>
-        <DashboardMenu />
+        <DashboardMenu isVetter={isVetter} />
       </FixedChrome>
 
       <h1 className="mt-10 text-[38px] leading-[1.15] font-black tracking-[-0.02em] text-cream md:mt-0">
@@ -121,6 +128,22 @@ export default async function Dashboard() {
             </section>
           )}
 
+          {!mentorListing && (
+            <Link href="/settings/coaching" className="mt-4 block">
+              <Card>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-[18px] font-bold tracking-[-0.02em] text-cream">
+                    Open to mentoring other designers?
+                  </h2>
+                  <ArrowRight size={18} strokeWidth={1.5} className="text-gold" />
+                </div>
+                <p className="mt-1.5 text-[13px] leading-[1.5] text-secondary">
+                  Join the coach bench — share what you know, on your terms.
+                </p>
+              </Card>
+            </Link>
+          )}
+
           {incomplete && (
             <Link href="/profile/edit" className="mt-4 block">
               <Card highlighted>
@@ -147,21 +170,21 @@ export default async function Dashboard() {
           <div className="mt-4 space-y-3 lg:mt-0">
             {coaches.map((coach) => (
               <Link
-                key={coach.slug}
+                key={coach.id}
                 href="/coaches"
                 className="block rounded-[20px] border border-border-1 bg-surface-2 p-4"
               >
                 <div className="flex items-center gap-3.5">
-                  {coach.photoUrl ? (
+                  {coach.photo_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={coach.photoUrl}
-                      alt={coach.name}
+                      src={coach.photo_url}
+                      alt={coach.full_name}
                       className="h-[48px] w-[48px] shrink-0 rounded-full object-cover"
                     />
                   ) : (
                     <span className="flex h-[48px] w-[48px] shrink-0 items-center justify-center rounded-full border border-border-2 bg-surface-1 text-[15px] font-black text-secondary">
-                      {coach.name
+                      {coach.full_name
                         .split(" ")
                         .map((w) => w[0])
                         .slice(0, 2)
@@ -169,12 +192,12 @@ export default async function Dashboard() {
                     </span>
                   )}
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[15px] font-bold text-cream">{coach.name}</p>
-                    <p className="mt-0.5 truncate text-[12px] text-secondary">{coach.org}</p>
+                    <p className="truncate text-[15px] font-bold text-cream">{coach.full_name}</p>
+                    <p className="mt-0.5 truncate text-[12px] text-secondary">{coach.company}</p>
                   </div>
                 </div>
                 <p className="mt-3 line-clamp-2 text-[12px] leading-[1.5] text-secondary">
-                  {coach.bestFor}
+                  {coach.best_for}
                 </p>
               </Link>
             ))}

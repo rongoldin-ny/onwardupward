@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { Check } from "lucide-react";
 import { chooseRole } from "@/app/actions/auth";
-import { ComingSoonPill, Cta, Logo, PageFrame } from "@/components/ui";
+import { Cta, Logo, PageFrame } from "@/components/ui";
 
 const roles = [
   {
@@ -16,10 +16,15 @@ const roles = [
     title: "I'm hiring",
     description: "Search a vetted network of elite product designers.",
   },
+  {
+    id: "coach",
+    title: "I'm a coach",
+    description: "Join the bench — mentor designers from the network on your terms.",
+  },
 ] as const;
 
 export default function RoleSelect() {
-  const [selected, setSelected] = useState<"candidate" | "recruiter">("candidate");
+  const [selected, setSelected] = useState<"candidate" | "recruiter" | "coach">("candidate");
   const [pending, startTransition] = useTransition();
 
   return (
@@ -63,12 +68,6 @@ export default function RoleSelect() {
             );
           })}
 
-          <div className="flex items-center gap-4 rounded-[20px] border border-dashed border-border-1 bg-surface-disabled p-5 opacity-65">
-            <span className="text-[20px] font-black tracking-[-0.02em] text-secondary">
-              I&apos;m a coach
-            </span>
-            <ComingSoonPill />
-          </div>
         </div>
       </main>
 

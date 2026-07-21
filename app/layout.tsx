@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Schibsted_Grotesk } from "next/font/google";
+import PageViewTracker from "@/components/PageViewTracker";
 import "./globals.css";
 
 const schibsted = Schibsted_Grotesk({
@@ -20,7 +21,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${schibsted.variable} h-full antialiased`}>
-      <body className="min-h-full bg-page">{children}</body>
+      <body className="min-h-full bg-page">
+        <PageViewTracker />
+        {children}
+      </body>
     </html>
   );
 }

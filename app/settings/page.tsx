@@ -4,6 +4,7 @@ import {
   ChevronRight,
   CreditCard,
   Eye,
+  GraduationCap,
   Image as ImageIcon,
   KeyRound,
   UserRound,
@@ -83,6 +84,14 @@ export default async function SettingsPage() {
                 icon={<Eye size={16} strokeWidth={1.5} />}
                 label="View profile"
                 sub="As recruiters see it"
+              />
+            )}
+            {isCandidate && (
+              <Row
+                href="/settings/coaching"
+                icon={<GraduationCap size={16} strokeWidth={1.5} />}
+                label="Coaching"
+                sub="Open to mentoring other designers?"
               />
             )}
           </div>

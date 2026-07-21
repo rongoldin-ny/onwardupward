@@ -6,7 +6,7 @@ import { AlignJustify } from "lucide-react";
 import { signOut } from "@/app/actions/auth";
 
 /** Corner hamburger for the candidate home — mirrors the recruiter search menu. */
-export default function DashboardMenu() {
+export default function DashboardMenu({ isVetter = false }: { isVetter?: boolean }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -39,6 +39,14 @@ export default function DashboardMenu() {
           >
             Coaches
           </Link>
+          {isVetter && (
+            <Link
+              href="/admin/waitlist"
+              className="block w-full px-5 py-2.5 text-left text-[14px] font-bold text-gold"
+            >
+              Admin
+            </Link>
+          )}
           <button
             type="button"
             onClick={() => signOut()}

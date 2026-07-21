@@ -2,17 +2,24 @@
 
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
+import { trackCoachView } from "@/app/actions/track";
 import {
   coachFormats,
   coachLevels,
   coachPricing,
-  type Coach,
-} from "@/lib/coaches";
+  TARGET_MENTEE_OPTIONS,
+  type CoachRow,
+} from "@/lib/coach-shared";
 import { Card, Tag } from "@/components/ui";
 
-const LEVELS = ["Directors & execs", "Managers & leads", "Senior ICs", "Early career"];
 const FORMATS = ["1:1 coaching", "Groups & cohorts", "Programs & courses"];
 const PRICING = ["Published pricing", "Inquire"];
+
+const CLAIM_MAILTO = `mailto:r@rongoldin.com?subject=${encodeURIComponent(
+  "Claim a coach slot",
+)}&body=${encodeURIComponent(
+  "Hi there, I'd like to claim my coach spot so that people from the Onward/Upward community can easily connect with me.",
+)}`;
 
 function Chip({
   label,
@@ -36,7 +43,7 @@ function Chip({
   );
 }
 
-export default function CoachesDirectory({ coaches }: { coaches: Coach[] }) {
+export default function CoachesDirectory({ coaches }: { coaches: CoachRow[] }) {
   const [q, setQ] = useState("");
   const [levels, setLevels] = useState<string[]>([]);
   const [formats, setFormats] = useState<string[]>([]);
@@ -50,7 +57,8 @@ export default function CoachesDirectory({ coaches }: { coaches: Coach[] }) {
     return coaches.filter((c) => {
       if (
         needle &&
-        ![c.name, c.org, c.bio, c.offerings, c.bestFor, c.price]
+        ![c.full_name, c.company, c.short_description, c.offering, c.best_for, c.pricing]
+          .filter(Boolean)
           .join(" ")
           .toLowerCase()
           .includes(needle)
@@ -82,7 +90,7 @@ export default function CoachesDirectory({ coaches }: { coaches: Coach[] }) {
       <div className="mt-5 space-y-3">
         {(
           [
-            ["Level", LEVELS, levels, setLevels],
+            ["Level", TARGET_MENTEE_OPTIONS as readonly string[], levels, setLevels],
             ["Format", FORMATS, formats, setFormats],
             ["Pricing", PRICING, pricing, setPricing],
           ] as const
@@ -107,18 +115,18 @@ export default function CoachesDirectory({ coaches }: { coaches: Coach[] }) {
 
       <div className="mt-3 grid gap-4 lg:grid-cols-2">
         {filtered.map((coach) => (
-          <Card key={coach.slug} className="flex flex-col">
+          <Card key={coach.id} className="flex flex-col">
             <div className="flex items-center gap-4">
-              {coach.photoUrl ? (
+              {coach.photo_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={coach.photoUrl}
-                  alt={coach.name}
+                  src={coach.photo_url}
+                  alt={coach.full_name}
                   className="h-[64px] w-[64px] shrink-0 rounded-full object-cover"
                 />
               ) : (
                 <span className="flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-full border border-border-2 bg-surface-2 text-[20px] font-black text-secondary">
-                  {coach.name
+                  {coach.full_name
                     .split(" ")
                     .map((w) => w[0])
                     .slice(0, 2)
@@ -128,39 +136,53 @@ export default function CoachesDirectory({ coaches }: { coaches: Coach[] }) {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
                   <h2 className="truncate text-[19px] font-black tracking-[-0.02em] text-cream">
-                    {coach.name}
+                    {coach.full_name}
                   </h2>
-                  <span
-                    className={`eyebrow shrink-0 rounded-full border px-3 py-1.5 ${
-                      coach.status === "claimed"
-                        ? "border-gold-border text-gold"
-                        : "border-border-2 text-muted"
-                    }`}
-                  >
-                    {coach.status === "claimed" ? "Claimed" : "Unclaimed"}
-                  </span>
+                  {coach.status === "approved" ? (
+                    <span className="eyebrow shrink-0 rounded-full border border-gold-border px-3 py-1.5 text-gold">
+                      Claimed
+                    </span>
+                  ) : (
+                    <a
+                      href={CLAIM_MAILTO}
+                      onClick={() => void trackCoachView(coach.full_name, "claim")}
+                      title="This you? Claim your slot"
+                      className="eyebrow shrink-0 rounded-full border border-border-2 px-3 py-1.5 text-muted hover:border-gold-border hover:text-gold"
+                    >
+                      Unclaimed
+                    </a>
+                  )}
                 </div>
-                <p className="mt-1 truncate text-[13px] text-secondary">{coach.org}</p>
+                <p className="mt-1 truncate text-[13px] text-secondary">{coach.company}</p>
               </div>
             </div>
-            <p className="mt-4 line-clamp-3 text-[14px] leading-[1.55] text-body-2">{coach.bio}</p>
-            <p className="mt-3 line-clamp-3 text-[13px] leading-[1.55] text-secondary">
-              {coach.offerings}
-            </p>
+            {coach.short_description && (
+              <p className="mt-4 line-clamp-3 text-[14px] leading-[1.55] text-body-2">
+                {coach.short_description}
+              </p>
+            )}
+            {coach.offering && (
+              <p className="mt-3 line-clamp-3 text-[13px] leading-[1.55] text-secondary">
+                {coach.offering}
+              </p>
+            )}
             <div className="mt-4 flex flex-wrap gap-2">
-              <Tag>{coach.price}</Tag>
+              {coach.pricing && <Tag>{coach.pricing}</Tag>}
               {coachLevels(coach).map((l) => (
                 <Tag key={l}>{l}</Tag>
               ))}
             </div>
-            <p className="mt-4 border-t border-border-1 pt-3.5 text-[13px] leading-[1.5] text-secondary">
-              <span className="font-bold text-gold">Best for:</span> {coach.bestFor}
-            </p>
-            {coach.status === "claimed" && (
+            {coach.best_for && (
+              <p className="mt-4 border-t border-border-1 pt-3.5 text-[13px] leading-[1.5] text-secondary">
+                <span className="font-bold text-gold">Best for:</span> {coach.best_for}
+              </p>
+            )}
+            {coach.status === "approved" && coach.booking_url && (
               <a
-                href={coach.contact}
-                target="_blank"
+                href={coach.booking_url}
+                target={coach.booking_url.startsWith("mailto:") ? undefined : "_blank"}
                 rel="noreferrer"
+                onClick={() => void trackCoachView(coach.full_name, "book")}
                 className="gold-gradient cta-glow mt-4 rounded-full px-6 py-3 text-center text-[14px] font-bold text-on-gold"
               >
                 Book a session

@@ -18,6 +18,7 @@ export function homeFor(user: Profile): string {
   if (user.role === "admin") return "/admin";
   if (!user.onboarding_complete) return "/onboarding";
   if (user.role === "candidate") return "/dashboard";
+  if (user.role === "coach") return "/coach";
   return user.is_paid ? "/search" : "/subscribe";
 }
 

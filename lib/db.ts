@@ -71,7 +71,7 @@ export type ReferenceRow = {
 
 export async function trackEvent(
   userId: string | null,
-  eventType: "profile_view" | "element_click" | "search_query" | "message_sent",
+  eventType: "profile_view" | "element_click" | "search_query" | "message_sent" | "page_view" | "coach_view",
   targetProfileId: string | null,
   metadata: Record<string, unknown> = {},
 ) {

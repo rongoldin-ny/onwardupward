@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { requireUser } from "@/lib/auth";
-import { COACHES } from "@/lib/coaches";
+import { getDirectoryCoaches } from "@/lib/coaches-db";
 import { Eyebrow, Logo, PageFrame } from "@/components/ui";
 import CoachesDirectory from "./CoachesDirectory";
 
@@ -13,6 +13,7 @@ export const metadata = { title: "Coaches — onward/upward" };
  */
 export default async function CoachesPage() {
   await requireUser();
+  const coaches = await getDirectoryCoaches();
 
   return (
     <PageFrame size="wide">
@@ -37,7 +38,7 @@ export default async function CoachesPage() {
             once they do.
           </p>
 
-          <CoachesDirectory coaches={COACHES} />
+          <CoachesDirectory coaches={coaches} />
 
           <p className="mt-8 text-[12px] text-muted">
             Unclaimed coaches can&apos;t be contacted through onward/upward yet.

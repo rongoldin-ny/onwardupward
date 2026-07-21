@@ -11,6 +11,8 @@ export default async function OnboardingPage() {
   const user = await requireUser();
   if (user.onboarding_complete) redirect(homeFor(user));
 
+  if (user.role === "coach") redirect("/coach");
+
   if (user.role === "recruiter") {
     const supabase = await supabaseServer();
     const { data: rp } = await supabase
