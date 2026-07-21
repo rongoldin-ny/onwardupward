@@ -135,7 +135,7 @@ export default function AscentHome() {
             <span className="level-num">02</span>
             <div className="level-body">
               <div className="level-tag">LEVEL TWO — TRAIN WITH THE BEST</div>
-              <h2>Coaches who&rsquo;ve made the climb.</h2>
+              <h2>Coaches and mentors who&rsquo;ve made the climb.</h2>
               <p>
                 Discover ways to work with the industry&rsquo;s best
                 coaches — leaders who&rsquo;ve built the teams you want to

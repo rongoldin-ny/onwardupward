@@ -30,7 +30,7 @@ export default async function CoachesPage() {
         <main className="mt-10">
           <Eyebrow>Train with the best</Eyebrow>
           <h1 className="mt-4 text-[34px] leading-[1.1] font-black tracking-[-0.02em] text-cream">
-            Coaches who&apos;ve made the climb.
+            Coaches and mentors who&apos;ve made the climb.
           </h1>
           <p className="mt-3 max-w-[560px] text-[15px] leading-[1.5] text-secondary">
             A curated bench of design and product leadership coaches. Unclaimed
