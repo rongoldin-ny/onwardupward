@@ -3,6 +3,8 @@
  * client components (directory, listing form) can use them freely.
  */
 
+export type CoachDiscipline = "design" | "product" | "both";
+
 export type CoachRow = {
   id: string;
   profile_id: string | null;
@@ -12,6 +14,7 @@ export type CoachRow = {
   short_description: string | null;
   offering: string | null;
   target_mentees: string[];
+  disciplines: CoachDiscipline | null;
   best_for: string | null;
   photo_url: string | null;
   booking_url: string | null;
@@ -30,6 +33,19 @@ export const TARGET_MENTEE_OPTIONS = [
   "Managers & leads",
   "Directors & execs",
 ] as const;
+
+export const DISCIPLINE_OPTIONS: { value: CoachDiscipline; label: string }[] = [
+  { value: "design", label: "Design" },
+  { value: "product", label: "Product" },
+  { value: "both", label: "Both" },
+];
+
+export function disciplineLabel(d: CoachDiscipline | null): string {
+  if (d === "design") return "Design coaching";
+  if (d === "product") return "Product coaching";
+  if (d === "both") return "Design & Product";
+  return "";
+}
 
 // ---------------------------------------------------------------- facets
 

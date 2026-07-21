@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { approveCoach } from "@/app/actions/coaches";
 import { getPendingCoaches } from "@/lib/coaches-db";
+import { disciplineLabel } from "@/lib/coach-shared";
 import type { Profile } from "@/lib/db";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { labelForRoleType } from "@/lib/taxonomy";
@@ -94,6 +95,7 @@ export default async function WaitlistPage() {
                     <p className="mt-0.5 truncate text-[13px] text-secondary">
                       {coach.email}
                       {coach.company ? ` · ${coach.company}` : ""}
+                      {coach.disciplines ? ` · ${disciplineLabel(coach.disciplines)}` : ""}
                     </p>
                   </div>
                 </div>

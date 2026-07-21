@@ -7,6 +7,7 @@ import {
   coachFormats,
   coachLevels,
   coachPricing,
+  disciplineLabel,
   TARGET_MENTEE_OPTIONS,
   type CoachRow,
 } from "@/lib/coach-shared";
@@ -14,6 +15,17 @@ import { Card, Tag } from "@/components/ui";
 
 const FORMATS = ["1:1 coaching", "Groups & cohorts", "Programs & courses"];
 const PRICING = ["Published pricing", "Inquire"];
+const DISCIPLINES = ["Design", "Product", "Both"];
+
+function matchesDiscipline(coach: CoachRow, active: string[]): boolean {
+  if (active.length === 0) return true;
+  const d = coach.disciplines;
+  if (!d) return active.includes("Both");
+  const label = d === "design" ? "Design" : d === "product" ? "Product" : "Both";
+  if (active.includes(label)) return true;
+  // "Both" coaches also match a Design-only or Product-only filter.
+  return d === "both" && (active.includes("Design") || active.includes("Product"));
+}
 
 const CLAIM_MAILTO = `mailto:r@rongoldin.com?subject=${encodeURIComponent(
   "Claim a coach slot",
@@ -48,6 +60,7 @@ export default function CoachesDirectory({ coaches }: { coaches: CoachRow[] }) {
   const [levels, setLevels] = useState<string[]>([]);
   const [formats, setFormats] = useState<string[]>([]);
   const [pricing, setPricing] = useState<string[]>([]);
+  const [disciplines, setDisciplines] = useState<string[]>([]);
 
   const toggle = (setter: React.Dispatch<React.SetStateAction<string[]>>, value: string) =>
     setter((cur) => (cur.includes(value) ? cur.filter((v) => v !== value) : [...cur, value]));
@@ -67,9 +80,10 @@ export default function CoachesDirectory({ coaches }: { coaches: CoachRow[] }) {
       if (levels.length > 0 && !coachLevels(c).some((l) => levels.includes(l))) return false;
       if (formats.length > 0 && !coachFormats(c).some((f) => formats.includes(f))) return false;
       if (pricing.length > 0 && !pricing.includes(coachPricing(c))) return false;
+      if (!matchesDiscipline(c, disciplines)) return false;
       return true;
     });
-  }, [coaches, q, levels, formats, pricing]);
+  }, [coaches, q, levels, formats, pricing, disciplines]);
 
   return (
     <div>
@@ -90,6 +104,7 @@ export default function CoachesDirectory({ coaches }: { coaches: CoachRow[] }) {
       <div className="mt-5 space-y-3">
         {(
           [
+            ["Discipline", DISCIPLINES, disciplines, setDisciplines],
             ["Level", TARGET_MENTEE_OPTIONS as readonly string[], levels, setLevels],
             ["Format", FORMATS, formats, setFormats],
             ["Pricing", PRICING, pricing, setPricing],
@@ -153,7 +168,9 @@ export default function CoachesDirectory({ coaches }: { coaches: CoachRow[] }) {
                     </a>
                   )}
                 </div>
-                <p className="mt-1 truncate text-[13px] text-secondary">{coach.company}</p>
+                <p className="mt-1 truncate text-[13px] text-secondary">
+                  {[coach.company, disciplineLabel(coach.disciplines)].filter(Boolean).join(" · ")}
+                </p>
               </div>
             </div>
             {coach.short_description && (
@@ -167,6 +184,7 @@ export default function CoachesDirectory({ coaches }: { coaches: CoachRow[] }) {
               </p>
             )}
             <div className="mt-4 flex flex-wrap gap-2">
+              {coach.disciplines && <Tag>{disciplineLabel(coach.disciplines)}</Tag>}
               {coach.pricing && <Tag>{coach.pricing}</Tag>}
               {coachLevels(coach).map((l) => (
                 <Tag key={l}>{l}</Tag>

@@ -39,12 +39,17 @@ export async function saveCoachListing(formData: FormData): Promise<{ error?: st
     .getAll("target_mentees")
     .map(String)
     .filter((m) => (TARGET_MENTEE_OPTIONS as readonly string[]).includes(m));
+  const disciplinesRaw = str("disciplines");
+  const disciplines = (["design", "product", "both"] as const).includes(disciplinesRaw as any)
+    ? (disciplinesRaw as "design" | "product" | "both")
+    : null;
   const booking = normalizeBooking(str("booking_url"));
 
   if (!fullName || !email || !shortDescription || !offering || !bestFor) {
     return { error: "Name, email, description, offering, and best-for are all required." };
   }
   if (!/^\S+@\S+\.\S+$/.test(email)) return { error: "That email doesn't look right." };
+  if (!disciplines) return { error: "Pick which disciplines you coach for." };
   if (mentees.length === 0) return { error: "Pick at least one group you mentor." };
   if (!booking) return { error: "Add a booking link — a URL or an email address." };
 
@@ -65,6 +70,7 @@ export async function saveCoachListing(formData: FormData): Promise<{ error?: st
     short_description: shortDescription,
     offering,
     target_mentees: mentees,
+    disciplines,
     best_for: bestFor,
     photo_url: photoUrl,
     booking_url: booking,

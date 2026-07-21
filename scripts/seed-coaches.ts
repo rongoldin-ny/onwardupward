@@ -4,6 +4,12 @@
 import { COACHES } from "../lib/coaches";
 import { supabaseAdmin } from "../lib/supabase/server";
 
+// Ron coaches both disciplines; the rest of the curated bench is
+// design-leadership-focused. Adjust in the coaches table any time.
+const DISCIPLINE_OVERRIDES: Record<string, "design" | "product" | "both"> = {
+  "ron-goldin": "both",
+};
+
 (async () => {
   const sb = supabaseAdmin();
   for (const c of COACHES) {
@@ -20,6 +26,7 @@ import { supabaseAdmin } from "../lib/supabase/server";
       website: c.source ? `https://${c.source.replace(/^https?:\/\//, "")}` : null,
       source: c.source,
       status: c.status === "claimed" ? "approved" : "unclaimed",
+      disciplines: DISCIPLINE_OVERRIDES[c.slug] ?? "design",
     };
     const { error } = await sb.from("coaches").upsert(row, { onConflict: "slug" });
     console.log(c.slug, error?.message ?? "ok");

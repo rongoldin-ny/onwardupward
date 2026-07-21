@@ -6,7 +6,12 @@ import { ImagePlus } from "lucide-react";
 import { saveCoachListing } from "@/app/actions/coaches";
 import { TextField, TextArea } from "@/components/fields";
 import { Cta, Eyebrow } from "@/components/ui";
-import { TARGET_MENTEE_OPTIONS, type CoachRow } from "@/lib/coach-shared";
+import {
+  DISCIPLINE_OPTIONS,
+  TARGET_MENTEE_OPTIONS,
+  type CoachDiscipline,
+  type CoachRow,
+} from "@/lib/coach-shared";
 
 /**
  * The one coach listing form — standalone coach onboarding, coach editing,
@@ -23,6 +28,9 @@ export default function CoachListingForm({
 }) {
   const router = useRouter();
   const [mentees, setMentees] = useState<string[]>(existing?.target_mentees ?? []);
+  const [discipline, setDiscipline] = useState<CoachDiscipline | null>(
+    existing?.disciplines ?? null,
+  );
   const [photoPreview, setPhotoPreview] = useState<string | null>(
     existing?.photo_url ?? prefill.photoUrl,
   );
@@ -106,6 +114,27 @@ export default function CoachListingForm({
           placeholder="Your offering — what a session with you covers"
           defaultValue={existing?.offering ?? ""}
         />
+        <div>
+          <p className="text-[13px] text-secondary">What disciplines do you coach for?</p>
+          <div className="mt-3 flex flex-wrap gap-2.5">
+            {DISCIPLINE_OPTIONS.map((option) => {
+              const on = discipline === option.value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setDiscipline(option.value)}
+                  className={`rounded-full border px-4 py-2.5 text-[13px] ${
+                    on ? "border-gold-active font-bold text-gold" : "border-border-2 text-body-2"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
+          <input type="hidden" name="disciplines" value={discipline ?? ""} />
+        </div>
         <div>
           <p className="text-[13px] text-secondary">Who do you mentor?</p>
           <div className="mt-3 flex flex-wrap gap-2.5">
