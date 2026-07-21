@@ -7,7 +7,8 @@ import { getWorkHistory, type PortfolioImage, type Profile, type WorkHistoryRow 
 import { emailShell, sendEmail } from "@/lib/email";
 import { triggerEnrichment } from "@/lib/enrich";
 import { extractProfile, fetchPortfolioHtml, normalizeUrl } from "@/lib/extract";
-import { saveImage, saveImageFromUrl } from "@/lib/uploads";
+import { resumeTextFromBytes } from "@/lib/resume";
+import { saveImage, saveImageFromUrl, saveResume } from "@/lib/uploads";
 
 function str(formData: FormData, key: string): string | null {
   const v = String(formData.get(key) ?? "").trim();
@@ -53,10 +54,39 @@ export async function importFromLinks(formData: FormData): Promise<ImportResult>
     .eq("id", user.id);
 
   const found: string[] = [];
-  if (portfolio) {
-    const html = await fetchPortfolioHtml(portfolio, portfolioPassword ?? user.portfolio_password);
-    if (html) {
-      const extracted = extractProfile(html);
+
+  // Résumé: store it, and use its text as another extraction signal.
+  let resumeText: string | null = null;
+  const resume = formData.get("resume");
+  if (resume instanceof File && resume.size > 0) {
+    const bytes = await resume.arrayBuffer();
+    const url = await saveResume(resume, user.id);
+    if (url) {
+      await supabase.from("profiles").update({ resume_url: url }).eq("id", user.id);
+      found.push("résumé");
+    }
+    resumeText = await resumeTextFromBytes(bytes);
+  }
+
+  const html = portfolio
+    ? await fetchPortfolioHtml(portfolio, portfolioPassword ?? user.portfolio_password)
+    : null;
+  if (html || resumeText) {
+    // The heuristic extractor runs on visible text, so a résumé's plain text
+    // works through the same patterns; portfolio wins ties, résumé fills gaps.
+    const extractions = [html, resumeText].filter(Boolean).map((t) => extractProfile(t!));
+    {
+      const extracted = {
+        name: extractions.find((e) => e.name)?.name,
+        bio: extractions.find((e) => e.bio)?.bio,
+        roleType: extractions.find((e) => e.roleType)?.roleType,
+        careerStage: extractions.find((e) => e.careerStage)?.careerStage,
+        city: extractions.find((e) => e.city)?.city,
+        country: extractions.find((e) => e.country)?.country,
+        yearsExperience: extractions.find((e) => e.yearsExperience)?.yearsExperience,
+        industries: extractions.find((e) => e.industries.length > 0)?.industries ?? [],
+        work: extractions.find((e) => e.work.length > 0)?.work ?? [],
+      };
       const patch: Record<string, unknown> = {};
       const set = (column: keyof Profile, value: unknown, current: unknown, label: string) => {
         if (value === undefined || value === null || current) return;
@@ -184,6 +214,15 @@ export async function saveWork(formData: FormData) {
     meta = [];
   }
 
+  // Résumé replace from the settings editor.
+  const resumeFile = formData.get("resume");
+  if (resumeFile instanceof File && resumeFile.size > 0) {
+    const resumeUrl = await saveResume(resumeFile, user.id);
+    if (resumeUrl) {
+      await supabase.from("profiles").update({ resume_url: resumeUrl }).eq("id", user.id);
+    }
+  }
+
   const images: PortfolioImage[] = [];
   for (const url of kept) {
     if (!existingByUrl.has(url)) continue; // only urls this candidate already owns
@@ -273,7 +312,7 @@ export async function saveContactPreference(formData: FormData) {
       to: "r@rongoldin.com",
       subject: `New member application: ${user.name ?? user.email ?? "unnamed"}`,
       html: emailShell(
-        "A new designer wants in.",
+        "A new member wants in.",
         `<p><strong style="color:#efe9dd">${user.name ?? "An unnamed candidate"}</strong> (${
           user.email ?? "no email"
         }) just finished their profile and is waiting for review.</p>`,

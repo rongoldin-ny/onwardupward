@@ -33,7 +33,7 @@ export default async function CoachesPage() {
             Coaches who&apos;ve made the climb.
           </h1>
           <p className="mt-3 max-w-[560px] text-[15px] leading-[1.5] text-secondary">
-            A curated bench of design leadership and career coaches. Unclaimed
+            A curated bench of design and product leadership coaches. Unclaimed
             profiles haven&apos;t joined the network yet — introductions open up
             once they do.
           </p>

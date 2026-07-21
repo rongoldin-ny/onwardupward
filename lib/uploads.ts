@@ -29,6 +29,23 @@ export async function saveImage(file: File, ownerId: string): Promise<string | n
   return supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
 }
 
+/** Persist an uploaded PDF résumé and return its public URL. */
+export async function saveResume(file: File, ownerId: string): Promise<string | null> {
+  if (file.type !== "application/pdf" || file.size === 0 || file.size > 10 * 1024 * 1024) {
+    return null;
+  }
+  const path = `${ownerId}/resume-${crypto.randomUUID()}.pdf`;
+  const supabase = supabaseAdmin();
+  const { error } = await supabase.storage
+    .from(BUCKET)
+    .upload(path, Buffer.from(await file.arrayBuffer()), { contentType: "application/pdf" });
+  if (error) {
+    console.error("saveResume failed:", error.message);
+    return null;
+  }
+  return supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+}
+
 /**
  * Mirror a remote image (e.g. one AI fill picked off the candidate's
  * portfolio) into our storage so profiles never hotlink external sites.
@@ -56,7 +73,9 @@ export async function saveImageFromUrl(url: string, ownerId: string): Promise<st
     }
     if (!res || !res.ok) return null;
     const type = (res.headers.get("content-type") ?? "").split(";")[0].trim();
-    const ext = EXT_BY_TYPE[type];
+    // svg allowed on the mirror path only (our own generated logo cards) —
+    // never for direct user uploads.
+    const ext = EXT_BY_TYPE[type] ?? (type === "image/svg+xml" ? "svg" : undefined);
     if (!ext) return null;
     const buf = Buffer.from(await res.arrayBuffer());
     if (buf.length === 0 || buf.length > 10 * 1024 * 1024) return null;

@@ -29,7 +29,7 @@ export async function approveCandidate(profileId: string): Promise<void> {
         html: emailShell(
           `${firstName}, you're in.`,
           `<p>Your profile has been reviewed and accepted. You're now part of a
-           private growth network for designers — visible to vetted recruiters,
+           growth network for product designers and PMs — visible to vetted recruiters,
            hiring managers and coaches.</p>
            <p style="margin-top:12px">While you're here, browse the bench of
            <a href="https://onwardupward.io/coaches" style="color:#e8c987">design

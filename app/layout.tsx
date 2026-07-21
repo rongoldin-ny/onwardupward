@@ -11,7 +11,7 @@ const schibsted = Schibsted_Grotesk({
 
 export const metadata: Metadata = {
   title: "onward/upward — A private talent network",
-  description: "Vetted product designers, found by taste — not keywords.",
+  description: "Vetted product designers and PMs, found by taste — not keywords.",
 };
 
 export default function RootLayout({

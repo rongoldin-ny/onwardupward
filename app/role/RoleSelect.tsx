@@ -14,12 +14,12 @@ const roles = [
   {
     id: "recruiter",
     title: "I'm hiring",
-    description: "Search a vetted network of elite product designers.",
+    description: "Search a vetted network of elite product designers and PMs.",
   },
   {
     id: "coach",
     title: "I'm a coach",
-    description: "Join the bench — mentor designers from the network on your terms.",
+    description: "Join the bench — mentor designers and PMs from the network on your terms.",
   },
 ] as const;
 

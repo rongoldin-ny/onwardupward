@@ -6,6 +6,7 @@ import { aiFillFromSources, type AiFillResult } from "@/lib/ai-fill";
 import type { PortfolioImage } from "@/lib/db";
 import { triggerEnrichment } from "@/lib/enrich";
 import { normalizeUrl } from "@/lib/extract";
+import { resumeTextFromBytes, resumeTextFromUrl } from "@/lib/resume";
 import { saveImageFromUrl } from "@/lib/uploads";
 import {
   saveBasics,
@@ -99,6 +100,7 @@ export async function fillProfileWithAI(formData: FormData): Promise<{
       linkedinUrl: linkedin,
       portfolioUrl: portfolio,
       portfolioPassword: password ?? user.portfolio_password,
+      resumeText: user.resume_url ? await resumeTextFromUrl(user.resume_url) : null,
     });
     if (result.fill) {
       // Count the use only on success — a bad URL or gated site shouldn't
@@ -139,12 +141,20 @@ export async function testProfileFill(formData: FormData): Promise<{
   const linkedin = String(formData.get("linkedin_url") ?? "").trim();
   const portfolio = String(formData.get("portfolio_url") ?? "").trim();
   const password = String(formData.get("portfolio_password") ?? "").trim() || null;
-  if (!linkedin && !portfolio) return { error: "Add a portfolio or LinkedIn URL." };
+  const resume = formData.get("resume");
+  const resumeText =
+    resume instanceof File && resume.size > 0
+      ? await resumeTextFromBytes(await resume.arrayBuffer())
+      : null;
+  if (!linkedin && !portfolio && !resumeText) {
+    return { error: "Add a portfolio URL, LinkedIn, or a résumé." };
+  }
   try {
     return await aiFillFromSources({
       linkedinUrl: linkedin ? normalizeUrl(linkedin) : null,
       portfolioUrl: portfolio ? normalizeUrl(portfolio) : null,
       portfolioPassword: password,
+      resumeText,
     });
   } catch (e) {
     console.error("test fill failed:", e);

@@ -478,6 +478,35 @@ export default function ProfileSettingsForm({
           placeholder="Portfolio password (optional)"
           defaultValue={profile.portfolio_password ?? ""}
         />
+        <label className="flex h-[58px] w-full cursor-pointer items-center justify-between rounded-full border border-border-1 bg-surface-2 px-6 text-[15px] text-muted">
+          <span className="min-w-0 truncate" data-resume-label>
+            {profile.resume_url ? "Résumé on file — tap to replace" : "Upload your résumé (PDF)"}
+          </span>
+          <input
+            type="file"
+            name="resume"
+            accept="application/pdf"
+            className="hidden"
+            onChange={(e) => {
+              const label = e.currentTarget
+                .closest("label")
+                ?.querySelector("[data-resume-label]");
+              const f = e.currentTarget.files?.[0];
+              if (label && f) label.textContent = f.name;
+            }}
+          />
+          <span className="shrink-0 pl-3 text-[13px] font-bold text-gold">Browse</span>
+        </label>
+        {profile.resume_url && (
+          <a
+            href={profile.resume_url}
+            target="_blank"
+            rel="noreferrer"
+            className="block text-[13px] font-medium"
+          >
+            View current résumé ↗
+          </a>
+        )}
         <div className="space-y-4">
           {items.map((item, i) => (
             <div

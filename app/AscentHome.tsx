@@ -95,7 +95,7 @@ export default function AscentHome() {
       <main>
         <header className="hero">
           <div className="glow-top" />
-          <div className="eyebrow-hero">A PRIVATE GROWTH NETWORK FOR DESIGNERS</div>
+          <div className="eyebrow-hero">A GROWTH NETWORK FOR PRODUCT DESIGNERS AND PMS</div>
           <h1>
             The best don&rsquo;t apply.<br />
             <span className="outline-gold">They ascend.</span>
@@ -103,8 +103,9 @@ export default function AscentHome() {
           <div className="hero-row">
             <a className="btn btn-lg" href="#join">Start your ascent</a>
             <span className="hero-sub">
-              Smart matching from where you are to where you want to be — hiring
-              managers and the industry&rsquo;s best coaches, one profile away.
+              Effortlessly set up a visual profile that helps connect you to
+              hiring managers, recruiters and the industry&rsquo;s best coaches
+              to grow yourself and your career.
             </span>
           </div>
           <div className="scroll-cue">SCROLL TO LEVEL UP ↓</div>
@@ -124,7 +125,7 @@ export default function AscentHome() {
               <div className="level-tag">LEVEL ONE — CHART YOUR PATH</div>
               <h2>Where you are. Where you&rsquo;re headed.</h2>
               <p>
-                Generate your designer player&rsquo;s card in two clicks and
+                Generate your player&rsquo;s card in two clicks and
                 zero seconds. Smart matching reads the gap between your today
                 and your next level, and plots the route.
               </p>
@@ -136,7 +137,7 @@ export default function AscentHome() {
               <div className="level-tag">LEVEL TWO — TRAIN WITH THE BEST</div>
               <h2>Coaches who&rsquo;ve made the climb.</h2>
               <p>
-                Discover ways to work with the industry&rsquo;s best design
+                Discover ways to work with the industry&rsquo;s best
                 coaches — leaders who&rsquo;ve built the teams you want to
                 join. Portfolio reviews, leveling plans, straight talk without
                 the hard sales pitch.
@@ -147,7 +148,7 @@ export default function AscentHome() {
             <span className="level-num">03</span>
             <div className="level-body">
               <div className="level-tag">LEVEL THREE — GET FOUND</div>
-              <h2>Hiring managers, searching for exactly you.</h2>
+              <h2>Get serendipitously discovered for gigs and collaborations.</h2>
               <p>
                 Founders, recruiters and design leaders most easily sift
                 through the noise and proactively land on your door, right when
@@ -162,9 +163,9 @@ export default function AscentHome() {
               <div className="level-tag">LEVEL NINETY-NINE — ASCEND</div>
               <h2>Skip the queue. Take the meeting.</h2>
               <p>
-                No applications, no ATS black hole. Direct intros to roles and
-                freelance opportunities that match your trajectory — or a
-                polite pass, on your terms.
+                No applications, no ATS black hole. Direct intros to roles,
+                freelance opportunities and other opportunities to earn money
+                that match your trajectory — or a polite pass, on your terms.
               </p>
             </div>
           </div>
@@ -173,11 +174,10 @@ export default function AscentHome() {
         <section className="recruiter reveal">
           <div className="recruiter-body">
             <div className="level-tag">FOR RECRUITERS &amp; HIRING MANAGERS</div>
-            <h2>See talent before the market does.</h2>
+            <h2>A more visual way to discover talent and connections.</h2>
             <p>
-              Proactive visibility into vetted candidates as they grow — watch
-              trajectories, not just titles, and make the connection before the
-              résumé exists.
+              Connect with self-aware, growth-oriented candidates that are on an
+              upward trajectory.
             </p>
           </div>
           <Link className="btn-ghost" href="/signup">Search the network →</Link>
@@ -195,7 +195,7 @@ export default function AscentHome() {
 
         {SHOW_SOCIAL_PROOF && (
           <section className="stats">
-            <div className="stat reveal"><div className="n">1,200+</div><div className="l">vetted designers, invite-only</div></div>
+            <div className="stat reveal"><div className="n">1,200+</div><div className="l">vetted designers & PMs, invite-only</div></div>
             <div className="stat reveal d1"><div className="n">85</div><div className="l">hand-picked industry coaches</div></div>
             <div className="stat reveal d2"><div className="n">6 days</div><div className="l">median search → first intro</div></div>
             <div className="stat reveal d3"><div className="n gold">0</div><div className="l">applications submitted, ever</div></div>
@@ -210,7 +210,7 @@ export default function AscentHome() {
               <span className="gold">level up?</span>
             </h2>
             <Link className="btn btn-xl" href="/signup">Request an invite</Link>
-            <span className="fine">Free for designers. Always.</span>
+            <span className="fine">Free for designers and PMs. Always.</span>
           </div>
         </section>
       </main>

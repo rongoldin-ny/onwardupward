@@ -2,7 +2,8 @@ import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
 import { fetchPortfolioHtml, visibleText } from "./extract";
-import { CAREER_STAGES, COUNTRIES, ROLE_TYPES } from "./taxonomy";
+import { makeLogoCards } from "./logo-card";
+import { CAREER_STAGES, COUNTRIES, ROLE_TYPES, uniqueCompanies } from "./taxonomy";
 
 /**
  * "Fill with AI" — Claude reads the candidate's portfolio (and LinkedIn when
@@ -174,6 +175,7 @@ export async function aiFillFromSources(sources: {
   linkedinUrl: string | null;
   portfolioUrl: string | null;
   portfolioPassword: string | null;
+  resumeText?: string | null;
 }): Promise<{ fill?: AiFillResult; error?: string }> {
   if (!process.env.ANTHROPIC_API_KEY) {
     return { error: "AI fill isn't configured on this server yet." };
@@ -188,10 +190,11 @@ export async function aiFillFromSources(sources: {
 
   let portfolioText = portfolioHtml ? visibleText(portfolioHtml) : null;
   const linkedinText = usableLinkedInText(linkedinHtml);
-  if (!portfolioText && !linkedinText) {
+  const resumeText = sources.resumeText?.trim() || null;
+  if (!portfolioText && !linkedinText && !resumeText) {
     return {
       error:
-        "Couldn't read your portfolio — check the URL (and password, if it's gated) and try again.",
+        "Couldn't read your portfolio — check the URL (and password, if it's gated), or upload a résumé, and try again.",
     };
   }
 
@@ -225,6 +228,7 @@ export async function aiFillFromSources(sources: {
           )
           .join("\n")}`
       : null,
+    resumeText ? `## Résumé (uploaded by the candidate)\n${resumeText}` : null,
     linkedinText ? `## LinkedIn (${sources.linkedinUrl})\n${linkedinText}` : null,
     !linkedinText && sources.linkedinUrl
       ? `## LinkedIn\nURL on file (page not publicly readable): ${sources.linkedinUrl}`
@@ -282,6 +286,19 @@ export async function aiFillFromSources(sources: {
   const allowed = new Set(images.map((i) => i.url));
   fill.images = fill.images.filter((img) => allowed.has(img.url));
   if (fill.photo_url && !allowed.has(fill.photo_url)) fill.photo_url = null;
+
+  // No portfolio imagery (common for PMs)? Company logo cards on colored
+  // backgrounds keep the "My work" section from being empty.
+  if (fill.images.length === 0 && fill.work.length > 0) {
+    const companies = uniqueCompanies(fill.work.map((w) => w.company));
+    const cards = await makeLogoCards(companies);
+    fill.images = cards.map((c) => ({
+      url: c.url,
+      company: c.company,
+      year: null,
+      caption: `Product work at ${c.company}`,
+    }));
+  }
 
   return { fill };
 }

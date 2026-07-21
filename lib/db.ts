@@ -38,6 +38,7 @@ export type Profile = {
   brags: string[];
   portfolio_url: string | null;
   portfolio_password: string | null;
+  resume_url: string | null;
   portfolio_images: PortfolioImage[];
   years_experience: number | null;
   industries: string[];

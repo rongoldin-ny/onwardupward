@@ -191,10 +191,30 @@ function StepLinks({ profile }: { profile: Profile }) {
         placeholder="Portfolio password, if it has one"
         defaultValue={profile.portfolio_password ?? ""}
       />
+      <label className="flex h-[58px] w-full cursor-pointer items-center justify-between rounded-full border border-border-1 bg-surface-2 px-6 text-[15px] text-muted">
+        <span data-resume-label>
+          {profile.resume_url ? "Résumé on file — tap to replace" : "Upload your résumé (PDF, optional)"}
+        </span>
+        <input
+          type="file"
+          name="resume"
+          accept="application/pdf"
+          className="hidden"
+          onChange={(e) => {
+            const label = e.currentTarget
+              .closest("label")
+              ?.querySelector("[data-resume-label]");
+            const f = e.currentTarget.files?.[0];
+            if (label && f) label.textContent = f.name;
+          }}
+        />
+        <span className="text-[13px] font-bold text-gold">Browse</span>
+      </label>
       <p className="pt-1 text-[13px] leading-[1.5] text-secondary">
-        Share your portfolio and we&apos;ll pull in your name, bio, roles,
-        experience, and location — you review everything before it goes live.
-        If it&apos;s password-protected, the password lets us read it too.
+        Share your portfolio or résumé and we&apos;ll pull in your name, bio,
+        roles, experience, and location — you review everything before it goes
+        live. If your portfolio is password-protected, the password lets us
+        read it too.
       </p>
     </div>
   );

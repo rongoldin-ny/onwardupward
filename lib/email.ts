@@ -44,7 +44,7 @@ export function emailShell(title: string, bodyHtml: string, cta?: { label: strin
           ? `<a href="${cta.url}" style="display:inline-block;margin-top:28px;background:#e8c987;color:#17130a;font-weight:700;font-size:15px;padding:14px 28px;border-radius:999px;text-decoration:none">${cta.label}</a>`
           : ""
       }
-      <p style="margin:32px 0 0;font-size:12px;color:#6e6a5e">onward/upward — a private growth network for designers</p>
+      <p style="margin:32px 0 0;font-size:12px;color:#6e6a5e">onward/upward — a growth network for product designers and PMs</p>
     </div>
   </div>`;
 }

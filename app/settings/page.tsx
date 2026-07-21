@@ -91,7 +91,7 @@ export default async function SettingsPage() {
                 href="/settings/coaching"
                 icon={<GraduationCap size={16} strokeWidth={1.5} />}
                 label="Coaching"
-                sub="Open to mentoring other designers?"
+                sub="Open to mentoring other designers and PMs?"
               />
             )}
           </div>

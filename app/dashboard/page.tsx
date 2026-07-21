@@ -133,7 +133,7 @@ export default async function Dashboard() {
               <Card>
                 <div className="flex items-center justify-between">
                   <h2 className="text-[18px] font-bold tracking-[-0.02em] text-cream">
-                    Open to mentoring other designers?
+                    Open to mentoring other designers and PMs?
                   </h2>
                   <ArrowRight size={18} strokeWidth={1.5} className="text-gold" />
                 </div>

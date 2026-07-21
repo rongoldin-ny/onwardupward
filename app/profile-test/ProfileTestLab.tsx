@@ -131,6 +131,25 @@ export default function ProfileTestLab() {
               placeholder="Portfolio password (optional)"
             />
             <TextField name="linkedin_url" placeholder="LinkedIn URL (optional)" />
+            <label className="flex h-[58px] w-full cursor-pointer items-center justify-between rounded-full border border-border-1 bg-surface-2 px-6 text-[15px] text-muted">
+              <span className="min-w-0 truncate" data-resume-label>
+                Résumé (PDF, optional)
+              </span>
+              <input
+                type="file"
+                name="resume"
+                accept="application/pdf"
+                className="hidden"
+                onChange={(e) => {
+                  const label = e.currentTarget
+                    .closest("label")
+                    ?.querySelector("[data-resume-label]");
+                  const f = e.currentTarget.files?.[0];
+                  if (label && f) label.textContent = f.name;
+                }}
+              />
+              <span className="shrink-0 pl-3 text-[13px] font-bold text-gold">Browse</span>
+            </label>
             {error && <p className="text-[14px] text-gold">{error}</p>}
             <Cta type="submit" disabled={pending} className="mt-3">
               <span className="flex items-center justify-center gap-2.5">
