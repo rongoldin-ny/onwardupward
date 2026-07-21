@@ -150,7 +150,7 @@ export default function AscentHome() {
               <div className="level-tag">LEVEL THREE — GET FOUND</div>
               <h2>Get serendipitously discovered for gigs and collaborations.</h2>
               <p>
-                Founders, recruiters and design leaders most easily sift
+                Founders, recruiters and product and design leaders most easily sift
                 through the noise and proactively land on your door, right when
                 you&rsquo;re ready. Confidential to your peers and no
                 #opentowork badge.
