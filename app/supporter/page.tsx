@@ -7,10 +7,10 @@ import { Cta, Eyebrow, Logo, PageFrame } from "@/components/ui";
 export const metadata = { title: "Supporter — onward/upward" };
 
 const PERKS = [
-  "A gold Supporter badge next to your name, everywhere it appears",
-  "Prioritized ranking in recruiter and hiring-manager searches",
+  "Your profile gets first looks — priority placement in recruiter and hiring-manager searches",
   "First in line for hot opportunities",
   "Early access to new features",
+  "You keep an independent network independent",
 ];
 
 export default async function SupporterPage() {

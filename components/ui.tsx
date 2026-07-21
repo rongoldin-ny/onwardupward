@@ -44,20 +44,6 @@ export function PageFrame({
   );
 }
 
-/** Gold star chip shown next to a Supporter's name. */
-export function SupporterBadge({ size = "md" }: { size?: "sm" | "md" }) {
-  return (
-    <span
-      title="Supporter"
-      className={`gold-gradient inline-flex shrink-0 items-center gap-1 rounded-full font-bold text-on-gold ${
-        size === "sm" ? "px-2 py-0.5 text-[9px]" : "px-2.5 py-1 text-[10px]"
-      } tracking-[0.08em] uppercase`}
-    >
-      ★ Supporter
-    </span>
-  );
-}
-
 /**
  * Fixed top-right browser chrome (avatar, menus) on md+ — the counterpart
  * to the fixed top-left logo, so signed-in controls sit outside the cards.

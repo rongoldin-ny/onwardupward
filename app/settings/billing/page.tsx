@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Check, Sparkle, Star } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { cancelSupporter } from "@/app/actions/supporter";
-import { Card, Eyebrow, SupporterBadge } from "@/components/ui";
+import { Card, Eyebrow } from "@/components/ui";
 import SettingsShell from "../SettingsShell";
 
 export default async function BillingSettingsPage() {
@@ -13,8 +13,7 @@ export default async function BillingSettingsPage() {
       ? ["Unlimited AI-powered search", "Full profiles, portfolios & references", "Direct contact with candidates"]
       : supporter
         ? [
-            "Gold Supporter badge next to your name",
-            "Prioritized ranking in recruiter searches",
+            "Your profile gets first looks in recruiter searches",
             "First in line for hot opportunities",
             "Early access to new features",
           ]
@@ -33,9 +32,8 @@ export default async function BillingSettingsPage() {
             )}
           </span>
         </div>
-        <h2 className="mt-3 flex items-center gap-3 text-[24px] font-black tracking-[-0.02em] text-cream">
+        <h2 className="mt-3 text-[24px] font-black tracking-[-0.02em] text-cream">
           {supporter ? "Supporter" : "Free preview"}
-          {supporter && <SupporterBadge />}
         </h2>
         <p className="mt-1.5 text-[13px] text-secondary">
           {supporter
@@ -65,12 +63,13 @@ export default async function BillingSettingsPage() {
           <Card className="border-gold-border">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <h2 className="flex items-center gap-2.5 text-[18px] font-bold tracking-[-0.02em] text-cream">
-                  Become a Supporter <SupporterBadge size="sm" />
+                <h2 className="text-[18px] font-bold tracking-[-0.02em] text-cream">
+                  Become a Supporter
                 </h2>
                 <p className="mt-1.5 text-[13px] leading-[1.5] text-secondary">
-                  $4.99/mo — a gold badge, priority in recruiter searches, first
-                  crack at hot opportunities, early access to new features.
+                  $4.99/mo — your profile gets first looks in recruiter
+                  searches, first crack at hot opportunities, and early access
+                  to new features.
                 </p>
               </div>
               <span className="text-[20px] text-gold">→</span>

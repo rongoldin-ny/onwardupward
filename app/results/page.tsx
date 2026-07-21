@@ -4,7 +4,7 @@ import { requirePaidRecruiter } from "@/lib/auth";
 import { trackEvent } from "@/lib/db";
 import { searchCandidates } from "@/lib/search";
 import { labelForCareerStage, labelForRoleType } from "@/lib/taxonomy";
-import { Avatar, Eyebrow, Logo, PageFrame, SupporterBadge, Tag } from "@/components/ui";
+import { Avatar, Eyebrow, Logo, PageFrame, Tag } from "@/components/ui";
 
 export default async function Results({
   searchParams,
@@ -96,9 +96,8 @@ export default async function Results({
                     <Avatar id={c.id} src={c.photoUrl} size={52} />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">
-                        <h2 className="flex min-w-0 items-center gap-2 truncate text-[19px] font-black tracking-[-0.02em] text-cream">
-                          <span className="truncate">{c.name}</span>
-                          {c.isSupporter && <SupporterBadge size="sm" />}
+                        <h2 className="truncate text-[19px] font-black tracking-[-0.02em] text-cream">
+                          {c.name}
                         </h2>
                         {index === 0 && filters.q && (
                           <span className="eyebrow flex shrink-0 items-center gap-1.5 text-gold">
