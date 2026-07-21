@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { requireUser, homeFor } from "@/lib/auth";
 import { supabaseServer } from "@/lib/supabase/server";
 import { getReferences, getWorkHistory } from "@/lib/db";
+import { getCommunitySkills } from "@/lib/superpowers-server";
 import CandidateWizard from "./CandidateWizard";
 import RecruiterWizard from "./RecruiterWizard";
 
@@ -29,9 +30,10 @@ export default async function OnboardingPage() {
     );
   }
 
-  const [work, references] = await Promise.all([
+  const [work, references, communitySkills] = await Promise.all([
     getWorkHistory(user.id),
     getReferences(user.id),
+    getCommunitySkills(),
   ]);
-  return <CandidateWizard profile={user} work={work} references={references} />;
+  return <CandidateWizard profile={user} work={work} references={references} communitySkills={communitySkills} />;
 }

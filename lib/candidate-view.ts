@@ -37,6 +37,7 @@ export async function toCandidateView(
     id: profile.id,
     name: profile.name ?? "Unnamed",
     isSupporter: profile.is_supporter ?? false,
+    aiSuperpowers: profile.ai_superpowers ?? [],
     photoUrl: profile.photo_url,
     roleLabel: labelForRoleType(profile.role_type),
     city: profile.location_city ?? "Anywhere",

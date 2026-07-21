@@ -23,6 +23,7 @@ import {
   TextField,
 } from "@/components/fields";
 import { INDUSTRIES } from "@/lib/taxonomy";
+import SuperpowersField from "@/components/SuperpowersField";
 import type { PortfolioImage, Profile, ReferenceRow, WorkHistoryRow } from "@/lib/db";
 
 const STEPS = [
@@ -40,9 +41,10 @@ type Props = {
   work: WorkHistoryRow[];
   references: ReferenceRow[];
   exitHref?: string;
+  communitySkills?: string[];
 };
 
-export default function CandidateWizard({ profile, work, references, exitHref = "/role" }: Props) {
+export default function CandidateWizard({ profile, work, references, exitHref = "/role", communitySkills = [] }: Props) {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -137,7 +139,7 @@ export default function CandidateWizard({ profile, work, references, exitHref = 
           }}
         >
           {step === 0 && <StepLinks profile={profileData} />}
-          {step === 1 && <StepBasics profile={profileData} />}
+          {step === 1 && <StepBasics profile={profileData} communitySkills={communitySkills} />}
           {step === 2 && <StepStory profile={profileData} work={workData} brags={brags} />}
           {step === 3 && <StepWork profile={profileData} existingImages={portfolioImages} />}
           {step === 4 && <StepReferences references={references} />}
@@ -220,7 +222,7 @@ function StepLinks({ profile }: { profile: Profile }) {
   );
 }
 
-function StepBasics({ profile }: { profile: Profile }) {
+function StepBasics({ profile, communitySkills }: { profile: Profile; communitySkills: string[] }) {
   const [industries, setIndustries] = useState<string[]>(profile.industries);
   const [customIndustry, setCustomIndustry] = useState("");
 
@@ -325,6 +327,18 @@ function StepBasics({ profile }: { profile: Profile }) {
         {industries.map((industry) => (
           <input key={industry} type="hidden" name="industries" value={industry} />
         ))}
+      </div>
+
+      <div>
+        <p className="text-[13px] text-secondary">
+          AI superpowers — what you build with, and how deep you go
+        </p>
+        <div className="mt-3">
+          <SuperpowersField
+            initial={profile.ai_superpowers ?? []}
+            communitySkills={communitySkills}
+          />
+        </div>
       </div>
     </div>
   );

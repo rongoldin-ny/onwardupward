@@ -1,6 +1,7 @@
 import { requireUser } from "@/lib/auth";
 import { supabaseServer } from "@/lib/supabase/server";
 import { getReferences, getWorkHistory } from "@/lib/db";
+import { getCommunitySkills } from "@/lib/superpowers-server";
 import SettingsShell from "../SettingsShell";
 import ProfileSettingsForm from "./ProfileSettingsForm";
 import RecruiterPrefsForm from "./RecruiterPrefsForm";
@@ -28,16 +29,17 @@ export default async function ProfileSettingsPage() {
     );
   }
 
-  const [work, references] = await Promise.all([
+  const [work, references, communitySkills] = await Promise.all([
     getWorkHistory(user.id),
     getReferences(user.id),
+    getCommunitySkills(),
   ]);
   return (
     <SettingsShell
       title="Edit profile."
       subtitle="Profiles are visible to recruiters, coaches and anyone you share your public link with."
     >
-      <ProfileSettingsForm profile={user} work={work} references={references} />
+      <ProfileSettingsForm profile={user} work={work} references={references} communitySkills={communitySkills} />
     </SettingsShell>
   );
 }

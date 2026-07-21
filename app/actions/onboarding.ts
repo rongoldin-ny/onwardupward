@@ -8,6 +8,7 @@ import { emailShell, sendEmail } from "@/lib/email";
 import { triggerEnrichment } from "@/lib/enrich";
 import { extractProfile, fetchPortfolioHtml, normalizeUrl } from "@/lib/extract";
 import { resumeTextFromBytes } from "@/lib/resume";
+import { sanitizeSuperpowers } from "@/lib/superpowers";
 import { saveImage, saveImageFromUrl, saveResume } from "@/lib/uploads";
 
 function str(formData: FormData, key: string): string | null {
@@ -165,6 +166,7 @@ export async function saveBasics(formData: FormData): Promise<{ error?: string }
       years_experience:
         years !== null && !Number.isNaN(years) && years >= 0 && years <= 60 ? years : null,
       industries,
+      ai_superpowers: sanitizeSuperpowers(String(formData.get("ai_superpowers") ?? "[]")),
     })
     .eq("id", user.id);
   return {};

@@ -12,6 +12,7 @@ export type CandidateView = {
   id: string;
   name: string;
   isSupporter: boolean;
+  aiSuperpowers: { skill: string; xp: "basic" | "fluent" | "expert" }[];
   photoUrl: string | null;
   roleLabel: string;
   city: string;
@@ -217,6 +218,40 @@ export default function CandidateProfileView({
                 LinkedIn
                 <ArrowUpRight size={13} strokeWidth={2} />
               </a>
+            )}
+            {candidate.aiSuperpowers.length > 0 && (
+              <div className="mt-7 w-full text-left">
+                <p className="eyebrow text-secondary">AI superpowers</p>
+                <ul className="mt-3.5 space-y-2.5">
+                  {candidate.aiSuperpowers.map((s) => {
+                    const rank = s.xp === "expert" ? 3 : s.xp === "fluent" ? 2 : 1;
+                    return (
+                      <li key={s.skill} className="flex items-center justify-between gap-3">
+                        <span className="min-w-0 truncate text-[13.5px] text-body">{s.skill}</span>
+                        <span
+                          className="flex shrink-0 gap-1"
+                          title={
+                            s.xp === "expert"
+                              ? "Expert — can teach a class"
+                              : s.xp === "fluent"
+                                ? "Fluent"
+                                : "Basic"
+                          }
+                        >
+                          {[1, 2, 3].map((n) => (
+                            <span
+                              key={n}
+                              className={`h-[6px] w-[14px] rounded-full ${
+                                n <= rank ? "gold-gradient" : "bg-border-1"
+                              }`}
+                            />
+                          ))}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
             )}
             <div className="mt-8 hidden w-full lg:block">
               {mode === "recruiter" ? (

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ImagePlus, Link2, Sparkles, X } from "lucide-react";
 import { fillProfileWithAI, reenrichProfile, saveFullProfile } from "@/app/actions/settings";
+import SuperpowersField from "@/components/SuperpowersField";
 import { Eyebrow } from "@/components/ui";
 import {
   CAREER_STAGES,
@@ -50,10 +51,12 @@ export default function ProfileSettingsForm({
   profile,
   work,
   references,
+  communitySkills = [],
 }: {
   profile: Profile;
   work: WorkHistoryRow[];
   references: ReferenceRow[];
+  communitySkills?: string[];
 }) {
   const [error, setError] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved">("idle");
@@ -403,6 +406,20 @@ export default function ProfileSettingsForm({
         {industries.map((industry) => (
           <input key={industry} type="hidden" name="industries" value={industry} />
         ))}
+      </section>
+
+      <section>
+        <Eyebrow>AI superpowers</Eyebrow>
+        <p className="mt-2 text-[13px] text-secondary">
+          What you build with, and how deep you go.
+        </p>
+        <div className="mt-4">
+          <SuperpowersField
+            initial={profile.ai_superpowers ?? []}
+            communitySkills={communitySkills}
+            onChange={scheduleSave}
+          />
+        </div>
       </section>
 
       <section key={`story-${ver}`} className="space-y-4">
