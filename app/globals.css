@@ -149,3 +149,23 @@ body {
   .ou-logo .ou-arrow,
   .ou-logo:hover .ou-arrow { animation: none !important; }
 }
+
+/* ---- global interactive hover: gold outline + subtle brightness lift --- */
+/* :where() keeps specificity at zero so any component-specific hover rule
+   still wins; outline (not box-shadow) so it never clobbers cta-glow. */
+@media (hover: hover) and (pointer: fine) {
+  :where(
+    a,
+    button,
+    [role="button"],
+    select,
+    label:has(> input[type="file"]),
+    label:has(> input[type="radio"]),
+    label:has(> input[type="checkbox"])
+  ):not(:disabled):not(:disabled *):hover {
+    filter: brightness(1.05);
+    outline: 1.5px solid rgba(232, 201, 135, 0.45);
+    outline-offset: 2px;
+    transition: filter 0.15s ease, outline-color 0.15s ease;
+  }
+}
