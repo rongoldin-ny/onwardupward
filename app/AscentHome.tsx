@@ -185,8 +185,8 @@ export default function AscentHome() {
 
         <section className="manifesto reveal">
           <p>
-            Onward/Upward is not about jobs —{" "}
-            <span className="lit">it&rsquo;s about growth.</span> Growth through
+            Onward/Upward is not a job board.{" "}
+            <span className="lit">It&rsquo;s a growth space.</span> Growth through
             under-the-radar opportunities and{" "}
             <span className="gold">the best mentors out there</span> to prepare
             you.
