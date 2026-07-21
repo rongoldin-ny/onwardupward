@@ -126,8 +126,8 @@ export default function AscentHome() {
               <h2>Where you are. Where you&rsquo;re headed.</h2>
               <p>
                 Generate your player&rsquo;s card in two clicks and
-                zero seconds. Smart matching reads the gap between your today
-                and your next level, and plots the route.
+                zero seconds. Use it to tell your story quickly and connect
+                the dots to potential mentors, coaches and gigs.
               </p>
             </div>
           </div>
