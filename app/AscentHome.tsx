@@ -41,11 +41,70 @@ export default function AscentHome() {
     addEventListener("scroll", onScroll, { passive: true });
     onScroll();
 
-    const spot = root.querySelector<HTMLElement>(".spot");
-    const onMove = (e: MouseEvent) => {
-      if (spot) spot.style.transform = `translate(${e.clientX}px,${e.clientY}px)`;
+    // Cursor trail: one continuous organic gold ribbon — a smoothed curve
+    // through recent cursor points that relaxes upward and fades, like a
+    // silk thread. Ported verbatim from the design handoff (RIBBON-PATCH.md).
+    const cv = root.querySelector<HTMLCanvasElement>(".trail")!;
+    const ctx = cv.getContext("2d")!;
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const fit = () => {
+      cv.width = innerWidth * dpr;
+      cv.height = innerHeight * dpr;
+    };
+    fit();
+    addEventListener("resize", fit, { passive: true });
+    const pts: { x: number; y: number; life: number; sway: number }[] = [];
+    const MAX = 34;
+    const onMove = (e: MouseEvent | PointerEvent) => {
+      const p = pts[pts.length - 1];
+      if (p) {
+        const dx = e.clientX - p.x, dy = e.clientY - p.y;
+        if (dx * dx + dy * dy < 36) return;
+      }
+      pts.push({ x: e.clientX, y: e.clientY, life: 1, sway: Math.random() * Math.PI * 2 });
+      if (pts.length > MAX) pts.shift();
     };
     addEventListener("mousemove", onMove, { passive: true });
+    addEventListener("pointermove", onMove, { passive: true });
+    let tick = 0;
+    let raf = 0;
+    const step = () => {
+      raf = requestAnimationFrame(step);
+      ctx.clearRect(0, 0, cv.width, cv.height);
+      if (pts.length < 3) {
+        if (pts.length && --pts[0].life <= 0) pts.shift();
+        return;
+      }
+      tick += 0.03;
+      // age, drift up with a gentle sideways sway, relax toward neighbors
+      for (let i = 0; i < pts.length; i++) {
+        const t = pts[i];
+        t.life -= 0.011;
+        t.y -= 0.5 + (1 - t.life) * 0.6;
+        t.x += Math.sin(tick + t.sway) * 0.35 + 0.15;
+      }
+      while (pts.length && pts[0].life <= 0) pts.shift();
+      for (let i = 1; i < pts.length - 1; i++) {
+        pts[i].x += (pts[i - 1].x + pts[i + 1].x - 2 * pts[i].x) * 0.08;
+        pts[i].y += (pts[i - 1].y + pts[i + 1].y - 2 * pts[i].y) * 0.08;
+      }
+      // draw as segments through midpoints (smooth quadratic ribbon),
+      // tapering width + alpha from tail to head
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      for (let i = 1; i < pts.length - 1; i++) {
+        const p0 = pts[i - 1], p1 = pts[i], p2 = pts[i + 1];
+        const a = Math.max(0, p1.life) * 0.9 * (0.3 + 0.7 * i / pts.length);
+        if (a <= 0.005) continue;
+        ctx.strokeStyle = `rgba(232,201,135,${a.toFixed(3)})`;
+        ctx.lineWidth = (1.4 + 2.6 * (i / pts.length)) * dpr;
+        ctx.beginPath();
+        ctx.moveTo((p0.x + p1.x) / 2 * dpr, (p0.y + p1.y) / 2 * dpr);
+        ctx.quadraticCurveTo(p1.x * dpr, p1.y * dpr, (p1.x + p2.x) / 2 * dpr, (p1.y + p2.y) / 2 * dpr);
+        ctx.stroke();
+      }
+    };
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) step();
 
     const io = new IntersectionObserver(
       (es) =>
@@ -62,13 +121,16 @@ export default function AscentHome() {
     return () => {
       removeEventListener("scroll", onScroll);
       removeEventListener("mousemove", onMove);
+      removeEventListener("pointermove", onMove);
+      removeEventListener("resize", fit);
+      cancelAnimationFrame(raf);
       io.disconnect();
     };
   }, []);
 
   return (
     <div className="ascent" ref={rootRef}>
-      <div className="spot" aria-hidden="true" />
+      <canvas className="trail" aria-hidden="true" />
       <svg className="bg-lines" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
         <path className="bgl" data-rate="1.15" d="M -20 1020 C 200 960, 320 900, 460 760 C 600 620, 680 560, 1020 340" fill="none" stroke="#e8c987" strokeWidth="1.6" opacity=".16" />
         <path className="bgl" data-rate="0.9" d="M -20 940 C 260 900, 380 820, 520 660 C 660 500, 780 420, 1020 160" fill="none" stroke="#e8c987" strokeWidth="1" opacity=".1" />
