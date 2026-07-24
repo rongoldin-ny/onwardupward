@@ -17,15 +17,7 @@ export default function AscentHome() {
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
-    const w = window as unknown as { __tm?: { m: number; c: number; err: string } };
-    w.__tm = w.__tm ?? { m: 0, c: 0, err: "" };
-    w.__tm.m++;
-    if (!("onerror" in w && (w as any).__tmHooked)) {
-      (w as any).__tmHooked = true;
-      addEventListener("error", (e) => {
-        if (w.__tm) w.__tm.err = String((e as ErrorEvent).message ?? "err").slice(0, 60);
-      });
-    }
+
 
     const lvl = root.querySelector<HTMLElement>("[data-hud-lvl]");
     const bar = root.querySelector<HTMLElement>("[data-hud-bar]");
@@ -50,102 +42,6 @@ export default function AscentHome() {
     addEventListener("scroll", onScroll, { passive: true });
     onScroll();
 
-    // Cursor trail: one continuous organic gold ribbon — a smoothed curve
-    // through recent cursor points that relaxes upward and fades, like a
-    // silk thread. Ported verbatim from the design handoff (RIBBON-PATCH.md).
-    const cv = root.querySelector<HTMLCanvasElement>(".trail")!;
-    const ctx = cv.getContext("2d")!;
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
-    const fit = () => {
-      cv.width = innerWidth * dpr;
-      cv.height = innerHeight * dpr;
-    };
-    fit();
-    console.log("[trail] mount", Date.now() % 100000, "w=", cv.width);
-    addEventListener("resize", fit, { passive: true });
-    const pts: { x: number; y: number; life: number; sway: number }[] = [];
-    const MAX = 44;
-    const onMove = (e: MouseEvent | PointerEvent) => {
-      const p = pts[pts.length - 1];
-      if (p) {
-        const dx = e.clientX - p.x, dy = e.clientY - p.y;
-        if (dx * dx + dy * dy < 36) return;
-      }
-      pts.push({ x: e.clientX, y: e.clientY, life: 1, sway: Math.random() * Math.PI * 2 });
-      if (pts.length > MAX) pts.shift();
-    };
-    addEventListener("mousemove", onMove, { passive: true });
-    addEventListener("pointermove", onMove, { passive: true });
-    let tick = 0;
-    let raf = 0;
-    const step = () => {
-      raf = requestAnimationFrame(step);
-      ctx.clearRect(0, 0, cv.width, cv.height);
-      if (pts.length < 3) {
-        if (pts.length && --pts[0].life <= 0) pts.shift();
-        return;
-      }
-      tick += 0.03;
-      // age, drift up with a gentle sideways sway, relax toward neighbors
-      for (let i = 0; i < pts.length; i++) {
-        const t = pts[i];
-        t.life -= 0.007;
-        t.y -= 0.5 + (1 - t.life) * 0.6;
-        t.x += Math.sin(tick + t.sway) * 0.35 + 0.15;
-      }
-      while (pts.length && pts[0].life <= 0) pts.shift();
-      for (let i = 1; i < pts.length - 1; i++) {
-        pts[i].x += (pts[i - 1].x + pts[i + 1].x - 2 * pts[i].x) * 0.08;
-        pts[i].y += (pts[i - 1].y + pts[i + 1].y - 2 * pts[i].y) * 0.08;
-      }
-      // draw as segments through midpoints (smooth quadratic ribbon),
-      // tapering width + alpha from tail to head
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
-      for (let i = 1; i < pts.length - 1; i++) {
-        const p0 = pts[i - 1], p1 = pts[i], p2 = pts[i + 1];
-        const a = Math.max(0, p1.life) * (0.45 + 0.55 * i / pts.length);
-        if (a <= 0.005) continue;
-        ctx.strokeStyle = `rgba(232,201,135,${a.toFixed(3)})`;
-        ctx.lineWidth = (2.2 + 4.2 * (i / pts.length)) * dpr;
-        ctx.beginPath();
-        ctx.moveTo((p0.x + p1.x) / 2 * dpr, (p0.y + p1.y) / 2 * dpr);
-        ctx.quadraticCurveTo(p1.x * dpr, p1.y * dpr, (p1.x + p2.x) / 2 * dpr, (p1.y + p2.y) / 2 * dpr);
-        ctx.stroke();
-      }
-    };
-    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) step();
-
-    // ?debug=1 — on-page diagnosis for the trail (no console needed).
-    let badgeTimer: ReturnType<typeof setInterval> | null = null;
-    if (new URLSearchParams(location.search).get("debug") === "1") {
-      const badge = document.createElement("div");
-      badge.style.cssText =
-        "position:fixed;bottom:8px;left:8px;z-index:99;background:#000;color:#E8C987;font:11px monospace;padding:6px 10px;border-radius:8px;pointer-events:none";
-      document.body.appendChild(badge);
-      let evts = 0;
-      let ptsMax = 0;
-      addEventListener("mousemove", () => evts++, { passive: true });
-      addEventListener("pointermove", () => evts++, { passive: true });
-      let loopFrames = 0;
-      const loopProbe = () => {
-        loopFrames++;
-        requestAnimationFrame(loopProbe);
-      };
-      requestAnimationFrame(loopProbe);
-      let lastLoopFrames = 0;
-      badgeTimer = setInterval(() => {
-        ptsMax = Math.max(ptsMax, pts.length);
-        const fps = loopFrames - lastLoopFrames;
-        lastLoopFrames = loopFrames;
-        const tm = (window as unknown as { __tm?: { m: number; c: number; err: string } }).__tm;
-        badge.textContent =
-          `mounts ${tm?.m ?? "?"} · cleanups ${tm?.c ?? "?"} · badges ${document.querySelectorAll("div[style*=monospace]").length} · ` +
-          `evts ${evts} · pts ${pts.length} (max ${ptsMax}) · fps ${fps}` +
-          (tm?.err ? ` · ERR ${tm.err}` : "");
-      }, 500);
-    }
-
     const io = new IntersectionObserver(
       (es) =>
         es.forEach((e) => {
@@ -159,14 +55,7 @@ export default function AscentHome() {
     root.querySelectorAll(".reveal").forEach((el) => io.observe(el));
 
     return () => {
-      const wc = window as unknown as { __tm?: { m: number; c: number; err: string } };
-      if (wc.__tm) wc.__tm.c++;
       removeEventListener("scroll", onScroll);
-      removeEventListener("mousemove", onMove);
-      removeEventListener("pointermove", onMove);
-      removeEventListener("resize", fit);
-      cancelAnimationFrame(raf);
-      if (badgeTimer) clearInterval(badgeTimer);
       io.disconnect();
     };
   }, []);
