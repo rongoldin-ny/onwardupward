@@ -17,6 +17,15 @@ export default function AscentHome() {
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
+    const w = window as unknown as { __tm?: { m: number; c: number; err: string } };
+    w.__tm = w.__tm ?? { m: 0, c: 0, err: "" };
+    w.__tm.m++;
+    if (!("onerror" in w && (w as any).__tmHooked)) {
+      (w as any).__tmHooked = true;
+      addEventListener("error", (e) => {
+        if (w.__tm) w.__tm.err = String((e as ErrorEvent).message ?? "err").slice(0, 60);
+      });
+    }
 
     const lvl = root.querySelector<HTMLElement>("[data-hud-lvl]");
     const bar = root.querySelector<HTMLElement>("[data-hud-bar]");
@@ -129,9 +138,11 @@ export default function AscentHome() {
         ptsMax = Math.max(ptsMax, pts.length);
         const fps = loopFrames - lastLoopFrames;
         lastLoopFrames = loopFrames;
+        const tm = (window as unknown as { __tm?: { m: number; c: number; err: string } }).__tm;
         badge.textContent =
-          `evts ${evts} · pts ${pts.length} (max ${ptsMax}) · fps ${fps} · ` +
-          `canvas ${cv.width}x${cv.height} · reduced ${matchMedia("(prefers-reduced-motion: reduce)").matches ? "ON" : "off"}`;
+          `mounts ${tm?.m ?? "?"} · cleanups ${tm?.c ?? "?"} · badges ${document.querySelectorAll("div[style*=monospace]").length} · ` +
+          `evts ${evts} · pts ${pts.length} (max ${ptsMax}) · fps ${fps}` +
+          (tm?.err ? ` · ERR ${tm.err}` : "");
       }, 500);
     }
 
@@ -148,7 +159,8 @@ export default function AscentHome() {
     root.querySelectorAll(".reveal").forEach((el) => io.observe(el));
 
     return () => {
-      console.log("[trail] CLEANUP", Date.now() % 100000);
+      const wc = window as unknown as { __tm?: { m: number; c: number; err: string } };
+      if (wc.__tm) wc.__tm.c++;
       removeEventListener("scroll", onScroll);
       removeEventListener("mousemove", onMove);
       removeEventListener("pointermove", onMove);
