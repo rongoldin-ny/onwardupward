@@ -55,7 +55,7 @@ export default function AscentHome() {
     console.log("[trail] mount", Date.now() % 100000, "w=", cv.width);
     addEventListener("resize", fit, { passive: true });
     const pts: { x: number; y: number; life: number; sway: number }[] = [];
-    const MAX = 34;
+    const MAX = 44;
     const onMove = (e: MouseEvent | PointerEvent) => {
       const p = pts[pts.length - 1];
       if (p) {
@@ -80,7 +80,7 @@ export default function AscentHome() {
       // age, drift up with a gentle sideways sway, relax toward neighbors
       for (let i = 0; i < pts.length; i++) {
         const t = pts[i];
-        t.life -= 0.011;
+        t.life -= 0.007;
         t.y -= 0.5 + (1 - t.life) * 0.6;
         t.x += Math.sin(tick + t.sway) * 0.35 + 0.15;
       }
@@ -95,10 +95,10 @@ export default function AscentHome() {
       ctx.lineJoin = "round";
       for (let i = 1; i < pts.length - 1; i++) {
         const p0 = pts[i - 1], p1 = pts[i], p2 = pts[i + 1];
-        const a = Math.max(0, p1.life) * 0.9 * (0.3 + 0.7 * i / pts.length);
+        const a = Math.max(0, p1.life) * (0.45 + 0.55 * i / pts.length);
         if (a <= 0.005) continue;
         ctx.strokeStyle = `rgba(232,201,135,${a.toFixed(3)})`;
-        ctx.lineWidth = (1.4 + 2.6 * (i / pts.length)) * dpr;
+        ctx.lineWidth = (2.2 + 4.2 * (i / pts.length)) * dpr;
         ctx.beginPath();
         ctx.moveTo((p0.x + p1.x) / 2 * dpr, (p0.y + p1.y) / 2 * dpr);
         ctx.quadraticCurveTo(p1.x * dpr, p1.y * dpr, (p1.x + p2.x) / 2 * dpr, (p1.y + p2.y) / 2 * dpr);
