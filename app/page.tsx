@@ -17,8 +17,7 @@ const TRAIL_SCRIPT = `
   const dpr = Math.min(2, window.devicePixelRatio || 1);
   let cv = null, ctx = null;
   const fit = () => { if (!cv) return; cv.width = innerWidth * dpr; cv.height = innerHeight * dpr; };
-  // React can replace the canvas node after hydration; re-bind to whichever
-  // canvas is live right now instead of capturing one forever.
+  // React hydration can replace the canvas node; re-resolve it each frame.
   const ensure = () => {
     const found = document.querySelector('canvas.trail');
     if (!found) { cv = null; ctx = null; return false; }
@@ -35,33 +34,15 @@ const TRAIL_SCRIPT = `
   };
   addEventListener('mousemove', onMove, { passive: true });
   addEventListener('pointermove', onMove, { passive: true });
-  const DBG = new URLSearchParams(location.search).get('ribbondebug') === '1';
-  let badge = null;
-  if (DBG) {
-    badge = document.createElement('div');
-    badge.style.cssText = 'position:fixed;bottom:8px;left:8px;z-index:99;background:#000;color:#E8C987;font:12px monospace;padding:6px 10px;border-radius:8px;pointer-events:none';
-    document.body.appendChild(badge);
-  }
-  let frames = 0, ptsMax = 0, evts = 0;
-  addEventListener('mousemove', () => evts++, { passive: true });
   let tick = 0;
   const step = () => {
     requestAnimationFrame(step);
-    frames++;
-    if (!ensure()) { if (badge) badge.textContent = 'NO CANVAS'; return; }
+    if (!ensure()) return;
     ctx.clearRect(0, 0, cv.width, cv.height);
-    if (DBG) {
-      // Always-on static test box: if you can SEE this solid gold square in
-      // the top-left, the canvas composites to your display.
-      ctx.fillStyle = 'rgba(232,201,135,1)';
-      ctx.fillRect(20 * dpr, 20 * dpr, 160 * dpr, 160 * dpr);
-      ctx.fillStyle = '#17130a';
-      ctx.font = (13 * dpr) + 'px monospace';
-      ctx.fillText('CANVAS OK', 34 * dpr, 105 * dpr);
-      ptsMax = Math.max(ptsMax, pts.length);
-      if (badge) badge.textContent = 'canvas ' + cv.width + 'x' + cv.height + ' · connected ' + cv.isConnected + ' · frames ' + frames + ' · evts ' + evts + ' · pts ' + pts.length + '/' + ptsMax;
-    }
-    if (pts.length < 3) { if (pts.length && --pts[0].life <= 0) pts.shift(); return; }
+    // Age every point at the same gentle rate BEFORE deciding we can draw, so
+    // a lone point survives long enough for the next few to accumulate. (The
+    // reference's <3 "drain" branch killed points one-per-frame, which capped
+    // a real mouse at 1 point and never formed a ribbon.)
     tick += 0.03;
     for (let i = 0; i < pts.length; i++) {
       const t = pts[i];
@@ -70,6 +51,7 @@ const TRAIL_SCRIPT = `
       t.x += Math.sin(tick + t.sway) * 0.35 + 0.15;
     }
     while (pts.length && pts[0].life <= 0) pts.shift();
+    if (pts.length < 3) return;
     for (let i = 1; i < pts.length - 1; i++) {
       pts[i].x += (pts[i - 1].x + pts[i + 1].x - 2 * pts[i].x) * 0.08;
       pts[i].y += (pts[i - 1].y + pts[i + 1].y - 2 * pts[i].y) * 0.08;
