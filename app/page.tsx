@@ -35,11 +35,32 @@ const TRAIL_SCRIPT = `
   };
   addEventListener('mousemove', onMove, { passive: true });
   addEventListener('pointermove', onMove, { passive: true });
+  const DBG = new URLSearchParams(location.search).get('ribbondebug') === '1';
+  let badge = null;
+  if (DBG) {
+    badge = document.createElement('div');
+    badge.style.cssText = 'position:fixed;bottom:8px;left:8px;z-index:99;background:#000;color:#E8C987;font:12px monospace;padding:6px 10px;border-radius:8px;pointer-events:none';
+    document.body.appendChild(badge);
+  }
+  let frames = 0, ptsMax = 0, evts = 0;
+  addEventListener('mousemove', () => evts++, { passive: true });
   let tick = 0;
   const step = () => {
     requestAnimationFrame(step);
-    if (!ensure()) return;
+    frames++;
+    if (!ensure()) { if (badge) badge.textContent = 'NO CANVAS'; return; }
     ctx.clearRect(0, 0, cv.width, cv.height);
+    if (DBG) {
+      // Always-on static test box: if you can SEE this solid gold square in
+      // the top-left, the canvas composites to your display.
+      ctx.fillStyle = 'rgba(232,201,135,1)';
+      ctx.fillRect(20 * dpr, 20 * dpr, 160 * dpr, 160 * dpr);
+      ctx.fillStyle = '#17130a';
+      ctx.font = (13 * dpr) + 'px monospace';
+      ctx.fillText('CANVAS OK', 34 * dpr, 105 * dpr);
+      ptsMax = Math.max(ptsMax, pts.length);
+      if (badge) badge.textContent = 'canvas ' + cv.width + 'x' + cv.height + ' · connected ' + cv.isConnected + ' · frames ' + frames + ' · evts ' + evts + ' · pts ' + pts.length + '/' + ptsMax;
+    }
     if (pts.length < 3) { if (pts.length && --pts[0].life <= 0) pts.shift(); return; }
     tick += 0.03;
     for (let i = 0; i < pts.length; i++) {
