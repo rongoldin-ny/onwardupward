@@ -107,6 +107,31 @@ export default function AscentHome() {
     };
     if (!matchMedia("(prefers-reduced-motion: reduce)").matches) step();
 
+    // ?debug=1 — on-page diagnosis for the trail (no console needed).
+    if (new URLSearchParams(location.search).get("debug") === "1") {
+      const badge = document.createElement("div");
+      badge.style.cssText =
+        "position:fixed;bottom:8px;left:8px;z-index:99;background:#000;color:#E8C987;font:11px monospace;padding:6px 10px;border-radius:8px;pointer-events:none";
+      document.body.appendChild(badge);
+      let frames = 0;
+      const origStep = () => frames++;
+      const badgeTimer = setInterval(() => {
+        frames = 0;
+        const probe = requestAnimationFrame(function count() {
+          frames++;
+          if (frames < 30) requestAnimationFrame(count);
+        });
+        setTimeout(() => {
+          cancelAnimationFrame(probe);
+          badge.textContent = `trail: canvas ${cv.width}x${cv.height} · reduced-motion ${
+            matchMedia("(prefers-reduced-motion: reduce)").matches ? "ON (ribbon disabled)" : "off"
+          } · pts ${pts.length} · rAF ${frames > 5 ? "ok" : "STALLED"}`;
+        }, 600);
+      }, 1000);
+      void origStep;
+      const oldCleanupMarker = badgeTimer; void oldCleanupMarker;
+    }
+
     const io = new IntersectionObserver(
       (es) =>
         es.forEach((e) => {
