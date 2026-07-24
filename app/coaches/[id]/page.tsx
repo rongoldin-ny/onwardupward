@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowUpRight, X } from "lucide-react";
+import CoachBookLink from "@/components/CoachBookLink";
 import { currentUser } from "@/lib/auth";
 import {
   CLAIM_MAILTO,
@@ -25,20 +26,24 @@ export default async function CoachDetailPage({
 
   const admin = supabaseAdmin();
   const [{ data }, user] = await Promise.all([
-    admin.from("coaches").select("*").eq("id", id).in("status", ["approved", "unclaimed"]).maybeSingle(),
+    admin.from("coaches").select("*").eq("id", id).maybeSingle(),
     currentUser().catch(() => null),
   ]);
   if (!data) notFound();
   const coach = data as CoachRow;
+  // Pending listings are only visible to their owner while under review.
+  if (coach.status === "pending" && user?.id !== coach.profile_id) notFound();
 
   await admin.from("analytics_events").insert({
     user_id: user?.id ?? null,
     event_type: "coach_view",
-    metadata: { coach: coach.full_name, kind: "detail" },
+    metadata: { coach_id: coach.id, coach: coach.full_name, kind: "detail" },
   });
 
   const approved = coach.status === "approved";
   const subtitle = [coach.company, disciplineLabel(coach.disciplines)].filter(Boolean).join(" · ");
+  const isOwner = !!user && user.id === coach.profile_id;
+  const editHref = user?.role === "coach" ? "/coach" : "/settings/coaching";
 
   return (
     <div>
@@ -96,7 +101,7 @@ export default async function CoachDetailPage({
                   approved ? "border-gold-border text-gold" : "border-border-2 text-muted"
                 }`}
               >
-                {approved ? "Claimed" : "Unclaimed"}
+                {coach.status === "pending" ? "Under review" : approved ? "Claimed" : "Unclaimed"}
               </span>
               {coachLevels(coach).length > 0 && (
                 <div className="mt-5 flex flex-wrap justify-center gap-2.5 lg:justify-start">
@@ -116,16 +121,23 @@ export default async function CoachDetailPage({
                   <ArrowUpRight size={13} strokeWidth={2} />
                 </a>
               )}
-              <div className="mt-8 hidden w-full lg:block">
-                {approved && coach.booking_url ? (
-                  <a
+              <div className="mt-8 hidden w-full space-y-3 lg:block">
+                {isOwner ? (
+                  <Link
+                    href={editHref}
+                    className="block rounded-full border border-gold-border px-6 py-4 text-center text-[15px] font-bold text-gold"
+                  >
+                    Edit listing
+                  </Link>
+                ) : approved && coach.booking_url ? (
+                  <CoachBookLink
+                    coachId={coach.id}
+                    coachName={coach.full_name}
                     href={coach.booking_url}
-                    target={coach.booking_url.startsWith("mailto:") ? undefined : "_blank"}
-                    rel="noreferrer"
                     className="gold-gradient cta-glow block rounded-full px-6 py-4 text-center text-[15px] font-bold text-on-gold"
                   >
                     Book a session
-                  </a>
+                  </CoachBookLink>
                 ) : !approved ? (
                   <a
                     href={CLAIM_MAILTO}
@@ -168,15 +180,22 @@ export default async function CoachDetailPage({
           </main>
 
           <footer className="mt-8 lg:hidden">
-            {approved && coach.booking_url ? (
-              <a
+            {isOwner ? (
+              <Link
+                href={editHref}
+                className="block rounded-full border border-gold-border px-6 py-4 text-center text-[15px] font-bold text-gold"
+              >
+                Edit listing
+              </Link>
+            ) : approved && coach.booking_url ? (
+              <CoachBookLink
+                coachId={coach.id}
+                coachName={coach.full_name}
                 href={coach.booking_url}
-                target={coach.booking_url.startsWith("mailto:") ? undefined : "_blank"}
-                rel="noreferrer"
                 className="gold-gradient cta-glow block rounded-full px-6 py-4 text-center text-[15px] font-bold text-on-gold"
               >
                 Book a session
-              </a>
+              </CoachBookLink>
             ) : !approved ? (
               <a
                 href={CLAIM_MAILTO}

@@ -6,9 +6,10 @@ import { trackEvent } from "@/lib/db";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
 /**
- * Supporter tier ($4.99/mo) — mock checkout for now, mirroring the recruiter
- * subscribe flow. When Stripe lands, these become checkout/portal redirects;
- * is_supporter is trigger-guarded so only service-role writes can flip it.
+ * Player Supporter tier ($5/mo, pilot pricing) — mock checkout for now,
+ * mirroring the recruiter subscribe flow. When Stripe lands, these become
+ * checkout/portal redirects; is_supporter is trigger-guarded so only
+ * service-role writes can flip it.
  */
 export async function becomeSupporter(): Promise<void> {
   const user = await requireCandidate();

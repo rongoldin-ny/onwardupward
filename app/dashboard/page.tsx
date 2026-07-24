@@ -128,7 +128,7 @@ export default async function Dashboard() {
             </section>
           )}
 
-          {!mentorListing && (
+          {!mentorListing ? (
             <Link href="/settings/coaching" className="mt-4 block">
               <Card>
                 <div className="flex items-center justify-between">
@@ -139,6 +139,20 @@ export default async function Dashboard() {
                 </div>
                 <p className="mt-1.5 text-[13px] leading-[1.5] text-secondary">
                   Join the coach bench — share what you know, on your terms.
+                </p>
+              </Card>
+            </Link>
+          ) : (
+            <Link href="/settings/coaching-analytics" className="mt-4 block">
+              <Card>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-[18px] font-bold tracking-[-0.02em] text-cream">
+                    Your coaching stats
+                  </h2>
+                  <ArrowRight size={18} strokeWidth={1.5} className="text-gold" />
+                </div>
+                <p className="mt-1.5 text-[13px] leading-[1.5] text-secondary">
+                  Impressions, views, and requests on your coach listing.
                 </p>
               </Card>
             </Link>

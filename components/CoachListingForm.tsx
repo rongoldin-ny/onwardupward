@@ -1,17 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useRef, useState, useTransition } from "react";
-import { ImagePlus } from "lucide-react";
+import { useState, useTransition } from "react";
 import { saveCoachListing } from "@/app/actions/coaches";
+import { DisciplineChips, MenteeChips, PhotoPicker } from "@/components/CoachFormFields";
 import { TextField, TextArea } from "@/components/fields";
 import { Cta, Eyebrow } from "@/components/ui";
-import {
-  DISCIPLINE_OPTIONS,
-  TARGET_MENTEE_OPTIONS,
-  type CoachDiscipline,
-  type CoachRow,
-} from "@/lib/coach-shared";
+import { type CoachDiscipline, type CoachRow } from "@/lib/coach-shared";
 
 /**
  * The one coach listing form — standalone coach onboarding, coach editing,
@@ -37,7 +32,6 @@ export default function CoachListingForm({
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [pending, startTransition] = useTransition();
-  const fileRef = useRef<HTMLInputElement>(null);
 
   function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -60,37 +54,7 @@ export default function CoachListingForm({
     <form onSubmit={submit} className="space-y-8">
       <section className="space-y-4">
         <Eyebrow>The essentials</Eyebrow>
-        <div className="flex items-center gap-5">
-          <button
-            type="button"
-            onClick={() => fileRef.current?.click()}
-            aria-label="Add photo or logo"
-            className="flex h-[76px] w-[76px] shrink-0 items-center justify-center overflow-hidden rounded-full border border-border-2 bg-surface-2"
-          >
-            {photoPreview ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={photoPreview} alt="" className="h-full w-full object-cover" />
-            ) : (
-              <ImagePlus size={20} strokeWidth={1.5} className="text-secondary" />
-            )}
-          </button>
-          <div className="text-[13px] leading-[1.5] text-secondary">
-            Photo or logo.
-            <br />
-            Tap to {photoPreview ? "replace" : "add"}.
-          </div>
-          <input
-            ref={fileRef}
-            type="file"
-            name="photo"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) setPhotoPreview(URL.createObjectURL(f));
-            }}
-          />
-        </div>
+        <PhotoPicker preview={photoPreview} onPick={setPhotoPreview} />
         <TextField
           name="full_name"
           placeholder="Full name"
@@ -114,52 +78,8 @@ export default function CoachListingForm({
           placeholder="Your offering — what a session with you covers"
           defaultValue={existing?.offering ?? ""}
         />
-        <div>
-          <p className="text-[13px] text-secondary">What disciplines do you coach for?</p>
-          <div className="mt-3 flex flex-wrap gap-2.5">
-            {DISCIPLINE_OPTIONS.map((option) => {
-              const on = discipline === option.value;
-              return (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => setDiscipline(option.value)}
-                  className={`rounded-full border px-4 py-2.5 text-[13px] ${
-                    on ? "border-gold-active font-bold text-gold" : "border-border-2 text-body-2"
-                  }`}
-                >
-                  {option.label}
-                </button>
-              );
-            })}
-          </div>
-          <input type="hidden" name="disciplines" value={discipline ?? ""} />
-        </div>
-        <div>
-          <p className="text-[13px] text-secondary">Who do you mentor?</p>
-          <div className="mt-3 flex flex-wrap gap-2.5">
-            {TARGET_MENTEE_OPTIONS.map((option) => {
-              const on = mentees.includes(option);
-              return (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() =>
-                    setMentees(on ? mentees.filter((m) => m !== option) : [...mentees, option])
-                  }
-                  className={`rounded-full border px-4 py-2.5 text-[13px] ${
-                    on ? "border-gold-active font-bold text-gold" : "border-border-2 text-body-2"
-                  }`}
-                >
-                  {option}
-                </button>
-              );
-            })}
-          </div>
-          {mentees.map((m) => (
-            <input key={m} type="hidden" name="target_mentees" value={m} />
-          ))}
-        </div>
+        <DisciplineChips value={discipline} onChange={setDiscipline} />
+        <MenteeChips value={mentees} onChange={setMentees} />
         <TextField
           name="best_for"
           placeholder="Best for — one line on who gets the most from you"

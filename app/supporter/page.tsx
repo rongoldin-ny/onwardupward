@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { Check, Star } from "lucide-react";
 import { requireCandidate } from "@/lib/auth";
+import { PILOT_PRICING_NOTE, PLAN_INFO } from "@/lib/billing";
 import { becomeSupporter } from "@/app/actions/supporter";
 import { Cta, Eyebrow, Logo, PageFrame } from "@/components/ui";
 
@@ -49,14 +50,18 @@ export default async function SupporterPage() {
           </ul>
 
           <div className="mt-10 flex items-baseline gap-2">
-            <span className="text-[44px] font-black tracking-[-0.02em] text-cream">$4.99</span>
+            <span className="text-[44px] font-black tracking-[-0.02em] text-cream">
+              {PLAN_INFO.player_supporter.price.replace("/mo", "")}
+            </span>
             <span className="text-[15px] text-secondary">/ month</span>
           </div>
 
           <form action={becomeSupporter} className="mt-7 w-full max-w-[400px]">
             <Cta type="submit">Become a Supporter</Cta>
           </form>
-          <p className="mt-4 text-[12px] text-muted">Cancel anytime in Settings → Billing.</p>
+          <p className="mt-4 text-[12px] text-muted">
+            Cancel anytime in Settings → Billing. {PILOT_PRICING_NOTE}
+          </p>
         </main>
       </div>
     </PageFrame>

@@ -1,9 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Search } from "lucide-react";
-import { trackCoachView } from "@/app/actions/track";
+import { trackCoachImpressions, trackCoachView } from "@/app/actions/track";
 import {
   CLAIM_MAILTO,
   coachFormats,
@@ -81,6 +81,18 @@ export default function CoachesDirectory({ coaches }: { coaches: CoachRow[] }) {
       return true;
     });
   }, [coaches, q, levels, formats, pricing, disciplines]);
+
+  const lastFired = useRef<string>("");
+  useEffect(() => {
+    const ids = filtered.map((c) => c.id);
+    const sig = [...ids].sort().join(",");
+    if (sig === lastFired.current) return;
+    const t = setTimeout(() => {
+      lastFired.current = sig;
+      void trackCoachImpressions(ids);
+    }, 500);
+    return () => clearTimeout(t);
+  }, [filtered]);
 
   return (
     <div>
@@ -169,7 +181,7 @@ export default function CoachesDirectory({ coaches }: { coaches: CoachRow[] }) {
                       href={CLAIM_MAILTO}
                       onClick={(e) => {
                         e.stopPropagation();
-                        void trackCoachView(coach.full_name, "claim");
+                        void trackCoachView(coach.id, coach.full_name, "claim");
                       }}
                       title="This you? Claim your slot"
                       className="eyebrow shrink-0 rounded-full border border-border-2 px-3 py-1.5 text-muted hover:border-gold-border hover:text-gold"
@@ -212,7 +224,7 @@ export default function CoachesDirectory({ coaches }: { coaches: CoachRow[] }) {
                 rel="noreferrer"
                 onClick={(e) => {
                   e.stopPropagation();
-                  void trackCoachView(coach.full_name, "book");
+                  void trackCoachView(coach.id, coach.full_name, "book");
                 }}
                 className="gold-gradient cta-glow mt-4 rounded-full px-6 py-3 text-center text-[14px] font-bold text-on-gold"
               >

@@ -20,6 +20,7 @@ export async function trackPageView(path: string): Promise<void> {
 }
 
 export async function trackCoachView(
+  coachId: string,
   coachName: string,
   kind: "book" | "claim" | "website",
 ): Promise<void> {
@@ -29,6 +30,22 @@ export async function trackCoachView(
     .insert({
       user_id: user?.id ?? null,
       event_type: "coach_view",
-      metadata: { coach: String(coachName).slice(0, 120), kind },
+      metadata: { coach_id: coachId, coach: String(coachName).slice(0, 120), kind },
     });
+}
+
+/** Batched "seen in the directory" logging for a rendered/filtered result set. */
+export async function trackCoachImpressions(coachIds: string[]): Promise<void> {
+  const ids = [...new Set(coachIds)].slice(0, 200);
+  if (ids.length === 0) return;
+  const user = await currentUser().catch(() => null);
+  await supabaseAdmin()
+    .from("analytics_events")
+    .insert(
+      ids.map((id) => ({
+        user_id: user?.id ?? null,
+        event_type: "coach_view" as const,
+        metadata: { coach_id: id, kind: "impression" },
+      })),
+    );
 }

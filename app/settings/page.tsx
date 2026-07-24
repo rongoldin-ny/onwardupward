@@ -1,5 +1,6 @@
 import Link from "next/link";
 import {
+  BarChart3,
   Bell,
   ChevronRight,
   CreditCard,
@@ -11,6 +12,8 @@ import {
 } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { signOut } from "@/app/actions/auth";
+import { getCoachByProfileId } from "@/lib/coaches-db";
+import { deriveBillingPlan, PLAN_INFO } from "@/lib/billing";
 import { Avatar, Eyebrow, Logo, PageFrame } from "@/components/ui";
 
 function Row({
@@ -44,6 +47,11 @@ function Row({
 export default async function SettingsPage() {
   const user = await requireUser();
   const isCandidate = user.role === "candidate";
+  const coachListing = isCandidate ? await getCoachByProfileId(user.id) : null;
+  const billingSub =
+    user.role === "recruiter"
+      ? "Recruiter — $199/mo"
+      : PLAN_INFO[deriveBillingPlan(user, !!coachListing)].label;
 
   return (
     <PageFrame size="narrow">
@@ -94,6 +102,14 @@ export default async function SettingsPage() {
                 sub="Open to mentoring other designers and PMs?"
               />
             )}
+            {coachListing && (
+              <Row
+                href="/settings/coaching-analytics"
+                icon={<BarChart3 size={16} strokeWidth={1.5} />}
+                label="Coaching analytics"
+                sub="Impressions, views, and requests"
+              />
+            )}
           </div>
 
           <Eyebrow className="mt-8">Account</Eyebrow>
@@ -107,7 +123,7 @@ export default async function SettingsPage() {
               href="/settings/billing"
               icon={<CreditCard size={16} strokeWidth={1.5} />}
               label="Billing"
-              sub="Free preview plan"
+              sub={billingSub}
             />
             <Row
               href="/settings/password"
