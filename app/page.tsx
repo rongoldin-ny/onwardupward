@@ -46,7 +46,7 @@ const TRAIL_SCRIPT = `
     tick += 0.03;
     for (let i = 0; i < pts.length; i++) {
       const t = pts[i];
-      t.life -= 0.007;
+      t.life -= 0.009;
       t.y -= 0.5 + (1 - t.life) * 0.6;
       t.x += Math.sin(tick + t.sway) * 0.35 + 0.15;
     }
@@ -57,12 +57,14 @@ const TRAIL_SCRIPT = `
       pts[i].y += (pts[i - 1].y + pts[i + 1].y - 2 * pts[i].y) * 0.08;
     }
     ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.shadowColor = 'rgba(232,201,135,0.55)';
+    ctx.shadowBlur = 8 * dpr;
     for (let i = 1; i < pts.length - 1; i++) {
       const p0 = pts[i - 1], p1 = pts[i], p2 = pts[i + 1];
-      const a = Math.max(0, p1.life) * (0.45 + 0.55 * i / pts.length);
+      const a = Math.max(0, p1.life) * (0.10 + 0.26 * i / pts.length);
       if (a <= 0.005) continue;
       ctx.strokeStyle = 'rgba(232,201,135,' + a.toFixed(3) + ')';
-      ctx.lineWidth = (2.2 + 4.2 * (i / pts.length)) * dpr;
+      ctx.lineWidth = (1.6 + 3.0 * (i / pts.length)) * dpr;
       ctx.beginPath();
       ctx.moveTo((p0.x + p1.x) / 2 * dpr, (p0.y + p1.y) / 2 * dpr);
       ctx.quadraticCurveTo(p1.x * dpr, p1.y * dpr, (p1.x + p2.x) / 2 * dpr, (p1.y + p2.y) / 2 * dpr);
