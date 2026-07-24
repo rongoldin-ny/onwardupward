@@ -153,7 +153,7 @@ export default async function CoachDetailPage({
                 </Card>
               )}
               {coach.best_for && (
-                <Card highlighted>
+                <Card>
                   <Eyebrow>Best for</Eyebrow>
                   <p className="mt-3 text-[15px] leading-[1.6] text-body">{coach.best_for}</p>
                 </Card>

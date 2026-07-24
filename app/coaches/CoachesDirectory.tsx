@@ -135,7 +135,7 @@ export default function CoachesDirectory({ coaches }: { coaches: CoachRow[] }) {
             onKeyDown={(e) => {
               if (e.key === "Enter") router.push(`/coaches/${coach.id}`);
             }}
-            className="cursor-pointer"
+            className="cursor-pointer rounded-[20px]"
           >
           <Card className="flex h-full flex-col">
             <div className="flex items-center gap-4">
