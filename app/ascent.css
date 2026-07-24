@@ -31,7 +31,7 @@
 /* ambient background: cursor glow + scroll-drawn ascending lines */
 .ascent .trail {
   position: fixed; inset: 0; width: 100vw; height: 100vh;
-  pointer-events: none; z-index: 6; mix-blend-mode: screen;
+  pointer-events: none; z-index: 6;
 }
 .ascent .bg-lines {
   position: fixed; inset: 0; width: 100%; height: 100%;
