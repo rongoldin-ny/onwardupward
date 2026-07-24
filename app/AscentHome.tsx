@@ -52,6 +52,7 @@ export default function AscentHome() {
       cv.height = innerHeight * dpr;
     };
     fit();
+    console.log("[trail] mount", Date.now() % 100000, "w=", cv.width);
     addEventListener("resize", fit, { passive: true });
     const pts: { x: number; y: number; life: number; sway: number }[] = [];
     const MAX = 34;
@@ -119,6 +120,7 @@ export default function AscentHome() {
     root.querySelectorAll(".reveal").forEach((el) => io.observe(el));
 
     return () => {
+      console.log("[trail] CLEANUP", Date.now() % 100000);
       removeEventListener("scroll", onScroll);
       removeEventListener("mousemove", onMove);
       removeEventListener("pointermove", onMove);
