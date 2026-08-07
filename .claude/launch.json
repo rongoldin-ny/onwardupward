@@ -3,7 +3,6 @@
   "configurations": [
     {
       "name": "ou-prototype",
-      "cwd": "/Users/rongoldin/ou-prototype",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev", "--", "--port", "3999"],
       "port": 3999
