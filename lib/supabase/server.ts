@@ -1,6 +1,7 @@
-import { createServerClient } from "@supabase/ssr";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+import type { NextRequest, NextResponse } from "next/server";
 
 /**
  * Request-scoped client authenticated as the current user (via auth cookies).
@@ -28,6 +29,46 @@ export async function supabaseServer(): Promise<SupabaseClient> {
       },
     },
   );
+}
+
+/**
+ * Client for Route Handlers that build their own redirect response.
+ *
+ * The OAuth routes can't use `supabaseServer()`: they return a `NextResponse`
+ * they construct themselves, so cookies written through `cookies()` never
+ * reach the browser. Auth writes real cookies here — the PKCE code verifier
+ * on the way out, the session on the way back — so collect them and hand
+ * them to `applyCookies(response)` before returning.
+ */
+export function supabaseRoute(request: NextRequest): {
+  supabase: SupabaseClient;
+  applyCookies: (response: NextResponse) => void;
+} {
+  const pending: { name: string; value: string; options: CookieOptions }[] = [];
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          pending.push(...cookiesToSet);
+        },
+      },
+    },
+  );
+
+  return {
+    supabase,
+    applyCookies(response) {
+      for (const { name, value, options } of pending) {
+        response.cookies.set(name, value, options);
+      }
+    },
+  };
 }
 
 /**

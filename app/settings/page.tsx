@@ -7,7 +7,6 @@ import {
   Eye,
   GraduationCap,
   Image as ImageIcon,
-  KeyRound,
   UserRound,
 } from "lucide-react";
 import { requireUser } from "@/lib/auth";
@@ -124,11 +123,6 @@ export default async function SettingsPage() {
               icon={<CreditCard size={16} strokeWidth={1.5} />}
               label="Billing"
               sub={billingSub}
-            />
-            <Row
-              href="/settings/password"
-              icon={<KeyRound size={16} strokeWidth={1.5} />}
-              label="Password"
             />
           </div>
         </main>
