@@ -4,8 +4,11 @@
  * history, references, messages, analytics events, company signals, and
  * uploaded images (moved into Storage with URLs rewritten).
  *
- * - Demo accounts get password "velvet" (as before).
- * - r@rongoldin.com gets a random password + a reset email so Ron sets his own.
+ * Sign-in is Google OAuth only, so the passwords set here are inert — nothing
+ * can be used to log in with them. They exist because createUser wants a
+ * value. Migrated accounts get in by signing in with Google on a matching
+ * email. Demo accounts keep "velvet"; the owner account gets a random one so
+ * a publicly-known password is never attached to it.
  *
  * Run: npx tsx scripts/migrate-sqlite.ts
  */
@@ -21,9 +24,6 @@ for (const line of readFileSync(".env.local", "utf8").split("\n")) {
   if (m) env[m[1]] = m[2].trim();
 }
 const admin = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
-  auth: { persistSession: false },
-});
-const anon = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPABASE_ANON_KEY, {
   auth: { persistSession: false },
 });
 
@@ -125,7 +125,7 @@ async function main() {
       })
       .eq("id", newId);
     if (upErr) console.error(`  ! profile update failed for ${p.email}: ${upErr.message}`);
-    else console.log(`  ✓ ${p.email} (${p.role})${isRon ? " — reset email pending" : ""}`);
+    else console.log(`  ✓ ${p.email} (${p.role})`);
   }
 
   const remap = (oldId: string | null) => (oldId ? (idMap.get(oldId) ?? null) : null);
@@ -134,16 +134,6 @@ async function main() {
   // porting child data again would only produce orphaned duplicates.
   if (idMap.size === 0) {
     console.log("No new accounts created — skipping data port.");
-    if (process.argv.includes("--send-reset")) {
-      const { error: resetErr } = await anon.auth.resetPasswordForEmail(RON_EMAIL, {
-        redirectTo: "http://localhost:3999/auth/confirm?next=/reset-password",
-      });
-      console.log(
-        resetErr
-          ? `! reset email for ${RON_EMAIL} failed: ${resetErr.message}`
-          : `✓ password reset email sent to ${RON_EMAIL}`,
-      );
-    }
     return;
   }
 
@@ -231,21 +221,6 @@ async function main() {
       );
       console.log(error ? `  ! company_signals: ${error.message}` : `  ✓ company_signals: ${signals.length} rows`);
     }
-  }
-
-  // Ron sets his own password via reset email — only when explicitly asked,
-  // so the (rate-limited) email isn't sent before Site URL is configured.
-  if (process.argv.includes("--send-reset")) {
-    const { error: resetErr } = await anon.auth.resetPasswordForEmail(RON_EMAIL, {
-      redirectTo: "http://localhost:3999/auth/confirm?next=/reset-password",
-    });
-    console.log(
-      resetErr
-        ? `! reset email for ${RON_EMAIL} failed: ${resetErr.message}`
-        : `✓ password reset email sent to ${RON_EMAIL}`,
-    );
-  } else {
-    console.log(`(skipped reset email for ${RON_EMAIL} — run with --send-reset once Site URL is set)`);
   }
 
   console.log("\nDone.");
