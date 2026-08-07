@@ -47,6 +47,7 @@ export type Profile = {
   is_paid: boolean;
   is_supporter: boolean;
   notification_prefs: NotificationPrefs;
+  role_chosen: boolean;
   onboarding_complete: boolean;
   vetting_status: "pending" | "approved";
   last_sign_in_at: string | null;

@@ -36,12 +36,14 @@ export async function GET(request: NextRequest) {
   // on a blank page pretending they're signed in.
   if (!profile) return fail("google");
 
-  const destination =
-    next?.startsWith("/") && profile.onboarding_complete
+  // Only accounts that have never picked a role go to /role. Keying this off
+  // onboarding_complete would send anyone who abandoned the wizard back to
+  // the picker on every single sign-in.
+  const destination = !profile.role_chosen
+    ? "/role"
+    : next?.startsWith("/")
       ? next
-      : profile.onboarding_complete
-        ? homeFor(profile)
-        : "/role";
+      : homeFor(profile);
 
   const response = NextResponse.redirect(new URL(destination, origin));
   applyCookies(response);
