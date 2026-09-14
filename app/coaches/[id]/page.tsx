@@ -27,8 +27,10 @@ export default async function CoachDetailPage({
   ]);
   if (!data) notFound();
   const coach = data as CoachRow;
-  // Pending listings are only visible to their owner while under review.
-  if (coach.status === "pending" && user?.id !== coach.profile_id) notFound();
+  // Drafts and pending listings are only visible to their owner.
+  if ((coach.status === "pending" || coach.status === "draft") && user?.id !== coach.profile_id) {
+    notFound();
+  }
   if (coach.profile_id && user?.id === coach.profile_id) redirect("/profile?side=coach");
 
   await admin.from("analytics_events").insert({

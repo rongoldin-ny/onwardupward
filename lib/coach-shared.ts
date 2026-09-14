@@ -22,7 +22,7 @@ export type CoachRow = {
   company: string | null;
   pricing: string | null;
   source: string | null;
-  status: "unclaimed" | "pending" | "approved";
+  status: "draft" | "unclaimed" | "pending" | "approved";
   created_at: string;
   updated_at: string;
 };
