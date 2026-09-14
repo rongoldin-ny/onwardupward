@@ -3,8 +3,8 @@ import { notFound } from "next/navigation";
 import { requireVetter } from "@/lib/vetting";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import type { Profile } from "@/lib/db";
-import { toCandidateView } from "@/lib/candidate-view";
-import CandidateProfileView from "@/components/CandidateProfileView";
+import { toProfileView } from "@/lib/profile-view";
+import ProfilePage from "@/components/profile/ProfilePage";
 import { approveCandidate } from "./actions";
 import { Cta } from "@/components/ui";
 
@@ -54,9 +54,10 @@ export default async function VettingReviewPage({
           )}
         </div>
       </div>
-      <CandidateProfileView
-        candidate={await toCandidateView(profile, { admin: true })}
-        mode="public"
+      <ProfilePage
+        view={await toProfileView(profile, { admin: true })}
+        viewer="member"
+        initialSide="player"
       />
     </div>
   );

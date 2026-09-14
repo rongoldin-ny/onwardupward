@@ -1,57 +1,12 @@
 "use client";
 
-import { useRef } from "react";
-import { ImagePlus } from "lucide-react";
 import {
   DISCIPLINE_OPTIONS,
   TARGET_MENTEE_OPTIONS,
   type CoachDiscipline,
 } from "@/lib/coach-shared";
 
-/** Shared building blocks for the coach listing form and the onboarding wizard. */
-
-export function PhotoPicker({
-  preview,
-  onPick,
-}: {
-  preview: string | null;
-  onPick: (url: string) => void;
-}) {
-  const fileRef = useRef<HTMLInputElement>(null);
-  return (
-    <div className="flex items-center gap-5">
-      <button
-        type="button"
-        onClick={() => fileRef.current?.click()}
-        aria-label="Add photo or logo"
-        className="flex h-[76px] w-[76px] shrink-0 items-center justify-center overflow-hidden rounded-full border border-border-2 bg-surface-2"
-      >
-        {preview ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={preview} alt="" className="h-full w-full object-cover" />
-        ) : (
-          <ImagePlus size={20} strokeWidth={1.5} className="text-secondary" />
-        )}
-      </button>
-      <div className="text-[13px] leading-[1.5] text-secondary">
-        Photo or logo.
-        <br />
-        Tap to {preview ? "replace" : "add"}.
-      </div>
-      <input
-        ref={fileRef}
-        type="file"
-        name="photo"
-        accept="image/*"
-        className="hidden"
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) onPick(URL.createObjectURL(f));
-        }}
-      />
-    </div>
-  );
-}
+/** Shared chip pickers for the coach face and the onboarding coaching step. */
 
 export function DisciplineChips({
   value,

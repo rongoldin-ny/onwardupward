@@ -1,9 +1,7 @@
 import { redirect } from "next/navigation";
 import { requireUser, homeFor } from "@/lib/auth";
 import { supabaseServer } from "@/lib/supabase/server";
-import { getReferences, getWorkHistory } from "@/lib/db";
-import { getCommunitySkills } from "@/lib/superpowers-server";
-import CandidateWizard from "./CandidateWizard";
+import OnboardingWizard from "./OnboardingWizard";
 import RecruiterWizard from "./RecruiterWizard";
 
 // Enrichment runs post-response via after(); give the function time to finish it.
@@ -11,8 +9,6 @@ export const maxDuration = 60;
 export default async function OnboardingPage() {
   const user = await requireUser();
   if (user.onboarding_complete) redirect(homeFor(user));
-
-  if (user.role === "coach") redirect("/coach");
 
   if (user.role === "recruiter") {
     const supabase = await supabaseServer();
@@ -30,10 +26,5 @@ export default async function OnboardingPage() {
     );
   }
 
-  const [work, references, communitySkills] = await Promise.all([
-    getWorkHistory(user.id),
-    getReferences(user.id),
-    getCommunitySkills(),
-  ]);
-  return <CandidateWizard profile={user} work={work} references={references} communitySkills={communitySkills} />;
+  return <OnboardingWizard profile={user} />;
 }
