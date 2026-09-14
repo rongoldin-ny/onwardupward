@@ -121,7 +121,7 @@ export default function AscentHome() {
               <p>
                 Generate your player&rsquo;s card in two clicks and
                 zero seconds. Use it to tell your story quickly and connect
-                the dots to potential mentors, coaches and gigs.
+                the dots to potential mentors and coaches.
               </p>
             </div>
           </div>
@@ -166,11 +166,10 @@ export default function AscentHome() {
 
         <section className="manifesto reveal">
           <p>
-            Onward/Upward is not a job board.{" "}
-            <span className="lit">It&rsquo;s a growth space.</span> Growth through
-            under-the-radar opportunities and{" "}
+            Onward/Upward is{" "}
+            <span className="lit">a growth space.</span> Growth through{" "}
             <span className="gold">the best mentors out there</span> to prepare
-            you.
+            you for the next chapter in your personal career journey.
           </p>
         </section>
 
