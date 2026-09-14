@@ -78,13 +78,13 @@ export default function AscentHome() {
         </div>
       </nav>
 
-      <div className="xp-rail" aria-hidden="true">
+      {/* <div className="xp-rail" aria-hidden="true">
         <span className="xp-label">XP</span>
         <div className="xp-track"><div className="xp-fill" data-hud-bar /></div>
       </div>
       <div className="lvl-hud" aria-hidden="true">
         <span className="k">LVL</span><span className="v" data-hud-lvl>001</span><span className="max">/ 099</span>
-      </div>
+      </div> */}
 
       <main>
         <header className="hero">
@@ -98,8 +98,8 @@ export default function AscentHome() {
             <a className="btn btn-lg" href="#join">Start your ascent</a>
             <span className="hero-sub">
               Effortlessly set up a visual profile that helps connect you to
-              hiring managers, recruiters and the industry&rsquo;s best coaches
-              to grow yourself and your career.
+              the industry&rsquo;s best coaches to grow yourself and your
+              career.
             </span>
           </div>
           <div className="scroll-cue">SCROLL TO LEVEL UP ↓</div>
@@ -141,31 +141,18 @@ export default function AscentHome() {
           <div className="level reveal">
             <span className="level-num">03</span>
             <div className="level-body">
-              <div className="level-tag">LEVEL THREE — GET FOUND</div>
+              <div className="level-tag">LEVEL UP</div>
               <h2>Get discovered for gigs and collaborations.</h2>
               <p>
-                Founders, recruiters and product and design leaders most easily sift
-                through the noise and proactively land on your door, right when
-                you&rsquo;re ready. Confidential to your peers and no
-                #opentowork badge.
-              </p>
-            </div>
-          </div>
-          <div className="level alt reveal">
-            <span className="level-num gold">99</span>
-            <div className="level-body">
-              <div className="level-tag">LEVEL NINETY-NINE — ASCEND</div>
-              <h2>Skip the queue. Take the meeting.</h2>
-              <p>
-                No applications, no ATS black hole. Direct intros to roles,
-                freelance opportunities and other opportunities to earn money
-                that match your trajectory — or a polite pass, on your terms.
+                Optionally, make yourself available to hiring managers and
+                recruiters looking for self-aware, growth-oriented candidates
+                on an upward trajectory.
               </p>
             </div>
           </div>
         </section>
 
-        <section className="recruiter reveal">
+        {/* <section className="recruiter reveal">
           <div className="recruiter-body">
             <div className="level-tag">FOR RECRUITERS &amp; HIRING MANAGERS</div>
             <h2>A more visual way to discover talent and make connections.</h2>
@@ -175,7 +162,7 @@ export default function AscentHome() {
             </p>
           </div>
           <Link className="btn-ghost" href="/signup">Search the network →</Link>
-        </section>
+        </section> */}
 
         <section className="manifesto reveal">
           <p>
