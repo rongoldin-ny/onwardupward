@@ -3,7 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { requireCandidate } from "@/lib/auth";
 import { getCoachByProfileId, getDirectoryCoaches, type CoachRow } from "@/lib/coaches-db";
 import { getMentorshipPosts } from "@/lib/mentorship-posts";
-import { candidateStats, profileIncomplete } from "@/lib/stats";
+import { candidateStats, profileCompletionPct } from "@/lib/stats";
 import { greeting } from "@/lib/greeting";
 import DashboardMenu from "./DashboardMenu";
 import {
@@ -26,7 +26,7 @@ export default async function Dashboard() {
     getCoachByProfileId(user.id),
   ]);
   const firstName = (user.name ?? "there").split(" ")[0];
-  const incomplete = profileIncomplete(user);
+  const completionPct = profileCompletionPct(user);
   const isVetter =
     user.role === "admin" || (user.email ?? "").toLowerCase() === "r@rongoldin.com";
   const directory = await getDirectoryCoaches();
@@ -158,18 +158,24 @@ export default async function Dashboard() {
             </Link>
           )}
 
-          {incomplete && (
-            <Link href="/profile/edit" className="mt-4 block">
+          {completionPct < 100 && (
+            <Link href="/settings/profile" className="mt-4 block">
               <Card highlighted>
                 <div className="flex items-center justify-between">
                   <h2 className="text-[18px] font-bold tracking-[-0.02em] text-cream">
-                    Finish your profile
+                    {completionPct}% complete — finish your profile
                   </h2>
                   <ArrowRight size={18} strokeWidth={1.5} className="text-gold" />
                 </div>
                 <p className="mt-1.5 text-[13px] text-secondary">
-                  Add your portfolio to get discovered.
+                  Review and add detail to get discovered.
                 </p>
+                <div className="mt-3 h-[4px] w-full overflow-hidden rounded-full bg-border-1">
+                  <div
+                    className="h-full gold-gradient rounded-full"
+                    style={{ width: `${completionPct}%` }}
+                  />
+                </div>
               </Card>
             </Link>
           )}

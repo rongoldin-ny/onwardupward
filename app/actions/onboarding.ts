@@ -33,11 +33,18 @@ export async function importFromLinks(formData: FormData): Promise<ImportResult>
   const supabase = await supabaseServer();
   const linkedinRaw = str(formData, "linkedin_url");
   const portfolioRaw = str(formData, "portfolio_url");
+  const resumeFile = formData.get("resume");
+  const hasResume = resumeFile instanceof File && resumeFile.size > 0;
 
-  if (!linkedinRaw) return { error: "Add your LinkedIn to continue.", found: [] };
-  const linkedin = normalizeUrl(linkedinRaw);
-  if (!linkedin || !/linkedin\.com/i.test(linkedin)) {
-    return { error: "That doesn't look like a LinkedIn URL.", found: [] };
+  if (!linkedinRaw && !portfolioRaw && !hasResume) {
+    return { error: "Add at least one of LinkedIn, a résumé, or your portfolio to continue.", found: [] };
+  }
+  let linkedin: string | null = null;
+  if (linkedinRaw) {
+    linkedin = normalizeUrl(linkedinRaw);
+    if (!linkedin || !/linkedin\.com/i.test(linkedin)) {
+      return { error: "That doesn't look like a LinkedIn URL.", found: [] };
+    }
   }
   const portfolio = portfolioRaw ? normalizeUrl(portfolioRaw) : null;
   if (portfolioRaw && !portfolio) {
@@ -48,7 +55,7 @@ export async function importFromLinks(formData: FormData): Promise<ImportResult>
   await supabase
     .from("profiles")
     .update({
-      linkedin_url: linkedin,
+      linkedin_url: linkedin ?? user.linkedin_url,
       portfolio_url: portfolio ?? user.portfolio_url,
       portfolio_password: portfolioPassword ?? user.portfolio_password,
     })
@@ -58,7 +65,7 @@ export async function importFromLinks(formData: FormData): Promise<ImportResult>
 
   // Résumé: store it, and use its text as another extraction signal.
   let resumeText: string | null = null;
-  const resume = formData.get("resume");
+  const resume = resumeFile;
   if (resume instanceof File && resume.size > 0) {
     const bytes = await resume.arrayBuffer();
     const url = await saveResume(resume, user.id);
@@ -138,9 +145,6 @@ export async function saveBasics(formData: FormData): Promise<{ error?: string }
   const linkedin = str(formData, "linkedin_url");
   const country = str(formData, "country");
   const city = str(formData, "city");
-  if (!name || !roleType || !careerStage || !linkedin || !country || !city) {
-    return { error: "Everything on this step is required." };
-  }
   const yearsRaw = str(formData, "years_experience");
   const years = yearsRaw ? parseInt(yearsRaw, 10) : null;
   const industries = [
@@ -298,13 +302,18 @@ export async function savePhoto(formData: FormData): Promise<{ error?: string }>
   return {};
 }
 
-export async function saveContactPreference(formData: FormData) {
+export async function finishOnboarding(formData: FormData) {
   const user = await requireUser();
-  const pref = str(formData, "contact_preference") === "linkedin" ? "linkedin" : "email";
   const supabase = await supabaseServer();
   await supabase
     .from("profiles")
-    .update({ contact_preference: pref, onboarding_complete: true })
+    .update({
+      career_stage: str(formData, "career_stage") ?? user.career_stage,
+      role_type: str(formData, "role_type") ?? user.role_type,
+      location_country: str(formData, "country") ?? user.location_country,
+      open_to_coaching_outreach: formData.get("open_to_coaching_outreach") === "on",
+      onboarding_complete: true,
+    })
     .eq("id", user.id);
   triggerEnrichment(user.id); // async — does not block navigation
 

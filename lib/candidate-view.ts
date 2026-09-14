@@ -9,10 +9,7 @@ export async function toCandidateView(
   opts: { admin?: boolean } = {},
 ): Promise<CandidateView> {
   const firstName = (profile.name ?? "them").split(" ")[0];
-  const contactNote =
-    profile.contact_preference === "linkedin"
-      ? `${firstName} prefers LinkedIn — connect there.`
-      : `${firstName} prefers email — replies within a few days.`;
+  const contactNote = `${firstName} prefers email — replies within a few days.`;
 
   // Public share pages have no signed-in viewer, so RLS-scoped reads come
   // back empty — those callers fetch with the admin client instead.

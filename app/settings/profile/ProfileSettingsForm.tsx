@@ -74,7 +74,7 @@ export default function ProfileSettingsForm({
 
   const [industries, setIndustries] = useState<string[]>(profile.industries);
   const [customIndustry, setCustomIndustry] = useState("");
-  const [pref, setPref] = useState(profile.contact_preference);
+  const [outreach, setOutreach] = useState(profile.open_to_coaching_outreach ?? false);
   const [items, setItems] = useState<WorkImageItem[]>(
     profile.portfolio_images.map((img) => ({
       url: img.url,
@@ -317,7 +317,7 @@ export default function ProfileSettingsForm({
         <TextField name="name" placeholder="Full name" defaultValue={p.name ?? ""} />
         <SelectField
           name="role_type"
-          placeholder="Role"
+          placeholder="Type of work"
           options={ROLE_TYPES}
           defaultValue={p.role_type ?? ""}
         />
@@ -680,40 +680,22 @@ export default function ProfileSettingsForm({
 
       <section className="space-y-4">
         <Eyebrow>Getting in touch</Eyebrow>
-        {(
-          [
-            { value: "email", label: "Email me directly" },
-            { value: "linkedin", label: "LinkedIn only" },
-          ] as const
-        ).map((option) => {
-          const selected = pref === option.value;
-          return (
-            <label
-              key={option.value}
-              className={`flex cursor-pointer items-center justify-between rounded-[20px] border bg-surface-2 p-5 ${
-                selected ? "border-gold-active" : "border-border-1"
-              }`}
-            >
-              <input
-                type="radio"
-                name="contact_preference"
-                value={option.value}
-                checked={selected}
-                onChange={() => {
-                  setPref(option.value);
-                  scheduleSave();
-                }}
-                className="hidden"
-              />
-              <span className="text-[15px] font-bold text-cream">{option.label}</span>
-              <span
-                className={`h-5 w-5 rounded-full border ${
-                  selected ? "gold-gradient border-transparent" : "border-border-2"
-                }`}
-              />
-            </label>
-          );
-        })}
+        <p className="text-[13px] text-secondary">We&apos;ll always reach you by email.</p>
+        <label className="flex cursor-pointer items-start gap-3 rounded-[20px] border border-border-1 bg-surface-2 p-5">
+          <input
+            type="checkbox"
+            name="open_to_coaching_outreach"
+            checked={outreach}
+            onChange={(e) => {
+              setOutreach(e.target.checked);
+              scheduleSave();
+            }}
+            className="mt-0.5 h-5 w-5 shrink-0 accent-[#E8C987]"
+          />
+          <span className="text-[14px] leading-[1.5] text-cream">
+            It&apos;s okay for people to reach out to me for coaching opportunities.
+          </span>
+        </label>
       </section>
 
       <p className="text-[12px] text-muted">Changes save automatically as you edit.</p>

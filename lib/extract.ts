@@ -219,18 +219,17 @@ function nameFromTitle(title: string): string | null {
 }
 
 const ROLE_PATTERNS: [RegExp, string][] = [
-  [/design (?:director|lead(?:er)?ship)|head of design|vp,? design|design manager/i, "design_management"],
-  [/content design/i, "content_designer"],
-  [/(?:ux|user|design) research/i, "ux_researcher"],
-  [/product manager|product management/i, "pm_ic"],
-  [/product designer|ux\/ui designer|ui\/ux designer|digital product designer|interaction designer/i, "designer"],
+  [/content design/i, "content_design"],
+  [/(?:ux|user|design) research/i, "user_research"],
+  [/product manager|product management/i, "product_management"],
+  [/product designer|ux\/ui designer|ui\/ux designer|digital product designer|interaction designer|design (?:director|lead(?:er)?ship)|head of design|vp,? design|design manager/i, "product_design"],
 ];
 
 const STAGE_PATTERNS: [RegExp, string][] = [
-  [/\b(?:director|head of|vp\b|vice president|chief design)/i, "director"],
-  [/\b(?:staff|principal)\b/i, "senior"],
-  [/\bsenior\b/i, "senior"],
-  [/\blead\b/i, "senior"],
+  [/\b(?:director|head of|vp\b|vice president|chief design)/i, "director_plus"],
+  [/\b(?:staff|principal)\b/i, "senior_ic"],
+  [/\bsenior\b/i, "senior_ic"],
+  [/\blead\b/i, "senior_ic"],
 ];
 
 const TITLE_WORDS =
@@ -251,7 +250,7 @@ export function extractProfile(html: string): ExtractedProfile {
 
   const searchable = `${title} ${h1} ${bio ?? ""} ${text}`;
   const roleType = ROLE_PATTERNS.find(([re]) => re.test(searchable))?.[1];
-  const careerStage = STAGE_PATTERNS.find(([re]) => re.test(searchable))?.[1] ?? (roleType ? "mid" : undefined);
+  const careerStage = STAGE_PATTERNS.find(([re]) => re.test(searchable))?.[1] ?? (roleType ? "mid_ic" : undefined);
 
   // "based in Copenhagen, Denmark" / "living in London"
   let city: string | undefined;
