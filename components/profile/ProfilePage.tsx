@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, Link2, Pencil, Sparkles, X } from "lucide-react";
+import { submitCoachApplication } from "@/app/actions/coaches";
 import { trackElementClick } from "@/app/actions/engage";
 import { saveProfilePage } from "@/app/actions/profile";
 import { fillProfileWithAI, reenrichProfile } from "@/app/actions/settings";
@@ -43,6 +44,7 @@ export default function ProfilePage({
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [aiPending, setAiPending] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [ver, setVer] = useState(0);
   const formRef = useRef<HTMLFormElement>(null);
   const playerRef = useRef<PlayerCardHandle>(null);
@@ -77,6 +79,7 @@ export default function ProfilePage({
       const result = await saveProfilePage(formData);
       if (result.error) {
         setError(result.error);
+        setToast(result.error);
         setSaveState("idle");
         return;
       }
@@ -111,12 +114,30 @@ export default function ProfilePage({
     [],
   );
 
-  async function finishEditing() {
+  async function flushSave() {
     if (saveTimer.current) clearTimeout(saveTimer.current);
     if (inflight.current) await inflight.current;
     await runSave();
+  }
+
+  async function finishEditing() {
+    await flushSave();
     setEditing(false);
     router.refresh();
+  }
+
+  async function handleSubmitApplication() {
+    if (submitting) return;
+    setSubmitting(true);
+    if (editing) await flushSave();
+    const result = await submitCoachApplication();
+    setSubmitting(false);
+    if (result.error) {
+      setToast(result.error);
+      return;
+    }
+    if (result.coach) setV((cur) => ({ ...cur, coach: result.coach ?? cur.coach }));
+    setToast("Application sent ✓ — we'll email you when you're approved.");
   }
 
   // ------------------------------------------------------------- AI fill
@@ -207,6 +228,8 @@ export default function ProfilePage({
             setCoachingEnabled(true);
             setEditing(true);
           }}
+          onSubmitApplication={handleSubmitApplication}
+          submitting={submitting}
         />
       }
     />
@@ -242,7 +265,13 @@ export default function ProfilePage({
             {isOwner && (
               <>
                 <span className="mr-auto text-[12px] text-secondary" aria-live="polite">
-                  {saveState === "saving" ? "Saving…" : saveState === "saved" ? "Saved ✓" : ""}
+                  {saveState === "saving"
+                    ? "Saving…"
+                    : saveState === "saved"
+                      ? "Saved ✓ — autosaves as you type"
+                      : editing
+                        ? "Autosaves as you type"
+                        : ""}
                 </span>
                 {editing && (
                   <button
@@ -270,7 +299,7 @@ export default function ProfilePage({
                     className="gold-gradient cta-glow flex h-11 items-center gap-2 rounded-full px-5 text-[14px] font-bold text-on-gold"
                   >
                     <Check size={15} strokeWidth={2.25} />
-                    Done
+                    Done editing
                   </button>
                 ) : (
                   <button
@@ -313,7 +342,9 @@ export default function ProfilePage({
             </footer>
           )}
           {editing && (
-            <p className="mt-8 text-[12px] text-muted">Changes save automatically as you edit.</p>
+            <p className="mt-8 text-[12px] text-muted">
+              Changes save automatically as you edit — &ldquo;Done editing&rdquo; just closes the editor.
+            </p>
           )}
         </form>
 

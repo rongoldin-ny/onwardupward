@@ -57,6 +57,9 @@ export default function OnboardingWizard({ profile, exitHref = "/role" }: Props)
   function finish(formData: FormData, withCoach: boolean) {
     startTransition(async () => {
       if (withCoach) {
+        // Finishing with an offering filled in counts as applying; an empty
+        // coaching step just leaves a draft to finish from the profile.
+        if (String(formData.get("offering") ?? "").trim()) formData.set("submit_for_review", "1");
         const result = await saveCoachAttributes(formData);
         if (result.error) {
           setError(result.error);

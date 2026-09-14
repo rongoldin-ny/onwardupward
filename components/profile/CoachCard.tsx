@@ -20,10 +20,14 @@ export default function CoachCard({
   view,
   coachingEnabled,
   onStartCoaching,
+  onSubmitApplication,
+  submitting = false,
 }: {
   view: ProfileView;
   coachingEnabled: boolean;
   onStartCoaching: () => void;
+  onSubmitApplication?: () => void;
+  submitting?: boolean;
 }) {
   const { editing, viewer, scheduleSave } = useEdit();
   const coach = view.coach;
@@ -60,8 +64,10 @@ export default function CoachCard({
     );
   }
 
-  const status = coach?.status ?? "pending";
+  const status = coach?.status ?? "draft";
   const approved = status === "approved";
+  const isDraft = status === "draft";
+  const canSubmit = !!coach?.offering && !!coach?.booking_url;
   const levels = coach ? coachLevels(coach) : [];
   const subtitle = coach
     ? [coach.company, disciplineLabel(coach.disciplines)].filter(Boolean).join(" · ")
@@ -82,15 +88,17 @@ export default function CoachCard({
             approved ? "border-gold-border text-gold" : "border-border-2 text-muted"
           }`}
         >
-          {!coach ? "Draft" : status === "pending" ? "Under review" : approved ? "Live" : "Unclaimed"}
+          {isDraft ? "Draft" : status === "pending" ? "Under review" : approved ? "Live" : "Unclaimed"}
         </span>
       </div>
 
-      {editing && (
+      {viewer === "owner" && (
         <p className="mt-3 text-[12.5px] leading-[1.5] text-secondary">
-          {status === "pending"
-            ? "Under review — you'll get an email the moment you're approved. Edits save to your application."
-            : "Edits go live immediately."}
+          {isDraft
+            ? "Saved as a draft as you type — nobody sees it until you submit it for review."
+            : status === "pending"
+              ? "Under review — you'll get an email the moment you're approved. Edits save to your application."
+              : "Edits go live immediately."}
         </p>
       )}
 
@@ -182,6 +190,24 @@ export default function CoachCard({
           </>
         )}
       </div>
+
+      {viewer === "owner" && isDraft && (
+        <div className="mt-8">
+          <Cta
+            type="button"
+            onClick={onSubmitApplication}
+            disabled={!canSubmit || submitting}
+            className="disabled:opacity-60"
+          >
+            {submitting ? "Submitting…" : "Submit for review"}
+          </Cta>
+          {!canSubmit && (
+            <p className="mt-3 text-center text-[12.5px] text-secondary">
+              Add your offering and a booking link to submit.
+            </p>
+          )}
+        </div>
+      )}
 
       {!editing && viewer !== "owner" && coach && (
         <div className="mt-8">

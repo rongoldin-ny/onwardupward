@@ -29,8 +29,8 @@ export default async function PublicProfilePage({
   if (user?.id === profile.id) redirect("/profile");
 
   const view = await toProfileView(profile, { admin: true });
-  // Pending listings are only visible to their owner while under review.
-  if (view.coach?.status === "pending") view.coach = null;
+  // Drafts and pending listings are only visible to their owner.
+  if (view.coach && view.coach.status !== "approved") view.coach = null;
   const approved = profile.vetting_status === "approved" || view.coach?.status === "approved";
   if (!approved || !isPublishable(profile)) notFound();
 
