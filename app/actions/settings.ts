@@ -32,11 +32,13 @@ export async function saveFullProfile(formData: FormData): Promise<{
   await saveWork(formData);
   await saveReferences(formData);
 
-  const pref = String(formData.get("contact_preference") ?? "") === "linkedin" ? "linkedin" : "email";
   const supabase = await supabaseServer();
   const { data: fresh } = await supabase
     .from("profiles")
-    .update({ contact_preference: pref })
+    .update({
+      contact_preference: "email",
+      open_to_coaching_outreach: formData.get("open_to_coaching_outreach") === "on",
+    })
     .eq("id", user.id)
     .select("portfolio_images")
     .single();

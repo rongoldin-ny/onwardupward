@@ -198,9 +198,9 @@ export default function AscentHome() {
       <footer>
         <span className="logo ou-logo" style={{ fontSize: 15 }}><LogoMark /></span>
         <div className="links">
-          <Link href="/terms">Terms</Link>
+          {/* <Link href="/terms">Terms</Link>
           <Link href="/privacy">Privacy</Link>
-          <Link href="/signup">For companies</Link>
+          <Link href="/signup">For companies</Link> */}
         </div>
       </footer>
     </div>

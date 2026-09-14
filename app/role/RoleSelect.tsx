@@ -8,23 +8,18 @@ import { Cta, Logo, PageFrame } from "@/components/ui";
 const roles = [
   {
     id: "candidate",
-    title: "Get hired",
-    description: "Build a profile that shows your best work — and gets you found.",
-  },
-  {
-    id: "recruiter",
-    title: "I'm hiring",
-    description: "Search a vetted network of elite product designers and PMs.",
+    title: "Looking for a coach",
+    description: "Build a profile that shows your best work — and connects you with coaches.",
   },
   {
     id: "coach",
-    title: "I'm a coach",
+    title: "Looking to coach others",
     description: "Join the bench — mentor designers and PMs from the network on your terms.",
   },
 ] as const;
 
 export default function RoleSelect() {
-  const [selected, setSelected] = useState<"candidate" | "recruiter" | "coach">("candidate");
+  const [selected, setSelected] = useState<"candidate" | "coach">("candidate");
   const [pending, startTransition] = useTransition();
 
   return (
