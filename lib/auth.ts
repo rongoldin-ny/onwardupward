@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { supabaseServer } from "./supabase/server";
 import type { Profile } from "./db";
@@ -22,9 +23,17 @@ export function homeFor(user: Profile): string {
   return user.is_paid ? "/search" : "/subscribe";
 }
 
+/** Sign-in url that remembers where the visitor was actually headed. */
+export async function signInPath(): Promise<string> {
+  const path = (await headers()).get("x-pathname");
+  return path?.startsWith("/") && !path.startsWith("/signin") && !path.startsWith("/signup")
+    ? `/signin?next=${encodeURIComponent(path)}`
+    : "/signin";
+}
+
 export async function requireUser(): Promise<Profile> {
   const user = await currentUser();
-  if (!user) redirect("/signin");
+  if (!user) redirect(await signInPath());
   return user;
 }
 
