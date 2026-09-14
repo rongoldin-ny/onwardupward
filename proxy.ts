@@ -6,6 +6,10 @@ import { NextResponse, type NextRequest } from "next/server";
  * always see a valid token. (Next 16 calls this "proxy"; it's middleware.)
  */
 export async function proxy(request: NextRequest) {
+  // Server components can't see the requested url; stash it so requireUser()
+  // can send people back where they were headed after signing in.
+  request.headers.set("x-pathname", request.nextUrl.pathname + request.nextUrl.search);
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(

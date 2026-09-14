@@ -15,10 +15,12 @@ export default async function SignInPage({
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
-  const user = await currentUser();
-  if (user) redirect(homeFor(user));
-
   const { error, next } = await searchParams;
+
+  const user = await currentUser();
+  if (user) {
+    redirect(next?.startsWith("/") && user.onboarding_complete ? next : homeFor(user));
+  }
 
   return (
     <PageFrame size="narrow">
