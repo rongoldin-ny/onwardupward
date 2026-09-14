@@ -1,12 +1,16 @@
-import { notFound } from "next/navigation";
-import { toCandidateView } from "@/lib/candidate-view";
+import { notFound, redirect } from "next/navigation";
+import ProfilePage from "@/components/profile/ProfilePage";
+import { currentUser } from "@/lib/auth";
 import type { Profile } from "@/lib/db";
+import { isPublishable } from "@/lib/profile-required";
+import { toProfileView } from "@/lib/profile-view";
 import { supabaseAdmin } from "@/lib/supabase/server";
-import CandidateProfileView from "@/components/CandidateProfileView";
 
 /**
- * Public share link for a candidate profile — viewable without signing in.
- * The uuid itself is the capability: unguessable, shared by the candidate.
+ * Public share link for any profile — viewable without signing in. The
+ * uuid itself is the capability: unguessable, shared by the owner. Visible
+ * once the required fields are filled and either the member application or
+ * the coach listing has been approved.
  */
 export default async function PublicProfilePage({
   params,
@@ -16,21 +20,26 @@ export default async function PublicProfilePage({
   const { id } = await params;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
 
-  const { data } = await supabaseAdmin()
-    .from("profiles")
-    .select("*")
-    .eq("id", id)
-    .eq("role", "candidate")
-    .eq("vetting_status", "approved")
-    .maybeSingle();
-  if (!data || !data.onboarding_complete) notFound();
+  const [{ data }, user] = await Promise.all([
+    supabaseAdmin().from("profiles").select("*").eq("id", id).maybeSingle(),
+    currentUser().catch(() => null),
+  ]);
+  if (!data) notFound();
+  const profile = data as Profile;
+  if (user?.id === profile.id) redirect("/profile");
 
-  const candidate = await toCandidateView(data as Profile, { admin: true });
-  return <CandidateProfileView candidate={candidate} mode="public" />;
+  const view = await toProfileView(profile, { admin: true });
+  // Pending listings are only visible to their owner while under review.
+  if (view.coach?.status === "pending") view.coach = null;
+  const approved = profile.vetting_status === "approved" || view.coach?.status === "approved";
+  if (!approved || !isPublishable(profile)) notFound();
+
+  return <ProfilePage view={view} viewer={user ? "member" : "public"} initialSide="player" />;
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return { title: "onward/upward" };
   const { data } = await supabaseAdmin()
     .from("profiles")
     .select("name")

@@ -3,7 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { requireCandidate } from "@/lib/auth";
 import { getCoachByProfileId, getDirectoryCoaches, type CoachRow } from "@/lib/coaches-db";
 import { getMentorshipPosts } from "@/lib/mentorship-posts";
-import { candidateStats, profileCompletionPct } from "@/lib/stats";
+import { candidateStats, missingRequired, profileCompletionPct } from "@/lib/stats";
 import { greeting } from "@/lib/greeting";
 import DashboardMenu from "./DashboardMenu";
 import {
@@ -27,6 +27,7 @@ export default async function Dashboard() {
   ]);
   const firstName = (user.name ?? "there").split(" ")[0];
   const completionPct = profileCompletionPct(user);
+  const missing = missingRequired(user);
   const isVetter =
     user.role === "admin" || (user.email ?? "").toLowerCase() === "r@rongoldin.com";
   const directory = await getDirectoryCoaches();
@@ -100,8 +101,8 @@ export default async function Dashboard() {
             )}
           </Card>
 
-          <CtaLink href="/profile/preview" variant="secondary" className="mt-4">
-            Preview my profile
+          <CtaLink href="/profile" variant="secondary" className="mt-4">
+            My profile
           </CtaLink>
 
           {posts.length > 0 && (
@@ -129,7 +130,7 @@ export default async function Dashboard() {
           )}
 
           {!mentorListing ? (
-            <Link href="/settings/coaching" className="mt-4 block">
+            <Link href="/profile?side=coach" className="mt-4 block">
               <Card>
                 <div className="flex items-center justify-between">
                   <h2 className="text-[18px] font-bold tracking-[-0.02em] text-cream">
@@ -159,7 +160,7 @@ export default async function Dashboard() {
           )}
 
           {completionPct < 100 && (
-            <Link href="/settings/profile" className="mt-4 block">
+            <Link href="/profile" className="mt-4 block">
               <Card highlighted>
                 <div className="flex items-center justify-between">
                   <h2 className="text-[18px] font-bold tracking-[-0.02em] text-cream">
@@ -168,7 +169,9 @@ export default async function Dashboard() {
                   <ArrowRight size={18} strokeWidth={1.5} className="text-gold" />
                 </div>
                 <p className="mt-1.5 text-[13px] text-secondary">
-                  Review and add detail to get discovered.
+                  {missing.length > 0
+                    ? `Add ${missing.join(", ")} to make your profile visible.`
+                    : "Review and add detail to get discovered."}
                 </p>
                 <div className="mt-3 h-[4px] w-full overflow-hidden rounded-full bg-border-1">
                   <div

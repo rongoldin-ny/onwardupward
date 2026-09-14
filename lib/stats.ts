@@ -1,5 +1,4 @@
 import { supabaseAdmin } from "./supabase/server";
-import type { Profile } from "./db";
 
 export type CandidateStats = {
   viewsToday: number;
@@ -53,24 +52,4 @@ export async function candidateStats(candidateId: string): Promise<CandidateStat
   return { viewsToday, viewsThisWeek, deltaPct, topPct };
 }
 
-/** Weighted completion score across the fields the abbreviated onboarding skips. */
-export function profileCompletionPct(profile: Profile): number {
-  const checks = [
-    !!profile.photo_url,
-    !!profile.bio,
-    !!profile.dream_job,
-    !!profile.last_role_text,
-    profile.brags.length > 0,
-    !!profile.portfolio_url || !!profile.resume_url,
-    !!profile.career_stage,
-    !!profile.role_type,
-    !!profile.location_country,
-  ];
-  const done = checks.filter(Boolean).length;
-  return Math.round((done / checks.length) * 100);
-}
-
-/** PRD §7.8 — banner shows if any optional profile sections are still empty. */
-export function profileIncomplete(profile: Profile): boolean {
-  return profileCompletionPct(profile) < 100;
-}
+export { isPublishable, missingRequired, profileCompletionPct } from "./profile-required";

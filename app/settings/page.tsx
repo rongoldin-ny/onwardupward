@@ -4,7 +4,6 @@ import {
   Bell,
   ChevronRight,
   CreditCard,
-  Eye,
   GraduationCap,
   Image as ImageIcon,
   UserRound,
@@ -46,7 +45,8 @@ function Row({
 export default async function SettingsPage() {
   const user = await requireUser();
   const isCandidate = user.role === "candidate";
-  const coachListing = isCandidate ? await getCoachByProfileId(user.id) : null;
+  const isRecruiter = user.role === "recruiter";
+  const coachListing = isRecruiter ? null : await getCoachByProfileId(user.id);
   const billingSub =
     user.role === "recruiter"
       ? "Recruiter — $199/mo"
@@ -72,7 +72,7 @@ export default async function SettingsPage() {
 
           <Eyebrow className="mt-9">Profile</Eyebrow>
           <div className="mt-3 overflow-hidden rounded-[20px] border border-border-1 bg-surface-2">
-            {isCandidate && (
+            {!isRecruiter && (
               <Row
                 href="/settings/photo"
                 icon={<ImageIcon size={16} strokeWidth={1.5} />}
@@ -80,22 +80,14 @@ export default async function SettingsPage() {
               />
             )}
             <Row
-              href="/settings/profile"
+              href={isRecruiter ? "/settings/search" : "/profile"}
               icon={<UserRound size={16} strokeWidth={1.5} />}
-              label="Edit profile"
-              sub={isCandidate ? "Everything recruiters see about you" : "Your search preferences"}
+              label={isRecruiter ? "Your search" : "Your profile"}
+              sub={isRecruiter ? "Your search preferences" : "View and edit everything others see"}
             />
-            {isCandidate && (
+            {isCandidate && !coachListing && (
               <Row
-                href="/profile/preview"
-                icon={<Eye size={16} strokeWidth={1.5} />}
-                label="View profile"
-                sub="As recruiters see it"
-              />
-            )}
-            {isCandidate && (
-              <Row
-                href="/settings/coaching"
+                href="/profile?side=coach"
                 icon={<GraduationCap size={16} strokeWidth={1.5} />}
                 label="Coaching"
                 sub="Open to mentoring other designers and PMs?"

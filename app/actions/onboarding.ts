@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { requireUser, homeFor } from "@/lib/auth";
+import { syncCoachIdentity } from "@/lib/coaches-db";
 import { supabaseServer, supabaseAdmin } from "@/lib/supabase/server";
 import { getWorkHistory, type PortfolioImage, type Profile, type WorkHistoryRow } from "@/lib/db";
 import { emailShell, sendEmail } from "@/lib/email";
@@ -173,6 +174,7 @@ export async function saveBasics(formData: FormData): Promise<{ error?: string }
       ai_superpowers: sanitizeSuperpowers(String(formData.get("ai_superpowers") ?? "[]")),
     })
     .eq("id", user.id);
+  await syncCoachIdentity(user.id);
   return {};
 }
 
@@ -299,6 +301,7 @@ export async function savePhoto(formData: FormData): Promise<{ error?: string }>
   if (!url) return { error: "That image didn't work — try a JPG or PNG under 10MB." };
   const supabase = await supabaseServer();
   await supabase.from("profiles").update({ photo_url: url }).eq("id", user.id);
+  await syncCoachIdentity(user.id);
   return {};
 }
 

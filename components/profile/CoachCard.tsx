@@ -1,0 +1,209 @@
+"use client";
+
+import { useState } from "react";
+import { GraduationCap } from "lucide-react";
+import CoachBookLink from "@/components/CoachBookLink";
+import { DisciplineChips, MenteeChips } from "@/components/CoachFormFields";
+import { TextArea, TextField } from "@/components/fields";
+import { Cta, Eyebrow, Tag } from "@/components/ui";
+import {
+  CLAIM_MAILTO,
+  coachLevels,
+  disciplineLabel,
+  type CoachDiscipline,
+} from "@/lib/coach-shared";
+import type { ProfileView } from "@/lib/profile-view";
+import { CardSection as Section, useEdit } from "./edit-context";
+
+/** The back of the card — coaching attributes. */
+export default function CoachCard({
+  view,
+  coachingEnabled,
+  onStartCoaching,
+}: {
+  view: ProfileView;
+  coachingEnabled: boolean;
+  onStartCoaching: () => void;
+}) {
+  const { editing, viewer, scheduleSave } = useEdit();
+  const coach = view.coach;
+  const [discipline, setDiscipline] = useState<CoachDiscipline | null>(coach?.disciplines ?? null);
+  const [mentees, setMentees] = useState<string[]>(coach?.target_mentees ?? []);
+
+  const shell = "overflow-hidden rounded-[24px] border border-border-1 bg-surface-2 p-6";
+
+  if (!coach && !coachingEnabled) {
+    return (
+      <div className={`${shell} flex min-h-[320px] flex-col items-center justify-center text-center`}>
+        <span className="flex h-14 w-14 items-center justify-center rounded-full border border-gold-border text-gold">
+          <GraduationCap size={22} strokeWidth={1.5} />
+        </span>
+        {viewer === "owner" ? (
+          <>
+            <h2 className="mt-5 text-[22px] font-black tracking-[-0.02em] text-cream">
+              Open to coaching?
+            </h2>
+            <p className="mt-2 max-w-[320px] text-[14px] leading-[1.5] text-secondary">
+              Join the coach bench — share what you know with designers and PMs
+              from the network, on your terms.
+            </p>
+            <Cta type="button" onClick={onStartCoaching} className="mt-6 max-w-[240px]">
+              Start coaching
+            </Cta>
+          </>
+        ) : (
+          <p className="mt-5 text-[15px] text-secondary">
+            {`${view.firstName} isn't coaching (yet).`}
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  const status = coach?.status ?? "pending";
+  const approved = status === "approved";
+  const levels = coach ? coachLevels(coach) : [];
+  const subtitle = coach
+    ? [coach.company, disciplineLabel(coach.disciplines)].filter(Boolean).join(" · ")
+    : "";
+  const bookingDisplay = (coach?.booking_url ?? "").replace(/^mailto:/, "");
+
+  return (
+    <div className={shell}>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <Eyebrow className="text-gold">Coach card</Eyebrow>
+          <h2 className="mt-2 text-[22px] leading-[1.15] font-black tracking-[-0.02em] text-cream">
+            {subtitle || (editing ? "Your coaching" : `Coaching with ${view.firstName}`)}
+          </h2>
+        </div>
+        <span
+          className={`eyebrow shrink-0 rounded-full border px-3 py-1.5 ${
+            approved ? "border-gold-border text-gold" : "border-border-2 text-muted"
+          }`}
+        >
+          {!coach ? "Draft" : status === "pending" ? "Under review" : approved ? "Live" : "Unclaimed"}
+        </span>
+      </div>
+
+      {editing && (
+        <p className="mt-3 text-[12.5px] leading-[1.5] text-secondary">
+          {status === "pending"
+            ? "Under review — you'll get an email the moment you're approved. Edits save to your application."
+            : "Edits go live immediately."}
+        </p>
+      )}
+
+      <div className="mt-6 space-y-6">
+        {editing ? (
+          <>
+            <Section title="Disciplines & levels">
+              <div className="space-y-5">
+                <DisciplineChips
+                  value={discipline}
+                  onChange={(d) => {
+                    setDiscipline(d);
+                    scheduleSave();
+                  }}
+                />
+                <MenteeChips
+                  value={mentees}
+                  onChange={(m) => {
+                    setMentees(m);
+                    scheduleSave();
+                  }}
+                />
+              </div>
+            </Section>
+            <Section title="The offering">
+              <TextArea
+                name="offering"
+                rows={4}
+                placeholder="What a session with you covers"
+                defaultValue={coach?.offering ?? ""}
+              />
+            </Section>
+            <Section title="Best for">
+              <TextField
+                name="best_for"
+                placeholder="One line on who gets the most from you"
+                defaultValue={coach?.best_for ?? ""}
+              />
+            </Section>
+            <Section title="Booking & pricing">
+              <div className="space-y-3">
+                <TextField
+                  name="booking_url"
+                  placeholder="Booking link — Calendly, website, or an email address"
+                  defaultValue={bookingDisplay}
+                />
+                <TextField
+                  name="pricing"
+                  placeholder="Pricing — a number or a range is fine"
+                  defaultValue={coach?.pricing ?? ""}
+                />
+                <TextField
+                  name="company"
+                  placeholder="Company or practice (optional)"
+                  defaultValue={coach?.company ?? ""}
+                />
+              </div>
+            </Section>
+          </>
+        ) : (
+          <>
+            {levels.length > 0 && (
+              <div className="flex flex-wrap gap-2.5">
+                {levels.map((l) => (
+                  <Tag key={l}>{l}</Tag>
+                ))}
+              </div>
+            )}
+            {coach?.offering && (
+              <Section title="The offering">
+                <p className="text-[15px] leading-[1.6] text-body">{coach.offering}</p>
+              </Section>
+            )}
+            {coach?.best_for && (
+              <Section title="Best for">
+                <p className="text-[15px] leading-[1.6] text-body">{coach.best_for}</p>
+              </Section>
+            )}
+            {coach?.pricing && (
+              <Section title="Pricing">
+                <p className="text-[15px] leading-[1.6] text-body">{coach.pricing}</p>
+              </Section>
+            )}
+            {!coach?.offering && !coach?.best_for && viewer === "owner" && (
+              <p className="text-[14px] text-secondary">
+                Tap Edit to describe your offering and how to book you.
+              </p>
+            )}
+          </>
+        )}
+      </div>
+
+      {!editing && viewer !== "owner" && coach && (
+        <div className="mt-8">
+          {approved && coach.booking_url ? (
+            <CoachBookLink
+              coachId={coach.id}
+              coachName={coach.full_name}
+              href={coach.booking_url}
+              className="gold-gradient cta-glow block rounded-full px-6 py-4 text-center text-[15px] font-bold text-on-gold"
+            >
+              Book a session
+            </CoachBookLink>
+          ) : status === "unclaimed" ? (
+            <a
+              href={CLAIM_MAILTO}
+              className="block rounded-full border border-border-2 px-6 py-4 text-center text-[15px] font-bold text-cream"
+            >
+              This you? Claim your slot
+            </a>
+          ) : null}
+        </div>
+      )}
+    </div>
+  );
+}

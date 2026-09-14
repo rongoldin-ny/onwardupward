@@ -28,10 +28,10 @@ export default function DashboardMenu({ isVetter = false }: { isVetter?: boolean
             Settings
           </Link>
           <Link
-            href="/profile/preview"
+            href="/profile"
             className="block w-full px-5 py-2.5 text-left text-[14px] text-body"
           >
-            Preview profile
+            My profile
           </Link>
           <Link
             href="/coaches"

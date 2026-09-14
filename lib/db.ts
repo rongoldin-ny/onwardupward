@@ -38,6 +38,7 @@ export type Profile = {
   brags: string[];
   portfolio_url: string | null;
   portfolio_password: string | null;
+  website_url: string | null;
   resume_url: string | null;
   ai_superpowers: { skill: string; xp: "basic" | "fluent" | "expert" }[];
   portfolio_images: PortfolioImage[];

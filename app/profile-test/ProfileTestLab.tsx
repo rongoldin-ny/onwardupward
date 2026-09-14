@@ -4,46 +4,52 @@ import { useState } from "react";
 import { Sparkles } from "lucide-react";
 import { testProfileFill } from "@/app/actions/settings";
 import type { AiFillResult } from "@/lib/ai-fill";
-import CandidateProfileView, { type CandidateView } from "@/components/CandidateProfileView";
+import ProfilePage from "@/components/profile/ProfilePage";
+import type { ProfileView } from "@/lib/profile-view";
 import { TextField } from "@/components/fields";
 import { Cta, Eyebrow, Logo, PageFrame } from "@/components/ui";
-import { labelForRoleType, uniqueCompanies } from "@/lib/taxonomy";
+import { labelForCareerStage, labelForRoleType, uniqueCompanies } from "@/lib/taxonomy";
 
-/** Build a throwaway CandidateView straight from an AI fill — no DB rows. */
-function fillToView(fill: AiFillResult, portfolioUrl: string | null): CandidateView {
+/** Build a throwaway ProfileView straight from an AI fill — no DB rows. */
+function fillToView(fill: AiFillResult, portfolioUrl: string | null): ProfileView {
   const name = fill.name ?? "Unnamed candidate";
-  const firstName = name.split(" ")[0];
   return {
     id: "profile-test",
     name,
-    isSupporter: false,
-    aiSuperpowers: [],
+    firstName: name.split(" ")[0],
+    email: null,
     photoUrl: fill.photo_url,
-    roleLabel: labelForRoleType(fill.role_type),
-    city: fill.location_city ?? "Anywhere",
-    firstName,
-    bio: fill.bio,
-    dreamJob: null,
-    lastRole: fill.last_role_text,
-    brags: fill.brags,
-    companies: uniqueCompanies(fill.work.map((w) => w.company)),
-    references: fill.references.map((r) => ({
-      name: r.full_name,
-      title: r.current_title ?? "",
-      linkedin: r.linkedin_url,
-    })),
-    linkedinUrl: null,
-    portfolioUrl,
-    portfolioPassword: null,
-    portfolioImages: fill.images.map((img) => ({
-      url: img.url,
-      company: img.company,
-      caption: img.caption,
-      year: img.year ?? "",
-    })),
+    location: [fill.location_city, fill.location_state, fill.location_country]
+      .filter(Boolean)
+      .join(", "),
     yearsExperience: fill.years_experience,
-    industries: fill.industries,
-    contactNote: `${firstName} is a temporary test profile.`,
+    background: fill.bio,
+    urls: portfolioUrl ? [{ label: "Portfolio", href: portfolioUrl }] : [],
+    portfolioPassword: null,
+    player: {
+      roleLabel: fill.role_type ? labelForRoleType(fill.role_type) : null,
+      careerStageLabel: fill.career_stage ? labelForCareerStage(fill.career_stage) : null,
+      industries: fill.industries,
+      aiSuperpowers: [],
+      companies: uniqueCompanies(fill.work.map((w) => w.company)),
+      brags: fill.brags,
+      dreamJob: null,
+      lastRole: fill.last_role_text,
+      portfolioImages: fill.images.map((img) => ({
+        url: img.url,
+        company: img.company,
+        caption: img.caption,
+        year: img.year ?? "",
+      })),
+      references: fill.references.map((r) => ({
+        name: r.full_name,
+        title: r.current_title ?? "",
+        linkedin: r.linkedin_url,
+      })),
+    },
+    coach: null,
+    missingRequired: [],
+    raw: { profile: null, work: [], references: [] },
   };
 }
 
@@ -101,7 +107,7 @@ export default function ProfileTestLab() {
             {JSON.stringify(fill, null, 2)}
           </pre>
         )}
-        <CandidateProfileView candidate={fillToView(fill, testedUrl)} mode="public" />
+        <ProfilePage view={fillToView(fill, testedUrl)} viewer="public" initialSide="player" />
       </div>
     );
   }
