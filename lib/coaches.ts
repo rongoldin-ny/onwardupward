@@ -572,7 +572,8 @@ export const COACHES: Coach[] = [
     name: "Frank Harris",
     org: "Independent",
     status: "unclaimed",
-    photoUrl: null,
+    photoUrl:
+      "https://ziaylaegutxikckewwnq.supabase.co/storage/v1/object/public/profile-assets/coaches/frank-harris-896a6283-fd1c-4bc8-8894-cf2cef16283b.webp",
     bio: "20+ years across engineering, design, and product leadership. Held VP roles at Betterment, Casper, InVision, and Slack; earlier a UX designer at Google and a PM at Etsy pre-IPO. Certified Professional Co-Active Coach (CPCC).",
     offerings:
       "Focused Sprint (6 sessions over 4 months) for senior ICs and new managers. Standard Engagement (13 sessions over 6 months, unlimited async support) for executives and founders. Corporate coaching for teams.",
