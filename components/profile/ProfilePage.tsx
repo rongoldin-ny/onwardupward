@@ -27,11 +27,13 @@ export default function ProfilePage({
   viewer,
   initialSide,
   communitySkills = [],
+  topMatch = null,
 }: {
   view: ProfileView;
   viewer: Viewer;
   initialSide: CardSide;
   communitySkills?: string[];
+  topMatch?: { isTopMatch: boolean; reason: string | null } | null;
 }) {
   const router = useRouter();
   const [v, setV] = useState(view);
@@ -230,11 +232,17 @@ export default function ProfilePage({
           }}
           onSubmitApplication={handleSubmitApplication}
           submitting={submitting}
+          topMatch={topMatch}
         />
       }
     />
   ) : (
-    <CoachCard view={v} coachingEnabled={!!v.coach} onStartCoaching={() => {}} />
+    <CoachCard
+      view={v}
+      coachingEnabled={!!v.coach}
+      onStartCoaching={() => {}}
+      topMatch={topMatch}
+    />
   );
 
   return (

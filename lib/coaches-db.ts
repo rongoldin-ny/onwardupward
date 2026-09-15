@@ -35,6 +35,18 @@ export async function getDirectoryCoaches(): Promise<CoachRow[]> {
   return coaches.filter((c) => !c.profile_id || publishable.has(c.profile_id));
 }
 
+/** Newsletter URLs for every coach who's added one, for the home reading feed. */
+export async function getCoachSubstackUrls(): Promise<string[]> {
+  const { data } = await supabaseAdmin()
+    .from("coaches")
+    .select("substack_url")
+    .not("substack_url", "is", null)
+    .in("status", ["approved", "unclaimed"]);
+  return ((data ?? []) as { substack_url: string | null }[])
+    .map((c) => c.substack_url)
+    .filter((url): url is string => !!url);
+}
+
 export async function getPendingCoaches(): Promise<CoachRow[]> {
   const { data } = await supabaseAdmin()
     .from("coaches")

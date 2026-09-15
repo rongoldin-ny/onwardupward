@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, Sparkles } from "lucide-react";
 import CoachBookLink from "@/components/CoachBookLink";
 import { DisciplineChips, MenteeChips } from "@/components/CoachFormFields";
 import { TextArea, TextField } from "@/components/fields";
@@ -22,12 +22,14 @@ export default function CoachCard({
   onStartCoaching,
   onSubmitApplication,
   submitting = false,
+  topMatch = null,
 }: {
   view: ProfileView;
   coachingEnabled: boolean;
   onStartCoaching: () => void;
   onSubmitApplication?: () => void;
   submitting?: boolean;
+  topMatch?: { isTopMatch: boolean; reason: string | null } | null;
 }) {
   const { editing, viewer, scheduleSave } = useEdit();
   const coach = view.coach;
@@ -157,6 +159,13 @@ export default function CoachCard({
                 />
               </div>
             </Section>
+            <Section title="Newsletter">
+              <TextField
+                name="substack_url"
+                placeholder="Your Substack or newsletter link (optional)"
+                defaultValue={coach?.substack_url ?? ""}
+              />
+            </Section>
           </>
         ) : (
           <>
@@ -182,10 +191,33 @@ export default function CoachCard({
                 <p className="text-[15px] leading-[1.6] text-body">{coach.pricing}</p>
               </Section>
             )}
+            {coach?.substack_url && (
+              <Section title="Newsletter">
+                <a
+                  href={coach.substack_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[15px] leading-[1.6] text-gold underline"
+                >
+                  {coach.substack_url.replace(/^https?:\/\//, "")}
+                </a>
+              </Section>
+            )}
             {!coach?.offering && !coach?.best_for && viewer === "owner" && (
               <p className="text-[14px] text-secondary">
                 Tap Edit to describe your offering and how to book you.
               </p>
+            )}
+            {viewer !== "owner" && topMatch?.isTopMatch && (
+              <div className="rounded-[14px] border border-gold-border bg-surface-1 px-4 py-3">
+                <span className="eyebrow flex items-center gap-1.5 text-gold">
+                  <Sparkles size={12} strokeWidth={1.5} />
+                  Top match
+                </span>
+                {topMatch.reason && (
+                  <p className="mt-1.5 text-[13px] leading-[1.5] text-body-2">{topMatch.reason}</p>
+                )}
+              </div>
             )}
           </>
         )}

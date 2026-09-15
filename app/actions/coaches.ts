@@ -68,6 +68,9 @@ export async function saveCoachAttributes(
   const bookingRaw = str("booking_url");
   const booking = bookingRaw ? normalizeBooking(bookingRaw) : null;
   if (bookingRaw && !booking) return { error: "That booking link doesn't look right." };
+  const substackRaw = str("substack_url");
+  const substackUrl = substackRaw ? normalizeUrl(substackRaw) : null;
+  if (substackRaw && !substackUrl) return { error: "That newsletter link doesn't look right." };
 
   const existing = await getCoachByProfileId(user.id);
   const row = {
@@ -84,6 +87,7 @@ export async function saveCoachAttributes(
     booking_url: booking,
     company: str("company") || null,
     pricing: str("pricing") || null,
+    substack_url: substackUrl,
   };
 
   const admin = supabaseAdmin();

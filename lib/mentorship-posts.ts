@@ -1,9 +1,12 @@
 /**
  * Daily design-mentorship reading for the candidate home. Substack's search
  * API is authwalled, so we aggregate a curated set of design-leadership
- * Substack RSS feeds, rank recent posts by mentorship relevance, and cache
- * for an hour via Next's fetch revalidation.
+ * Substack RSS feeds — plus every coach's own newsletter from the `coaches`
+ * table — rank recent posts by mentorship relevance, and cache for an hour
+ * via Next's fetch revalidation.
  */
+
+import { getCoachSubstackUrls } from "./coaches-db";
 
 export type MentorshipPost = {
   title: string;
@@ -16,13 +19,24 @@ export type MentorshipPost = {
 /** The house newsletter — its freshest post gets a pinned slot. */
 const HOUSE_FEED = "https://rongoldin.substack.com/feed";
 
-const FEEDS: string[] = [
+/** Curated, non-coach feeds. Coach newsletters come from `coaches.substack_url`. */
+const CURATED_FEEDS: string[] = [
   HOUSE_FEED, // Formative — product, design & AI
   "https://davidhoang.substack.com/feed", // Proof of Concept — design leadership
   "https://newsletter.weskao.com/feed", // Wes Kao — career growth, managing up
   "https://www.lennysnewsletter.com/feed", // Lenny — product careers
   "https://designleads.substack.com/feed", // design leadership
 ];
+
+function toFeedUrl(url: string): string {
+  const trimmed = url.replace(/\/+$/, "");
+  return trimmed.endsWith("/feed") ? trimmed : `${trimmed}/feed`;
+}
+
+async function allFeeds(): Promise<string[]> {
+  const coachUrls = await getCoachSubstackUrls().catch(() => []);
+  return Array.from(new Set([...CURATED_FEEDS, ...coachUrls.map(toFeedUrl)]));
+}
 
 const RELEVANT =
   /mentor|coach|career|leadership|leading|grow|growth|promotion|feedback|portfolio|manager|hiring|interview|craft|senior|junior|advice/i;
@@ -48,8 +62,9 @@ function parseFeed(xml: string): MentorshipPost[] {
 }
 
 export async function getMentorshipPosts(limit = 3): Promise<MentorshipPost[]> {
+  const feeds = await allFeeds();
   const settled = await Promise.allSettled(
-    FEEDS.map(async (url) => {
+    feeds.map(async (url) => {
       const res = await fetch(url, {
         redirect: "follow",
         signal: AbortSignal.timeout(6000),

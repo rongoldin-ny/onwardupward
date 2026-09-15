@@ -4,11 +4,9 @@
 import { COACHES } from "../lib/coaches";
 import { supabaseAdmin } from "../lib/supabase/server";
 
-// Ron coaches both disciplines; the rest of the curated bench is
-// design-leadership-focused. Adjust in the coaches table any time.
-const DISCIPLINE_OVERRIDES: Record<string, "design" | "product" | "both"> = {
-  "ron-goldin": "both",
-};
+// The curated bench defaults to design-leadership focus. Adjust in the
+// coaches table any time.
+const DISCIPLINE_OVERRIDES: Record<string, "design" | "product" | "both"> = {};
 
 (async () => {
   const sb = supabaseAdmin();
@@ -24,6 +22,7 @@ const DISCIPLINE_OVERRIDES: Record<string, "design" | "product" | "both"> = {
       photo_url: c.photoUrl,
       booking_url: c.status === "claimed" ? c.contact : null,
       website: c.source ? `https://${c.source.replace(/^https?:\/\//, "")}` : null,
+      substack_url: c.substackUrl ?? null,
       source: c.source,
       status: c.status === "claimed" ? "approved" : "unclaimed",
       disciplines: DISCIPLINE_OVERRIDES[c.slug] ?? "design",
