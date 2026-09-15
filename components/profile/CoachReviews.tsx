@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { MessageSquare } from "lucide-react";
 import { submitCoachReview } from "@/app/actions/reviews";
 import { TextArea, TextField } from "@/components/fields";
@@ -27,12 +27,15 @@ function ReviewForm({
   onDone: () => void;
 }) {
   const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function submit(formData: FormData) {
+  async function submit() {
+    if (!formRef.current) return;
     setSubmitting(true);
     setError(null);
+    const formData = new FormData(formRef.current);
     const result = await submitCoachReview(coachId, formData);
     setSubmitting(false);
     if (result.error) {
@@ -44,7 +47,14 @@ function ReviewForm({
   }
 
   return (
-    <form action={submit} className="space-y-3 rounded-[16px] border border-border-1 bg-surface-1 p-4">
+    <form
+      ref={formRef}
+      onSubmit={(e) => {
+        e.preventDefault();
+        void submit();
+      }}
+      className="space-y-3 rounded-[16px] border border-border-1 bg-surface-1 p-4"
+    >
       <div>
         <p className="mb-2 text-[12.5px] font-bold text-secondary">What did you get help with?</p>
         <TextField
