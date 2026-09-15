@@ -95,7 +95,7 @@ export default function AscentHome() {
             <span className="outline-gold">Get a coach.</span>
           </h1>
           <div className="hero-row">
-            <a className="btn btn-lg" href="#join">Apply</a>
+            <a className="btn btn-lg" href="#join">Sign up</a>
             <span className="hero-sub">
               Get started exploring coaches, advertising your coaching, or both.
             </span>
@@ -192,7 +192,7 @@ export default function AscentHome() {
               Ready to<br />
               <span className="gold">level up?</span>
             </h2>
-            <Link className="btn btn-xl" href="/signup">Request an invite</Link>
+            <Link className="btn btn-xl" href="/signup">Sign up</Link>
             <span className="fine">Free during the Beta</span>
           </div>
         </section>

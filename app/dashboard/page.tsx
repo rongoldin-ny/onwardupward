@@ -38,6 +38,30 @@ export default async function Dashboard() {
 
       <main className="mt-9 lg:grid lg:grid-cols-[1fr_320px] lg:items-start lg:gap-10">
         <div>
+          {completionPct < 100 && (
+            <Link href="/profile" className="mb-4 block">
+              <Card highlighted>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-[18px] font-bold tracking-[-0.02em] text-cream">
+                    {completionPct}% complete — finish your profile
+                  </h2>
+                  <ArrowRight size={18} strokeWidth={1.5} className="text-gold" />
+                </div>
+                <p className="mt-1.5 text-[13px] text-secondary">
+                  {missing.length > 0
+                    ? `Add ${missing.join(", ")} to make your profile visible.`
+                    : "Review and add detail to get discovered."}
+                </p>
+                <div className="mt-3 h-[4px] w-full overflow-hidden rounded-full bg-border-1">
+                  <div
+                    className="h-full gold-gradient rounded-full"
+                    style={{ width: `${completionPct}%` }}
+                  />
+                </div>
+              </Card>
+            </Link>
+          )}
+
           <Card className="p-6">
             <Eyebrow>Your profile, this week</Eyebrow>
             <div className="mt-4 flex items-end gap-3">
@@ -134,29 +158,6 @@ export default async function Dashboard() {
             </Link>
           )}
 
-          {completionPct < 100 && (
-            <Link href="/profile" className="mt-4 block">
-              <Card highlighted>
-                <div className="flex items-center justify-between">
-                  <h2 className="text-[18px] font-bold tracking-[-0.02em] text-cream">
-                    {completionPct}% complete — finish your profile
-                  </h2>
-                  <ArrowRight size={18} strokeWidth={1.5} className="text-gold" />
-                </div>
-                <p className="mt-1.5 text-[13px] text-secondary">
-                  {missing.length > 0
-                    ? `Add ${missing.join(", ")} to make your profile visible.`
-                    : "Review and add detail to get discovered."}
-                </p>
-                <div className="mt-3 h-[4px] w-full overflow-hidden rounded-full bg-border-1">
-                  <div
-                    className="h-full gold-gradient rounded-full"
-                    style={{ width: `${completionPct}%` }}
-                  />
-                </div>
-              </Card>
-            </Link>
-          )}
         </div>
 
         <div className="mt-9 lg:relative lg:mt-0">
