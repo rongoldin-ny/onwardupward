@@ -19,6 +19,7 @@ export type CoachRow = {
   photo_url: string | null;
   booking_url: string | null;
   website: string | null;
+  substack_url: string | null;
   company: string | null;
   pricing: string | null;
   source: string | null;

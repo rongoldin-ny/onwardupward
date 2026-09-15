@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { requireUser } from "@/lib/auth";
+import { getCoachMatches } from "@/lib/coach-match";
 import { getDirectoryCoaches } from "@/lib/coaches-db";
 import { Eyebrow, Logo, PageFrame } from "@/components/ui";
 import CoachesDirectory from "./CoachesDirectory";
@@ -12,8 +13,9 @@ export const metadata = { title: "Coaches — onward/upward" };
  * direct contact routes; claimed coaches are bookable.
  */
 export default async function CoachesPage() {
-  await requireUser();
+  const user = await requireUser();
   const coaches = await getDirectoryCoaches();
+  const matches = user.role === "candidate" ? await getCoachMatches(user, coaches) : {};
 
   return (
     <PageFrame size="wide">
@@ -38,7 +40,7 @@ export default async function CoachesPage() {
             once they do.
           </p>
 
-          <CoachesDirectory coaches={coaches} />
+          <CoachesDirectory coaches={coaches} matches={matches} />
 
           <p className="mt-8 text-[12px] text-muted">
             Unclaimed coaches can&apos;t be contacted through onward/upward yet.

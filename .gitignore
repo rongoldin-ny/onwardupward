@@ -42,3 +42,6 @@ next-env.d.ts
 
 # local data (SQLite migration source, uploaded files, demo credentials)
 /.data/
+
+# supabase CLI local link cache
+supabase/.temp/

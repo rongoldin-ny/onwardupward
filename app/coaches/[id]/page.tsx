@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import ProfilePage from "@/components/profile/ProfilePage";
 import { currentUser } from "@/lib/auth";
 import type { CoachRow } from "@/lib/coach-shared";
+import { getCoachMatches } from "@/lib/coach-match";
 import type { Profile } from "@/lib/db";
 import { isPublishable } from "@/lib/profile-required";
 import { coachOnlyProfileView, toProfileView } from "@/lib/profile-view";
@@ -40,6 +41,8 @@ export default async function CoachDetailPage({
   });
 
   const viewer = user ? "member" : "public";
+  const topMatch =
+    user?.role === "candidate" ? ((await getCoachMatches(user, [coach]))[coach.id] ?? null) : null;
 
   if (coach.profile_id) {
     const { data: p } = await admin
@@ -51,11 +54,18 @@ export default async function CoachDetailPage({
       const profile = p as Profile;
       if (!isPublishable(profile)) notFound();
       const view = await toProfileView(profile, { admin: true });
-      return <ProfilePage view={view} viewer={viewer} initialSide="coach" />;
+      return <ProfilePage view={view} viewer={viewer} initialSide="coach" topMatch={topMatch} />;
     }
   }
 
-  return <ProfilePage view={coachOnlyProfileView(coach)} viewer={viewer} initialSide="coach" />;
+  return (
+    <ProfilePage
+      view={coachOnlyProfileView(coach)}
+      viewer={viewer}
+      initialSide="coach"
+      topMatch={topMatch}
+    />
+  );
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {

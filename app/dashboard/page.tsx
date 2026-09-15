@@ -5,16 +5,7 @@ import { getCoachByProfileId, getDirectoryCoaches, type CoachRow } from "@/lib/c
 import { getMentorshipPosts } from "@/lib/mentorship-posts";
 import { candidateStats, missingRequired, profileCompletionPct } from "@/lib/stats";
 import { greeting } from "@/lib/greeting";
-import DashboardMenu from "./DashboardMenu";
-import {
-  Avatar,
-  Card,
-  CtaLink,
-  Eyebrow,
-  FixedChrome,
-  Logo,
-  PageFrame,
-} from "@/components/ui";
+import { Card, CtaLink, Eyebrow, Logo, PageFrame } from "@/components/ui";
 
 const RECOMMENDED_COACH_SLUGS = ["andy-polaine", "mia-blume", "judd-garratt"];
 
@@ -28,8 +19,6 @@ export default async function Dashboard() {
   const firstName = (user.name ?? "there").split(" ")[0];
   const completionPct = profileCompletionPct(user);
   const missing = missingRequired(user);
-  const isVetter =
-    user.role === "admin" || (user.email ?? "").toLowerCase() === "r@rongoldin.com";
   const directory = await getDirectoryCoaches();
   const coaches = RECOMMENDED_COACH_SLUGS.map((s) => directory.find((c) => c.slug === s))
     .filter(Boolean)
@@ -38,23 +27,9 @@ export default async function Dashboard() {
   return (
     <PageFrame size="wide">
     <div className="flex flex-1 flex-col px-7 pt-8 pb-8 lg:px-10 lg:pb-10">
-      {/* Mobile: logo + controls in the card header. Desktop: controls live
-          in the fixed browser chrome, level with the top-left logo. */}
-      <header className="flex items-center justify-between md:hidden">
+      <header className="md:hidden">
         <Logo />
-        <div className="ml-auto flex items-center gap-3">
-          <Link href="/settings" aria-label="Settings">
-            <Avatar id={user.id} src={user.photo_url} size={40} />
-          </Link>
-          <DashboardMenu isVetter={isVetter} />
-        </div>
       </header>
-      <FixedChrome>
-        <Link href="/settings" aria-label="Settings">
-          <Avatar id={user.id} src={user.photo_url} size={40} />
-        </Link>
-        <DashboardMenu isVetter={isVetter} />
-      </FixedChrome>
 
       <h1 className="mt-10 text-[38px] leading-[1.15] font-black tracking-[-0.02em] text-cream md:mt-0">
         {greeting()},<br />

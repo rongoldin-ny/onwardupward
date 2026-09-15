@@ -1,10 +1,12 @@
+import { cache } from "react";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { supabaseServer } from "./supabase/server";
 import type { Profile } from "./db";
 
-/** The signed-in user's profile row, or null. */
-export async function currentUser(): Promise<Profile | null> {
+/** The signed-in user's profile row, or null. Memoized per-request — the
+ * global nav and each page both call this without doubling the DB round trip. */
+export const currentUser = cache(async (): Promise<Profile | null> => {
   const supabase = await supabaseServer();
   const {
     data: { user },
@@ -12,7 +14,7 @@ export async function currentUser(): Promise<Profile | null> {
   if (!user) return null;
   const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
   return (data as Profile) ?? null;
-}
+});
 
 /** Where a signed-in user's "home" is, per PRD §7.2. */
 export function homeFor(user: Profile): string {
