@@ -89,17 +89,15 @@ export default function AscentHome() {
       <main>
         <header className="hero">
           <div className="glow-top" />
-          <div className="eyebrow-hero">A GROWTH NETWORK FOR PRODUCT DESIGNERS AND PMS</div>
+          <div className="eyebrow-hero">A GROWTH NETWORK FOR TECH WORKERS</div>
           <h1>
-            The best don&rsquo;t apply.<br />
-            <span className="outline-gold">They ascend.</span>
+            Don&rsquo;t go it alone.<br />
+            <span className="outline-gold">Get a coach.</span>
           </h1>
           <div className="hero-row">
-            <a className="btn btn-lg" href="#join">Start your ascent</a>
+            <a className="btn btn-lg" href="#join">Apply</a>
             <span className="hero-sub">
-              Effortlessly set up a visual profile that helps connect you to
-              the industry&rsquo;s best coaches to grow yourself and your
-              career.
+              Sign up to get coaching, be a coach, or both.
             </span>
           </div>
           <div className="scroll-cue">SCROLL TO LEVEL UP ↓</div>
@@ -116,6 +114,11 @@ export default function AscentHome() {
           <div className="level reveal">
             <span className="level-num">01</span>
             <div className="level-body">
+              <p className="level-intro">
+                Currently open to product managers, product and content
+                designers, and user researchers at all levels. More coming
+                soon.
+              </p>
               <div className="level-tag">LEVEL ONE — CHART YOUR PATH</div>
               <h2>Where you are. Where you&rsquo;re headed.</h2>
               <p>
@@ -144,7 +147,7 @@ export default function AscentHome() {
               <div className="level-tag">LEVEL UP</div>
               <h2>Get discovered for gigs and collaborations.</h2>
               <p>
-                Optionally, make yourself available to hiring managers and
+                Coming soon: make yourself available to hiring managers and
                 recruiters looking for self-aware, growth-oriented candidates
                 on an upward trajectory.
               </p>
@@ -190,7 +193,7 @@ export default function AscentHome() {
               <span className="gold">level up?</span>
             </h2>
             <Link className="btn btn-xl" href="/signup">Request an invite</Link>
-            <span className="fine">Free for designers and PMs. Always.</span>
+            <span className="fine">Free during the Beta</span>
           </div>
         </section>
       </main>
@@ -198,6 +201,7 @@ export default function AscentHome() {
       <footer>
         <span className="logo ou-logo" style={{ fontSize: 15 }}><LogoMark /></span>
         <div className="links">
+          <a href="mailto:hello@onwardupward.io">Contact</a>
           {/* <Link href="/terms">Terms</Link>
           <Link href="/privacy">Privacy</Link>
           <Link href="/signup">For companies</Link> */}
