@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
-import { MessageSquare } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Check, MessageSquare } from "lucide-react";
 import { submitCoachReview } from "@/app/actions/reviews";
 import { TextArea, TextField } from "@/components/fields";
 import { Avatar, Cta, Eyebrow } from "@/components/ui";
@@ -20,13 +20,14 @@ function timeAgo(iso: string): string {
 function ReviewForm({
   coachId,
   existing,
-  onDone,
+  onSaved,
+  onCancel,
 }: {
   coachId: string;
   existing: CoachReview | null;
-  onDone: () => void;
+  onSaved: (review: CoachReview) => void;
+  onCancel: () => void;
 }) {
-  const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,12 +39,11 @@ function ReviewForm({
     const formData = new FormData(formRef.current);
     const result = await submitCoachReview(coachId, formData);
     setSubmitting(false);
-    if (result.error) {
-      setError(result.error);
+    if (result.error || !result.review) {
+      setError(result.error ?? "Couldn't save your review — try again.");
       return;
     }
-    router.refresh();
-    onDone();
+    onSaved(result.review);
   }
 
   return (
@@ -89,7 +89,7 @@ function ReviewForm({
         </Cta>
         <button
           type="button"
-          onClick={onDone}
+          onClick={onCancel}
           className="h-[42px] rounded-full px-4 text-[13.5px] text-secondary"
         >
           Cancel
@@ -114,19 +114,64 @@ export default function CoachReviews({
   /** Set when the viewer isn't signed in — the write button links here instead. */
   signInHref?: string;
 }) {
+  const router = useRouter();
+  const [list, setList] = useState(reviews);
+  const [own, setOwn] = useState(ownReview);
   const [writing, setWriting] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+
+  // Re-sync if the server sends fresh props (e.g. navigating to a different
+  // coach) — adjusted during render per React's guidance, not via an effect,
+  // so a local post doesn't get clobbered by a stale re-render in between.
+  const [prevReviews, setPrevReviews] = useState(reviews);
+  if (reviews !== prevReviews) {
+    setPrevReviews(reviews);
+    setList(reviews);
+  }
+  const [prevOwnReview, setPrevOwnReview] = useState(ownReview);
+  if (ownReview !== prevOwnReview) {
+    setPrevOwnReview(ownReview);
+    setOwn(ownReview);
+  }
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 2600);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  function handleSaved(review: CoachReview) {
+    setList((cur) => [review, ...cur.filter((r) => r.id !== review.id)]);
+    setToast(own ? "Review updated" : "Review posted");
+    setOwn(review);
+    setWriting(false);
+    router.refresh();
+  }
 
   return (
     <div>
-      <Eyebrow className="text-muted">Reviews</Eyebrow>
+      <div className="flex items-center justify-between gap-3">
+        <Eyebrow className="text-muted">Reviews</Eyebrow>
+        {toast && (
+          <span className="eyebrow flex items-center gap-1.5 text-success">
+            <Check size={12} strokeWidth={2} />
+            {toast}
+          </span>
+        )}
+      </div>
 
       {writing ? (
         <div className="mt-3">
-          <ReviewForm coachId={coachId} existing={ownReview} onDone={() => setWriting(false)} />
+          <ReviewForm
+            coachId={coachId}
+            existing={own}
+            onSaved={handleSaved}
+            onCancel={() => setWriting(false)}
+          />
         </div>
       ) : (
         <>
-          {reviews.length === 0 ? (
+          {list.length === 0 ? (
             <div className="mt-3 flex flex-col items-center gap-3 rounded-[16px] border border-dashed border-border-2 px-5 py-6 text-center">
               <MessageSquare size={20} strokeWidth={1.5} className="text-muted" />
               <p className="text-[13px] text-secondary">No reviews yet.</p>
@@ -147,7 +192,7 @@ export default function CoachReviews({
             </div>
           ) : (
             <div className="mt-3 space-y-3">
-              {reviews.map((r) => (
+              {list.map((r) => (
                 <div key={r.id} className="rounded-[16px] border border-border-1 bg-surface-1 p-4">
                   <div className="flex items-center gap-2.5">
                     <Avatar id={r.reviewerId} src={r.reviewerPhoto} size={28} />
@@ -173,7 +218,7 @@ export default function CoachReviews({
                   onClick={() => setWriting(true)}
                   className="text-[13px] font-bold text-gold"
                 >
-                  {ownReview ? "Edit your review" : "Write a review"}
+                  {own ? "Edit your review" : "Write a review"}
                 </button>
               )}
               {!canReview && signInHref && (
