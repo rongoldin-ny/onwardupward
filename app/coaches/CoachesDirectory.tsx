@@ -18,10 +18,14 @@ import { MultiSelect } from "@/components/MultiSelect";
 
 const FORMATS = ["1:1 coaching", "Groups & cohorts", "Programs & courses"];
 const PRICING = ["Published pricing", "Inquire"];
-const DISCIPLINES = ["Design", "Product", "Both"];
+// "Content Design" and "Research" are the finer-grained specialty tags
+// (lib/taxonomy.ts ROLE_TYPES); the rest match the coarser discipline field.
+const DISCIPLINES = ["Design", "Product", "Both", "Content Design", "Research"];
 
 function matchesDiscipline(coach: CoachRow, active: string[]): boolean {
   if (active.length === 0) return true;
+  if (active.includes("Content Design") && coach.specialties.includes("content_design")) return true;
+  if (active.includes("Research") && coach.specialties.includes("user_research")) return true;
   // No answer yet (curated seeds pre-migration) counts as "both".
   const d = coach.disciplines ?? "both";
   const label = d === "design" ? "Design" : d === "product" ? "Product" : "Both";
