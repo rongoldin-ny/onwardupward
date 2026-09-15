@@ -10,6 +10,7 @@ import { supabaseAdmin } from "../lib/supabase/server";
     const row = {
       slug: c.slug,
       full_name: c.name,
+      title: c.title ?? null,
       company: c.org,
       short_description: c.bio,
       offering: c.offerings,

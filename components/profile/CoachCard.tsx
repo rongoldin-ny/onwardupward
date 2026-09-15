@@ -8,9 +8,11 @@ import { DisciplineChips, MenteeChips, SpecialtyChips } from "@/components/Coach
 import { TextArea, TextField } from "@/components/fields";
 import { Cta, Eyebrow, Tag } from "@/components/ui";
 import { coachLevels, disciplineLabel, type CoachDiscipline } from "@/lib/coach-shared";
+import type { CoachReview } from "@/lib/coach-reviews-db";
 import type { ProfileView } from "@/lib/profile-view";
 import { labelForRoleType } from "@/lib/taxonomy";
 import { CardSection as Section, useEdit } from "./edit-context";
+import CoachReviews from "./CoachReviews";
 
 /** The back of the card — coaching attributes. */
 export default function CoachCard({
@@ -21,6 +23,8 @@ export default function CoachCard({
   submitting = false,
   topMatch = null,
   hasPendingClaim = false,
+  reviews = [],
+  ownReview = null,
 }: {
   view: ProfileView;
   coachingEnabled: boolean;
@@ -29,6 +33,8 @@ export default function CoachCard({
   submitting?: boolean;
   topMatch?: { isTopMatch: boolean; reason: string | null } | null;
   hasPendingClaim?: boolean;
+  reviews?: CoachReview[];
+  ownReview?: CoachReview | null;
 }) {
   const { editing, viewer, scheduleSave } = useEdit();
   const coach = view.coach;
@@ -71,19 +77,29 @@ export default function CoachCard({
   const isDraft = status === "draft";
   const canSubmit = !!coach?.offering && !!coach?.booking_url;
   const levels = coach ? coachLevels(coach) : [];
-  const subtitle = coach
+  const autoSubtitle = coach
     ? [coach.company, disciplineLabel(coach.disciplines)].filter(Boolean).join(" · ")
     : "";
+  const subtitle = coach?.title || autoSubtitle;
   const bookingDisplay = (coach?.booking_url ?? "").replace(/^mailto:/, "");
 
   return (
     <div className={shell}>
       <div className="flex items-start justify-between gap-4">
-        <div>
+        <div className="min-w-0 flex-1">
           <Eyebrow className="text-gold">Coach card</Eyebrow>
-          <h2 className="mt-2 text-[22px] leading-[1.15] font-black tracking-[-0.02em] text-cream">
-            {subtitle || (editing ? "Your coaching" : `Coaching with ${view.firstName}`)}
-          </h2>
+          {editing ? (
+            <TextField
+              name="title"
+              placeholder={autoSubtitle || "Your coaching"}
+              defaultValue={coach?.title ?? ""}
+              className="mt-2 !h-auto !py-2.5 text-[18px] font-black tracking-[-0.02em]"
+            />
+          ) : (
+            <h2 className="mt-2 text-[22px] leading-[1.15] font-black tracking-[-0.02em] text-cream">
+              {subtitle || `Coaching with ${view.firstName}`}
+            </h2>
+          )}
         </div>
         <span
           className={`eyebrow shrink-0 rounded-full border px-3 py-1.5 ${
@@ -239,6 +255,20 @@ export default function CoachCard({
           </>
         )}
       </div>
+
+      {!editing && coach && (
+        <div className="mt-8">
+          <CoachReviews
+            coachId={coach.id}
+            reviews={reviews}
+            ownReview={ownReview}
+            canReview={viewer === "member"}
+            signInHref={
+              viewer === "public" ? `/signin?next=${encodeURIComponent(`/coaches/${coach.id}`)}` : undefined
+            }
+          />
+        </div>
+      )}
 
       {viewer === "owner" && isDraft && (
         <div className="mt-8">

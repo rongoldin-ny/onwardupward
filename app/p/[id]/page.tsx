@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import ProfilePage from "@/components/profile/ProfilePage";
 import { currentUser } from "@/lib/auth";
+import { getCoachReviews, getOwnReview } from "@/lib/coach-reviews-db";
 import type { Profile } from "@/lib/db";
 import { isPublishable } from "@/lib/profile-required";
 import { toProfileView } from "@/lib/profile-view";
@@ -34,7 +35,22 @@ export default async function PublicProfilePage({
   const approved = profile.vetting_status === "approved" || view.coach?.status === "approved";
   if (!approved || !isPublishable(profile)) notFound();
 
-  return <ProfilePage view={view} viewer={user ? "member" : "public"} initialSide="player" />;
+  const [reviews, ownReview] = view.coach
+    ? await Promise.all([
+        getCoachReviews(view.coach.id),
+        user ? getOwnReview(view.coach.id, user.id) : Promise.resolve(null),
+      ])
+    : [[], null];
+
+  return (
+    <ProfilePage
+      view={view}
+      viewer={user ? "member" : "public"}
+      initialSide="player"
+      reviews={reviews}
+      ownReview={ownReview}
+    />
+  );
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
