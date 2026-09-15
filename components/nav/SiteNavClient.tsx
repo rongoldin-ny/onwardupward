@@ -82,7 +82,7 @@ export default function SiteNavClient({
             <Link
               href={profileHref}
               onClick={() => setOpen(false)}
-              className="flex items-center gap-3 px-5 py-2.5 text-left text-[14px] text-body"
+              className="list-row flex items-center gap-3 px-5 py-2.5 text-left text-[14px] text-body"
             >
               <Avatar id={userId} src={photoUrl} size={24} />
               Profile
@@ -90,7 +90,7 @@ export default function SiteNavClient({
             <Link
               href="/settings"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-3 px-5 py-2.5 text-left text-[14px] text-body"
+              className="list-row flex items-center gap-3 px-5 py-2.5 text-left text-[14px] text-body"
             >
               <Settings size={16} strokeWidth={1.5} className="text-secondary" />
               Settings
@@ -100,7 +100,7 @@ export default function SiteNavClient({
                 key={item.href}
                 href={item.href}
                 onClick={() => setOpen(false)}
-                className={`block w-full px-5 py-2.5 text-left text-[14px] ${
+                className={`list-row block w-full px-5 py-2.5 text-left text-[14px] ${
                   item.label === "Admin" ? "font-bold text-gold" : "text-body"
                 }`}
               >
@@ -110,7 +110,7 @@ export default function SiteNavClient({
             <button
               type="button"
               onClick={() => signOut()}
-              className="block w-full px-5 py-2.5 text-left text-[14px] text-body"
+              className="list-row block w-full px-5 py-2.5 text-left text-[14px] text-body"
             >
               Sign out
             </button>

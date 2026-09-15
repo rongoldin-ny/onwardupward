@@ -177,9 +177,10 @@ body {
   .ou-logo:hover .ou-arrow { animation: none !important; }
 }
 
-/* ---- global interactive hover: gold outline + subtle brightness lift --- */
+/* ---- global interactive hover: the element itself turns gold ---------- */
 /* :where() keeps specificity at zero so any component-specific hover rule
-   still wins; outline (not box-shadow) so it never clobbers cta-glow. */
+   still wins. No outline/box-shadow — text and icons (via currentColor)
+   recolor to gold instead of getting boxed. */
 @media (hover: hover) and (pointer: fine) {
   :where(
     a,
@@ -189,20 +190,23 @@ body {
     label:has(> input[type="file"]),
     label:has(> input[type="radio"]),
     label:has(> input[type="checkbox"])
-  ):not(:disabled):not(:disabled *):hover {
-    filter: brightness(1.05);
-    outline: 1.5px solid rgba(232, 201, 135, 0.45);
-    outline-offset: 2px;
-    transition: filter 0.15s ease, outline-color 0.15s ease;
+  ):not(:disabled):not(:disabled *):not(.gold-gradient):not(.text-on-gold):not(.ascent .btn):hover {
+    color: var(--gold);
+    transition: color 0.15s ease;
+  }
+
+  /* Controls that already carry a solid gold fill (primary CTAs, the
+     ascent landing page's button): keep their on-gold text and just lift
+     brightness instead of recoloring it. */
+  :where(.gold-gradient, .text-on-gold, .ascent .btn):hover {
+    filter: brightness(1.06);
   }
 }
 
-/* Stacked list rows sharing a `border-b` divider (settings, etc.): the
-   global outline above offsets outward from each row, so hovering near the
-   shared line between two rows makes that static divider look lit up.
-   Swap it for a contained background tint that never bleeds past the row. */
+/* Stacked list rows sharing a `border-b` divider (settings, nav menus,
+   etc.): a subtle contained background tint instead of recoloring the
+   row's own text, which would fight with icons/labels inside it. */
 .list-row:hover {
-  outline: none !important;
   filter: none !important;
   background: rgba(232, 201, 135, 0.06);
 }
