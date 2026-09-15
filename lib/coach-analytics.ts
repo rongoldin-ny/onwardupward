@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "./supabase/server";
+import type { Profile } from "./db";
 
 export type CoachAnalytics = {
   impressions30d: number;
@@ -45,4 +46,37 @@ export async function coachAnalytics(coachId: string): Promise<CoachAnalytics> {
     requestsAllTime: requests.allTime,
     requests30d: requests.last30d,
   };
+}
+
+export type CoachViewer = { profile: Profile; viewedAt: string };
+
+/** Signed-in members who opened this coach's detail page, most recent first — one row per person. */
+export async function getCoachViewers(coachId: string, limit = 20): Promise<CoachViewer[]> {
+  const admin = supabaseAdmin();
+  const { data } = await admin
+    .from("analytics_events")
+    .select("user_id, created_at")
+    .eq("event_type", "coach_view")
+    .eq("metadata->>coach_id", coachId)
+    .eq("metadata->>kind", "detail")
+    .not("user_id", "is", null)
+    .order("created_at", { ascending: false });
+
+  const latestByUser = new Map<string, string>();
+  for (const row of data ?? []) {
+    const userId = row.user_id as string;
+    if (!latestByUser.has(userId)) latestByUser.set(userId, row.created_at as string);
+  }
+  const userIds = Array.from(latestByUser.keys()).slice(0, limit);
+  if (userIds.length === 0) return [];
+
+  const { data: profiles } = await admin.from("profiles").select("*").in("id", userIds);
+  const byId = new Map(((profiles ?? []) as Profile[]).map((p) => [p.id, p]));
+
+  return userIds
+    .map((id) => {
+      const profile = byId.get(id);
+      return profile ? { profile, viewedAt: latestByUser.get(id)! } : null;
+    })
+    .filter((v): v is CoachViewer => !!v);
 }

@@ -65,6 +65,28 @@ export async function getCoachByProfileId(profileId: string): Promise<CoachRow |
   return (data as CoachRow) ?? null;
 }
 
+export type ClaimProfile = { id: string; name: string | null; email: string | null; photo_url: string | null };
+export type PendingClaim = { id: string; createdAt: string; coach: CoachRow; profile: ClaimProfile };
+
+type ClaimRow = {
+  id: string;
+  created_at: string;
+  coach: CoachRow | null;
+  profile: ClaimProfile | null;
+};
+
+/** Pending "claim this listing" requests, newest first, for the admin to compare against the coach card. */
+export async function getPendingClaims(): Promise<PendingClaim[]> {
+  const { data } = await supabaseAdmin()
+    .from("coach_claims")
+    .select("id, created_at, coach:coaches(*), profile:profiles(id, name, email, photo_url)")
+    .eq("status", "pending")
+    .order("created_at", { ascending: false });
+  return ((data ?? []) as unknown as ClaimRow[])
+    .filter((r): r is ClaimRow & { coach: CoachRow; profile: ClaimProfile } => !!r.coach && !!r.profile)
+    .map((r) => ({ id: r.id, createdAt: r.created_at, coach: r.coach, profile: r.profile }));
+}
+
 /**
  * The profile is the source of truth for a claimed coach's identity; the
  * coaches row keeps a copy so the directory query stays join-free.

@@ -172,3 +172,29 @@ export async function approveCoach(coachId: string): Promise<void> {
   }
   redirect("/admin/waitlist");
 }
+
+/** Turn a pending coach application down, with an optional personal note in the email. */
+export async function rejectCoach(coachId: string, formData: FormData): Promise<void> {
+  await requireVetter();
+  const admin = supabaseAdmin();
+  const { data } = await admin.from("coaches").select("*").eq("id", coachId).maybeSingle();
+  if (!data) redirect("/admin/waitlist");
+
+  if (data.status !== "rejected") {
+    await admin.from("coaches").update({ status: "rejected" }).eq("id", coachId);
+    const note = String(formData.get("note") ?? "").trim();
+    if (data.email) {
+      const firstName = String(data.full_name ?? "there").split(" ")[0];
+      await sendEmail({
+        to: data.email,
+        subject: "About your onward/upward coach application",
+        html: emailShell(
+          `${firstName}, an update on your coach application.`,
+          `<p>We reviewed your coach listing and it's not quite the right fit for the bench
+           right now.</p>${note ? `<p style="margin-top:12px">${note}</p>` : ""}`,
+        ),
+      });
+    }
+  }
+  redirect("/admin/waitlist");
+}

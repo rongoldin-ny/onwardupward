@@ -3,7 +3,6 @@ import {
   BarChart3,
   Bell,
   ChevronRight,
-  CreditCard,
   GraduationCap,
   Image as ImageIcon,
   UserRound,
@@ -11,7 +10,6 @@ import {
 import { requireUser } from "@/lib/auth";
 import { signOut } from "@/app/actions/auth";
 import { getCoachByProfileId } from "@/lib/coaches-db";
-import { deriveBillingPlan, PLAN_INFO } from "@/lib/billing";
 import { Avatar, Eyebrow, Logo, PageFrame } from "@/components/ui";
 
 function Row({
@@ -28,7 +26,7 @@ function Row({
   return (
     <Link
       href={href}
-      className="flex items-center gap-4 border-b border-border-1 px-5 py-4 last:border-b-0"
+      className="list-row flex items-center gap-4 border-b border-border-1 px-5 py-4 last:border-b-0"
     >
       <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border-2 text-secondary">
         {icon}
@@ -47,10 +45,6 @@ export default async function SettingsPage() {
   const isCandidate = user.role === "candidate";
   const isRecruiter = user.role === "recruiter";
   const coachListing = isRecruiter ? null : await getCoachByProfileId(user.id);
-  const billingSub =
-    user.role === "recruiter"
-      ? "Recruiter — $199/mo"
-      : PLAN_INFO[deriveBillingPlan(user, !!coachListing)].label;
 
   return (
     <PageFrame size="narrow">
@@ -110,16 +104,13 @@ export default async function SettingsPage() {
               icon={<Bell size={16} strokeWidth={1.5} />}
               label="Notifications"
             />
-            <Row
-              href="/settings/billing"
-              icon={<CreditCard size={16} strokeWidth={1.5} />}
-              label="Billing"
-              sub={billingSub}
-            />
           </div>
         </main>
 
         <footer className="mt-auto pt-10">
+          <p className="mb-3 text-center text-[12px] text-muted">
+            onward/upward is free while we&apos;re in beta — no billing yet.
+          </p>
           <form action={signOut}>
             <button
               type="submit"

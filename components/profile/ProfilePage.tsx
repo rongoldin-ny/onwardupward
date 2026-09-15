@@ -28,12 +28,14 @@ export default function ProfilePage({
   initialSide,
   communitySkills = [],
   topMatch = null,
+  hasPendingClaim = false,
 }: {
   view: ProfileView;
   viewer: Viewer;
   initialSide: CardSide;
   communitySkills?: string[];
   topMatch?: { isTopMatch: boolean; reason: string | null } | null;
+  hasPendingClaim?: boolean;
 }) {
   const router = useRouter();
   const [v, setV] = useState(view);
@@ -233,6 +235,7 @@ export default function ProfilePage({
           onSubmitApplication={handleSubmitApplication}
           submitting={submitting}
           topMatch={topMatch}
+          hasPendingClaim={hasPendingClaim}
         />
       }
     />
@@ -242,6 +245,7 @@ export default function ProfilePage({
       coachingEnabled={!!v.coach}
       onStartCoaching={() => {}}
       topMatch={topMatch}
+      hasPendingClaim={hasPendingClaim}
     />
   );
 

@@ -1,9 +1,10 @@
 /**
- * Daily design-mentorship reading for the candidate home. Substack's search
- * API is authwalled, so we aggregate a curated set of design-leadership
- * Substack RSS feeds — plus every coach's own newsletter from the `coaches`
- * table — rank recent posts by mentorship relevance, and cache for an hour
- * via Next's fetch revalidation.
+ * Design-mentorship reading for the candidate home and the /reads page.
+ * Substack's search API is authwalled, so we aggregate a curated set of
+ * design-leadership Substack RSS feeds — plus every coach's own newsletter
+ * from the `coaches` table, tagged so /reads can give coach writing its own
+ * section — rank recent posts by mentorship relevance, and cache for an
+ * hour via Next's fetch revalidation.
  */
 
 import { getCoachSubstackUrls } from "./coaches-db";
@@ -14,6 +15,7 @@ export type MentorshipPost = {
   publication: string;
   publishedAt: Date;
   house?: boolean;
+  isCoach?: boolean;
 };
 
 /** The house newsletter — its freshest post gets a pinned slot. */
@@ -33,11 +35,6 @@ function toFeedUrl(url: string): string {
   return trimmed.endsWith("/feed") ? trimmed : `${trimmed}/feed`;
 }
 
-async function allFeeds(): Promise<string[]> {
-  const coachUrls = await getCoachSubstackUrls().catch(() => []);
-  return Array.from(new Set([...CURATED_FEEDS, ...coachUrls.map(toFeedUrl)]));
-}
-
 const RELEVANT =
   /mentor|coach|career|leadership|leading|grow|growth|promotion|feedback|portfolio|manager|hiring|interview|craft|senior|junior|advice/i;
 
@@ -46,7 +43,7 @@ function tag(xml: string, name: string): string {
   return (m?.[1] ?? "").trim();
 }
 
-function parseFeed(xml: string): MentorshipPost[] {
+function parseFeed(xml: string): Omit<MentorshipPost, "house" | "isCoach">[] {
   // The channel title is the publication name — self-labeling survives
   // feed redirects, unlike a hardcoded name.
   const publication = tag(xml.split("<item>")[0], "title") || "Substack";
@@ -61,8 +58,12 @@ function parseFeed(xml: string): MentorshipPost[] {
     .filter((p) => p.title && p.url);
 }
 
-export async function getMentorshipPosts(limit = 3): Promise<MentorshipPost[]> {
-  const feeds = await allFeeds();
+/** Fetches every feed, tags each post by source, and returns the fresh ones (newest first). */
+async function fetchFreshPosts(): Promise<MentorshipPost[]> {
+  const coachUrls = await getCoachSubstackUrls().catch(() => []);
+  const coachFeedUrls = new Set(coachUrls.map(toFeedUrl));
+  const feeds = Array.from(new Set([...CURATED_FEEDS, ...coachFeedUrls]));
+
   const settled = await Promise.allSettled(
     feeds.map(async (url) => {
       const res = await fetch(url, {
@@ -72,20 +73,25 @@ export async function getMentorshipPosts(limit = 3): Promise<MentorshipPost[]> {
         next: { revalidate: 3600 },
       });
       if (!res.ok) return [] as MentorshipPost[];
-      return parseFeed(await res.text()).map((p) => ({ ...p, house: url === HOUSE_FEED }));
+      return parseFeed(await res.text()).map((p) => ({
+        ...p,
+        house: url === HOUSE_FEED,
+        isCoach: coachFeedUrls.has(url),
+      }));
     }),
   );
 
   const all = settled.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
-  const fresh = all
+  return all
     .filter((p) => Date.now() - p.publishedAt.getTime() < 45 * 24 * 3600 * 1000)
     .sort((a, b) => b.publishedAt.getTime() - a.publishedAt.getTime());
+}
 
+/** Four passes: relevant posts from unseen publications, any relevant, fresh from unseen publications, then anything fresh. */
+function pickPosts(fresh: MentorshipPost[], limit: number): MentorshipPost[] {
   const relevant = fresh.filter((p) => RELEVANT.test(p.title));
   const picks: MentorshipPost[] = [];
   const seenPubs = new Set<string>();
-  // Four passes: relevant posts from unseen publications, any relevant,
-  // fresh from unseen publications, then anything fresh.
   const passes: [MentorshipPost[], boolean][] = [
     [relevant, true],
     [relevant, false],
@@ -101,10 +107,32 @@ export async function getMentorshipPosts(limit = 3): Promise<MentorshipPost[]> {
       seenPubs.add(p.publication);
     }
   }
+  return picks;
+}
+
+/** Dashboard preview: a short, blended list with the house feed pinned in. */
+export async function getMentorshipPosts(limit = 3): Promise<MentorshipPost[]> {
+  const fresh = await fetchFreshPosts();
+  const picks = pickPosts(fresh, limit);
   // Pin the freshest house post into the lineup if relevance didn't pick it.
   const house = fresh.find((p) => p.house);
-  if (house && !picks.some((p) => p.url === house.url)) {
-    picks.unshift(house);
-  }
+  if (house && !picks.some((p) => p.url === house.url)) picks.unshift(house);
   return picks.slice(0, limit);
+}
+
+/** The /reads page: coach writing gets its own section instead of being crowded out by the bigger curated newsletters. */
+export async function getReadsPageData(
+  coachLimit = 8,
+  otherLimit = 8,
+): Promise<{ coachPosts: MentorshipPost[]; otherPosts: MentorshipPost[] }> {
+  const fresh = await fetchFreshPosts();
+  const coachPosts = pickPosts(
+    fresh.filter((p) => p.isCoach),
+    coachLimit,
+  );
+  const otherFresh = fresh.filter((p) => !p.isCoach);
+  const otherPosts = pickPosts(otherFresh, otherLimit);
+  const house = otherFresh.find((p) => p.house);
+  if (house && !otherPosts.some((p) => p.url === house.url)) otherPosts.unshift(house);
+  return { coachPosts, otherPosts: otherPosts.slice(0, otherLimit) };
 }

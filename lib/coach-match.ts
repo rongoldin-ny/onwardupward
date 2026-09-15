@@ -103,3 +103,79 @@ export async function getCoachMatches(
   );
   return cached();
 }
+
+const ViewerMatches = z.object({
+  matches: z.array(
+    z.object({
+      profile_id: z.string(),
+      is_possible_match: z.boolean(),
+      reason: z
+        .string()
+        .nullable()
+        .describe(
+          "One short, concrete sentence on why this viewer might be worth reaching out to " +
+            "(e.g. 'looking to move from IC to management'). Null when is_possible_match is false.",
+        ),
+    }),
+  ),
+});
+
+async function scoreViewers(
+  coach: CoachRow,
+  viewers: Profile[],
+): Promise<Record<string, CoachMatch>> {
+  if (!process.env.ANTHROPIC_API_KEY || viewers.length === 0) return {};
+  const coachSummary = [coach.full_name, coach.best_for, coach.offering, coach.short_description]
+    .filter(Boolean)
+    .join(" | ");
+  if (!coachSummary.trim()) return {};
+
+  try {
+    const client = new Anthropic();
+    const response = await client.messages.parse({
+      model: "claude-opus-4-8",
+      max_tokens: 2048,
+      thinking: { type: "adaptive" },
+      output_config: { effort: "low", format: zodOutputFormat(ViewerMatches) },
+      system:
+        "You help a coach on a design/product leadership network understand which members who " +
+        "viewed their listing might be worth reaching out to. For each viewer, judge whether " +
+        "there's a STRONG, specific signal they fit what this coach offers — not just a generic " +
+        "overlap. Only mark is_possible_match true for a genuinely strong, specific fit; most " +
+        "viewers should be false. When true, write one short, concrete, plain-language sentence " +
+        "— never restate the viewer's bio or use marketing language.",
+      messages: [
+        {
+          role: "user",
+          content:
+            `Coach:\n${coachSummary}\n\nViewers:\n${viewers
+              .map((v) => `- id: ${v.id}\n  ${candidateSummary(v)}`)
+              .join("\n")}`,
+        },
+      ],
+    });
+    const parsed = response.parsed_output;
+    if (!parsed) return {};
+    const out: Record<string, CoachMatch> = {};
+    for (const m of parsed.matches)
+      out[m.profile_id] = { isTopMatch: m.is_possible_match, reason: m.reason };
+    return out;
+  } catch (err) {
+    console.error("coach-match scoreViewers failed:", err);
+    return {};
+  }
+}
+
+/** For a coach's analytics: which viewers might be worth reaching out to, and why. Cached per (coach, viewer set) for an hour. */
+export async function getViewerMatches(
+  coach: CoachRow,
+  viewers: Profile[],
+): Promise<Record<string, CoachMatch>> {
+  if (!process.env.ANTHROPIC_API_KEY || viewers.length === 0) return {};
+  const cached = unstable_cache(
+    () => scoreViewers(coach, viewers),
+    ["viewer-matches", coach.id, viewers.map((v) => v.id).sort().join(",")],
+    { revalidate: 3600 },
+  );
+  return cached();
+}
