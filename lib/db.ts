@@ -34,12 +34,14 @@ export type Profile = {
   bio: string | null;
   ai_bio: string | null;
   dream_job: string | null;
+  growth_goal: string | null;
   last_role_text: string | null;
   brags: string[];
   portfolio_url: string | null;
   portfolio_password: string | null;
   website_url: string | null;
   resume_url: string | null;
+  resume_public: boolean;
   ai_superpowers: { skill: string; xp: "basic" | "fluent" | "expert" }[];
   portfolio_images: PortfolioImage[];
   years_experience: number | null;

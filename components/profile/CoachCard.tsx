@@ -4,11 +4,12 @@ import { useState } from "react";
 import { GraduationCap, Sparkles } from "lucide-react";
 import { claimCoach } from "@/app/actions/claims";
 import CoachBookLink from "@/components/CoachBookLink";
-import { DisciplineChips, MenteeChips } from "@/components/CoachFormFields";
+import { DisciplineChips, MenteeChips, SpecialtyChips } from "@/components/CoachFormFields";
 import { TextArea, TextField } from "@/components/fields";
 import { Cta, Eyebrow, Tag } from "@/components/ui";
 import { coachLevels, disciplineLabel, type CoachDiscipline } from "@/lib/coach-shared";
 import type { ProfileView } from "@/lib/profile-view";
+import { labelForRoleType } from "@/lib/taxonomy";
 import { CardSection as Section, useEdit } from "./edit-context";
 
 /** The back of the card — coaching attributes. */
@@ -33,6 +34,7 @@ export default function CoachCard({
   const coach = view.coach;
   const [discipline, setDiscipline] = useState<CoachDiscipline | null>(coach?.disciplines ?? null);
   const [mentees, setMentees] = useState<string[]>(coach?.target_mentees ?? []);
+  const [specialties, setSpecialties] = useState<string[]>(coach?.specialties ?? []);
 
   const shell = "overflow-hidden rounded-[24px] border border-border-1 bg-surface-2 p-6";
 
@@ -121,6 +123,13 @@ export default function CoachCard({
                     scheduleSave();
                   }}
                 />
+                <SpecialtyChips
+                  value={specialties}
+                  onChange={(s) => {
+                    setSpecialties(s);
+                    scheduleSave();
+                  }}
+                />
               </div>
             </Section>
             <Section title="The offering">
@@ -167,6 +176,16 @@ export default function CoachCard({
           </>
         ) : (
           <>
+            {coach && coach.specialties.length > 0 && (
+              <div>
+                <Eyebrow className="text-muted">Specializes in</Eyebrow>
+                <div className="mt-2.5 flex flex-wrap gap-2.5">
+                  {coach.specialties.map((s) => (
+                    <Tag key={s}>{labelForRoleType(s)}</Tag>
+                  ))}
+                </div>
+              </div>
+            )}
             {levels.length > 0 && (
               <div className="flex flex-wrap gap-2.5">
                 {levels.map((l) => (

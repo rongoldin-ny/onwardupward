@@ -26,6 +26,7 @@ export type PlayerView = {
   companies: string[];
   brags: string[];
   dreamJob: string | null;
+  growthGoal: string | null;
   lastRole: string | null;
   portfolioImages: PortfolioImage[];
   references: { name: string; title: string; linkedin: string | null }[];
@@ -48,17 +49,29 @@ export type ProfileView = {
   raw: { profile: Profile | null; work: WorkHistoryRow[]; references: ReferenceRow[] };
 };
 
-export function profileUrls(p: {
-  linkedin_url: string | null;
-  portfolio_url: string | null;
-  website_url: string | null;
-  resume_url: string | null;
-}): ProfileUrl[] {
+/**
+ * Résumés are private by default (only used server-side for AI summaries and
+ * matching) — the link only appears here for the owner, an admin/vetter
+ * reviewing an application, or when the owner has opted in via
+ * `resume_public`. `canSeePrivateResume` covers the first two.
+ */
+export function profileUrls(
+  p: {
+    linkedin_url: string | null;
+    portfolio_url: string | null;
+    website_url: string | null;
+    resume_url: string | null;
+    resume_public: boolean;
+  },
+  opts: { canSeePrivateResume?: boolean } = {},
+): ProfileUrl[] {
   const out: ProfileUrl[] = [];
   if (p.linkedin_url) out.push({ label: "LinkedIn", href: p.linkedin_url });
   if (p.portfolio_url) out.push({ label: "Portfolio", href: p.portfolio_url });
   if (p.website_url) out.push({ label: "Website", href: p.website_url });
-  if (p.resume_url) out.push({ label: "Résumé", href: p.resume_url });
+  if (p.resume_url && (p.resume_public || opts.canSeePrivateResume)) {
+    out.push({ label: "Résumé", href: p.resume_url });
+  }
   return out;
 }
 
@@ -76,6 +89,7 @@ export function buildProfileView(
   work: WorkHistoryRow[],
   references: ReferenceRow[],
   coach: CoachRow | null,
+  opts: { canSeePrivateResume?: boolean } = {},
 ): ProfileView {
   const name = profile.name ?? "Unnamed";
   return {
@@ -87,7 +101,7 @@ export function buildProfileView(
     location: locationLabel(profile),
     yearsExperience: profile.years_experience,
     background: profile.bio,
-    urls: profileUrls(profile),
+    urls: profileUrls(profile, opts),
     portfolioPassword: profile.portfolio_password,
     player: {
       roleLabel: profile.role_type ? labelForRoleType(profile.role_type) : null,
@@ -97,6 +111,7 @@ export function buildProfileView(
       companies: uniqueCompanies(work.map((w) => w.company)),
       brags: profile.brags,
       dreamJob: profile.dream_job,
+      growthGoal: profile.growth_goal,
       lastRole: profile.last_role_text,
       portfolioImages: profile.portfolio_images,
       references: references.map((r) => ({
@@ -113,7 +128,7 @@ export function buildProfileView(
 
 export async function toProfileView(
   profile: Profile,
-  opts: { admin?: boolean } = {},
+  opts: { admin?: boolean; canSeePrivateResume?: boolean } = {},
 ): Promise<ProfileView> {
   // Public pages have no signed-in viewer, so RLS-scoped reads come back
   // empty — those callers fetch with the admin client instead.
@@ -136,7 +151,9 @@ export async function toProfileView(
       : getReferences(profile.id),
     getCoachByProfileId(profile.id),
   ]);
-  return buildProfileView(profile, work, references, coach);
+  return buildProfileView(profile, work, references, coach, {
+    canSeePrivateResume: opts.canSeePrivateResume,
+  });
 }
 
 /** Curated, unclaimed coach seeds have no profile row — only a Coach face. */
