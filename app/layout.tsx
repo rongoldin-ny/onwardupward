@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Schibsted_Grotesk } from "next/font/google";
 import PageViewTracker from "@/components/PageViewTracker";
 import SiteNav from "@/components/nav/SiteNav";
+import SiteFooter from "@/components/nav/SiteFooter";
 import "./globals.css";
 
 const schibsted = Schibsted_Grotesk({
@@ -26,6 +27,7 @@ export default function RootLayout({
         <PageViewTracker />
         <SiteNav />
         {children}
+        <SiteFooter />
       </body>
     </html>
   );
