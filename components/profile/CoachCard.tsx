@@ -2,16 +2,12 @@
 
 import { useState } from "react";
 import { GraduationCap, Sparkles } from "lucide-react";
+import { claimCoach } from "@/app/actions/claims";
 import CoachBookLink from "@/components/CoachBookLink";
 import { DisciplineChips, MenteeChips } from "@/components/CoachFormFields";
 import { TextArea, TextField } from "@/components/fields";
 import { Cta, Eyebrow, Tag } from "@/components/ui";
-import {
-  CLAIM_MAILTO,
-  coachLevels,
-  disciplineLabel,
-  type CoachDiscipline,
-} from "@/lib/coach-shared";
+import { coachLevels, disciplineLabel, type CoachDiscipline } from "@/lib/coach-shared";
 import type { ProfileView } from "@/lib/profile-view";
 import { CardSection as Section, useEdit } from "./edit-context";
 
@@ -23,6 +19,7 @@ export default function CoachCard({
   onSubmitApplication,
   submitting = false,
   topMatch = null,
+  hasPendingClaim = false,
 }: {
   view: ProfileView;
   coachingEnabled: boolean;
@@ -30,6 +27,7 @@ export default function CoachCard({
   onSubmitApplication?: () => void;
   submitting?: boolean;
   topMatch?: { isTopMatch: boolean; reason: string | null } | null;
+  hasPendingClaim?: boolean;
 }) {
   const { editing, viewer, scheduleSave } = useEdit();
   const coach = view.coach;
@@ -252,12 +250,25 @@ export default function CoachCard({
             >
               Book a session
             </CoachBookLink>
-          ) : status === "unclaimed" ? (
+          ) : status === "unclaimed" && hasPendingClaim ? (
+            <p className="rounded-full border border-border-2 px-6 py-4 text-center text-[15px] font-bold text-secondary">
+              Claim pending review
+            </p>
+          ) : status === "unclaimed" && viewer === "member" ? (
+            <form action={claimCoach.bind(null, coach.id)}>
+              <button
+                type="submit"
+                className="block w-full rounded-full border border-border-2 px-6 py-4 text-center text-[15px] font-bold text-cream"
+              >
+                This you? Claim your slot
+              </button>
+            </form>
+          ) : status === "unclaimed" && viewer === "public" ? (
             <a
-              href={CLAIM_MAILTO}
+              href={`/signin?next=${encodeURIComponent(`/coaches/${coach.id}`)}`}
               className="block rounded-full border border-border-2 px-6 py-4 text-center text-[15px] font-bold text-cream"
             >
-              This you? Claim your slot
+              This you? Sign in to claim your slot
             </a>
           ) : null}
         </div>

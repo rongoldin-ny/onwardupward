@@ -16,7 +16,7 @@ export async function approveCandidate(profileId: string): Promise<void> {
     .eq("id", profileId)
     .eq("role", "candidate")
     .maybeSingle();
-  if (!data) redirect("/admin/vetting");
+  if (!data) redirect("/admin/waitlist");
 
   if (data.vetting_status !== "approved") {
     await admin.from("profiles").update({ vetting_status: "approved" }).eq("id", profileId);
@@ -39,5 +39,38 @@ export async function approveCandidate(profileId: string): Promise<void> {
       });
     }
   }
-  redirect("/admin/vetting");
+  redirect("/admin/waitlist");
+}
+
+/** Turn a pending member away, with an optional personal note in the email. */
+export async function rejectCandidate(profileId: string, formData: FormData): Promise<void> {
+  await requireVetter();
+  const admin = supabaseAdmin();
+
+  const { data } = await admin
+    .from("profiles")
+    .select("id, name, email, vetting_status")
+    .eq("id", profileId)
+    .eq("role", "candidate")
+    .maybeSingle();
+  if (!data) redirect("/admin/waitlist");
+
+  if (data.vetting_status !== "rejected") {
+    await admin.from("profiles").update({ vetting_status: "rejected" }).eq("id", profileId);
+
+    const note = String(formData.get("note") ?? "").trim();
+    if (data.email) {
+      const firstName = (data.name ?? "there").split(" ")[0];
+      await sendEmail({
+        to: data.email,
+        subject: "Update on your onward/upward application",
+        html: emailShell(
+          `${firstName}, an update on your application.`,
+          `<p>We reviewed your profile and it's not quite the right fit for onward/upward
+           right now.</p>${note ? `<p style="margin-top:12px">${note}</p>` : ""}`,
+        ),
+      });
+    }
+  }
+  redirect("/admin/waitlist");
 }

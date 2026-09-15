@@ -196,3 +196,13 @@ body {
     transition: filter 0.15s ease, outline-color 0.15s ease;
   }
 }
+
+/* Stacked list rows sharing a `border-b` divider (settings, etc.): the
+   global outline above offsets outward from each row, so hovering near the
+   shared line between two rows makes that static divider look lit up.
+   Swap it for a contained background tint that never bleeds past the row. */
+.list-row:hover {
+  outline: none !important;
+  filter: none !important;
+  background: rgba(232, 201, 135, 0.06);
+}

@@ -3,12 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { AlignJustify } from "lucide-react";
+import { AlignJustify, Settings } from "lucide-react";
 import { signOut } from "@/app/actions/auth";
 import { Avatar } from "@/components/ui";
 
 const NAV_ITEMS = [
-  { href: "/settings", label: "Settings" },
   { href: "/coaches", label: "Coaches" },
   { href: "/reads", label: "Reads" },
 ];
@@ -51,6 +50,13 @@ export default function SiteNavClient({
             {item.label}
           </Link>
         ))}
+        <Link
+          href="/settings"
+          aria-label="Settings"
+          className={isActive(pathname, "/settings") ? "text-cream" : "text-secondary"}
+        >
+          <Settings size={18} strokeWidth={1.5} />
+        </Link>
         <Link href={profileHref} aria-label="Your profile">
           <Avatar
             id={userId}
@@ -80,6 +86,14 @@ export default function SiteNavClient({
             >
               <Avatar id={userId} src={photoUrl} size={24} />
               Profile
+            </Link>
+            <Link
+              href="/settings"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-3 px-5 py-2.5 text-left text-[14px] text-body"
+            >
+              <Settings size={16} strokeWidth={1.5} className="text-secondary" />
+              Settings
             </Link>
             {items.map((item) => (
               <Link

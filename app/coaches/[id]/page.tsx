@@ -44,6 +44,18 @@ export default async function CoachDetailPage({
   const topMatch =
     user?.role === "candidate" ? ((await getCoachMatches(user, [coach]))[coach.id] ?? null) : null;
 
+  let hasPendingClaim = false;
+  if (user && coach.status === "unclaimed") {
+    const { data: claim } = await admin
+      .from("coach_claims")
+      .select("id")
+      .eq("coach_id", coach.id)
+      .eq("profile_id", user.id)
+      .eq("status", "pending")
+      .maybeSingle();
+    hasPendingClaim = !!claim;
+  }
+
   if (coach.profile_id) {
     const { data: p } = await admin
       .from("profiles")
@@ -54,7 +66,15 @@ export default async function CoachDetailPage({
       const profile = p as Profile;
       if (!isPublishable(profile)) notFound();
       const view = await toProfileView(profile, { admin: true });
-      return <ProfilePage view={view} viewer={viewer} initialSide="coach" topMatch={topMatch} />;
+      return (
+        <ProfilePage
+          view={view}
+          viewer={viewer}
+          initialSide="coach"
+          topMatch={topMatch}
+          hasPendingClaim={hasPendingClaim}
+        />
+      );
     }
   }
 
@@ -64,6 +84,7 @@ export default async function CoachDetailPage({
       viewer={viewer}
       initialSide="coach"
       topMatch={topMatch}
+      hasPendingClaim={hasPendingClaim}
     />
   );
 }
