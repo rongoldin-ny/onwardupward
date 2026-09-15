@@ -15,6 +15,8 @@ export type CoachRow = {
   offering: string | null;
   target_mentees: string[];
   disciplines: CoachDiscipline | null;
+  /** Which of the platform's role types (lib/taxonomy.ts ROLE_TYPES) this coach specializes in. */
+  specialties: string[];
   best_for: string | null;
   photo_url: string | null;
   booking_url: string | null;

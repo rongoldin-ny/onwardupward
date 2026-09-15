@@ -7,6 +7,7 @@ import { getCoachByProfileId, TARGET_MENTEE_OPTIONS } from "@/lib/coaches-db";
 import { emailShell, sendEmail } from "@/lib/email";
 import { normalizeUrl } from "@/lib/extract";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { ROLE_TYPES } from "@/lib/taxonomy";
 import { requireVetter } from "@/lib/vetting";
 
 /** Email addresses become mailto links; anything else must be a valid URL. */
@@ -59,6 +60,11 @@ export async function saveCoachAttributes(
     .getAll("target_mentees")
     .map(String)
     .filter((m) => (TARGET_MENTEE_OPTIONS as readonly string[]).includes(m));
+  const roleTypeValues = ROLE_TYPES.map((r) => r.value) as readonly string[];
+  const specialties = formData
+    .getAll("specialties")
+    .map(String)
+    .filter((s) => roleTypeValues.includes(s));
   const disciplinesRaw = str("disciplines");
   const disciplines = (["design", "product", "both"] as const).includes(
     disciplinesRaw as "design" | "product" | "both",
@@ -82,6 +88,7 @@ export async function saveCoachAttributes(
     website: user.website_url,
     offering: str("offering") || null,
     target_mentees: mentees,
+    specialties,
     disciplines,
     best_for: str("best_for") || null,
     booking_url: booking,

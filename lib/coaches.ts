@@ -22,6 +22,8 @@ export type Coach = {
   substackUrl?: string;
   /** Defaults to "design" in the seed script when omitted. */
   disciplines?: "design" | "product" | "both";
+  /** Role types (lib/taxonomy.ts ROLE_TYPES values) this coach specializes in, if known. */
+  specialties?: string[];
 };
 
 const STORAGE = "https://ziaylaegutxikckewwnq.supabase.co/storage/v1/object/public/profile-assets/coaches";

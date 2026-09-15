@@ -22,6 +22,7 @@ import { supabaseAdmin } from "../lib/supabase/server";
       source: c.source,
       status: c.status === "claimed" ? "approved" : "unclaimed",
       disciplines: c.disciplines ?? "design",
+      specialties: c.specialties ?? [],
     };
     const { error } = await sb.from("coaches").upsert(row, { onConflict: "slug" });
     console.log(c.slug, error?.message ?? "ok");
