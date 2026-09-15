@@ -4,10 +4,6 @@
 import { COACHES } from "../lib/coaches";
 import { supabaseAdmin } from "../lib/supabase/server";
 
-// The curated bench defaults to design-leadership focus. Adjust in the
-// coaches table any time.
-const DISCIPLINE_OVERRIDES: Record<string, "design" | "product" | "both"> = {};
-
 (async () => {
   const sb = supabaseAdmin();
   for (const c of COACHES) {
@@ -25,7 +21,7 @@ const DISCIPLINE_OVERRIDES: Record<string, "design" | "product" | "both"> = {};
       substack_url: c.substackUrl ?? null,
       source: c.source,
       status: c.status === "claimed" ? "approved" : "unclaimed",
-      disciplines: DISCIPLINE_OVERRIDES[c.slug] ?? "design",
+      disciplines: c.disciplines ?? "design",
     };
     const { error } = await sb.from("coaches").upsert(row, { onConflict: "slug" });
     console.log(c.slug, error?.message ?? "ok");
