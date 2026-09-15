@@ -51,7 +51,7 @@ export function MultiSelect({
               key={option}
               type="button"
               onClick={() => toggle(option)}
-              className="flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left text-[13px] text-body"
+              className="list-row flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left text-[13px] text-body"
             >
               {option}
               {value.includes(option) && <Check size={14} strokeWidth={2} className="shrink-0 text-gold" />}

@@ -20,18 +20,18 @@ const FORMATS = ["1:1 coaching", "Groups & cohorts", "Programs & courses"];
 const PRICING = ["Published pricing", "Inquire"];
 // "Content Design" and "Research" are the finer-grained specialty tags
 // (lib/taxonomy.ts ROLE_TYPES); the rest match the coarser discipline field.
-const DISCIPLINES = ["Design", "Product", "Both", "Content Design", "Research"];
+const DISCIPLINES = ["Design", "Product", "Content Design", "Research"];
 
 function matchesDiscipline(coach: CoachRow, active: string[]): boolean {
   if (active.length === 0) return true;
   if (active.includes("Content Design") && coach.specialties.includes("content_design")) return true;
   if (active.includes("Research") && coach.specialties.includes("user_research")) return true;
-  // No answer yet (curated seeds pre-migration) counts as "both".
+  // No answer yet (curated seeds pre-migration), and coaches covering both
+  // disciplines, match a Design and/or Product filter — select both to see them.
   const d = coach.disciplines ?? "both";
-  const label = d === "design" ? "Design" : d === "product" ? "Product" : "Both";
-  if (active.includes(label)) return true;
-  // "Both" coaches also match a Design-only or Product-only filter.
-  return d === "both" && (active.includes("Design") || active.includes("Product"));
+  if (d === "design") return active.includes("Design");
+  if (d === "product") return active.includes("Product");
+  return active.includes("Design") || active.includes("Product");
 }
 
 export default function CoachesDirectory({
