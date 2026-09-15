@@ -41,20 +41,30 @@ export function isPublishable(p: RequiredFields): boolean {
   return missingRequired(p).length === 0;
 }
 
-/** Required fields count double; the optional player fields fill in the rest. */
+/**
+ * Every field counts once, across the whole profile surface a user fills in.
+ * Weighting the required fields double (as this used to) overstated brand-new
+ * accounts, whose name, email, and photo arrive pre-filled from OAuth: three
+ * freebies alone read as 29% of a profile the user hadn't touched yet.
+ */
 export function profileCompletionPct(profile: Profile): number {
-  const required = missingRequired(profile);
-  const requiredTotal = 7;
-  const optional = [
+  const filled = [
+    !!profile.name,
+    !!profile.photo_url,
+    !!profile.email,
+    !!profile.location_country,
+    !!(profile.linkedin_url || profile.portfolio_url || profile.website_url || profile.resume_url),
+    !!profile.bio,
+    profile.years_experience !== null && profile.years_experience !== undefined,
     !!profile.dream_job,
+    !!profile.growth_goal,
     !!profile.last_role_text,
     profile.brags.length > 0,
     !!profile.career_stage,
     !!profile.role_type,
     profile.industries.length > 0,
     profile.portfolio_images.length > 0,
+    (profile.ai_superpowers?.length ?? 0) > 0,
   ];
-  const done = (requiredTotal - required.length) * 2 + optional.filter(Boolean).length;
-  const total = requiredTotal * 2 + optional.length;
-  return Math.round((done / total) * 100);
+  return Math.round((filled.filter(Boolean).length / filled.length) * 100);
 }
