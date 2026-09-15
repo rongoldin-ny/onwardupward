@@ -125,6 +125,14 @@
 }
 .ascent .marquee span { font-weight: 700; font-size: 14px; letter-spacing: 0.18em; color: var(--a-secondary); }
 
+/* standalone statement between the marquee and the levels */
+.ascent .open-note {
+  margin: 0; padding: clamp(56px, 9vh, 96px) var(--a-pad-x) 0;
+  max-width: 1100px; font-weight: 900; font-size: clamp(22px, 3.2vw, 36px);
+  line-height: 1.25; letter-spacing: -0.02em; color: var(--a-text);
+  text-wrap: balance;
+}
+
 /* levels */
 .ascent .levels {
   padding: clamp(90px, 14vh, 160px) var(--a-pad-x);
@@ -132,10 +140,6 @@
 }
 .ascent .level { display: flex; flex-wrap: wrap; gap: clamp(20px, 4vw, 60px); align-items: flex-start; }
 .ascent .level.alt { margin-left: auto; text-align: right; flex-direction: row-reverse; }
-.ascent .level-intro {
-  font-weight: 700; font-size: clamp(18px, 2.2vw, 24px); line-height: 1.4;
-  color: var(--a-text); margin: 0 0 20px;
-}
 .ascent .level-num {
   font-weight: 900; font-size: clamp(90px, 15vw, 190px); line-height: 0.85;
   letter-spacing: -0.05em; color: transparent;

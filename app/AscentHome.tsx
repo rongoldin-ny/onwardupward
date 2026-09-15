@@ -89,7 +89,7 @@ export default function AscentHome() {
       <main>
         <header className="hero">
           <div className="glow-top" />
-          <div className="eyebrow-hero">A GROWTH NETWORK FOR TECH WORKERS</div>
+          <div className="eyebrow-hero">A growth network for people in tech</div>
           <h1>
             Don&rsquo;t go it alone.<br />
             <span className="outline-gold">Get a coach.</span>
@@ -97,7 +97,7 @@ export default function AscentHome() {
           <div className="hero-row">
             <a className="btn btn-lg" href="#join">Apply</a>
             <span className="hero-sub">
-              Sign up to get coaching, be a coach, or both.
+              Get started exploring coaches, advertising your coaching, or both.
             </span>
           </div>
           <div className="scroll-cue">SCROLL TO LEVEL UP ↓</div>
@@ -110,15 +110,15 @@ export default function AscentHome() {
           </div>
         </div>
 
+        <p className="open-note reveal">
+          Currently open to product managers, product and content designers,
+          and user researchers at all levels. More coming soon.
+        </p>
+
         <section className="levels">
           <div className="level reveal">
             <span className="level-num">01</span>
             <div className="level-body">
-              <p className="level-intro">
-                Currently open to product managers, product and content
-                designers, and user researchers at all levels. More coming
-                soon.
-              </p>
               <div className="level-tag">LEVEL ONE — CHART YOUR PATH</div>
               <h2>Where you are. Where you&rsquo;re headed.</h2>
               <p>
