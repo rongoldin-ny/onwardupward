@@ -304,14 +304,17 @@ export default function CoachCard({
               Claim pending review
             </p>
           ) : status === "unclaimed" && viewer === "member" ? (
-            <form action={claimCoach.bind(null, coach.id)}>
-              <button
-                type="submit"
-                className="block w-full rounded-full border border-border-2 px-6 py-4 text-center text-[15px] font-bold text-cream"
-              >
-                This you? Claim your slot
-              </button>
-            </form>
+            // A <form> here would nest inside ProfilePage's own outer <form>
+            // (the autosave form) — browsers don't allow nested forms and
+            // reassociate the submit button with the outer one instead, so
+            // this calls the server action directly from a plain button.
+            <button
+              type="button"
+              onClick={() => void claimCoach(coach.id)}
+              className="block w-full rounded-full border border-border-2 px-6 py-4 text-center text-[15px] font-bold text-cream"
+            >
+              This you? Claim your slot
+            </button>
           ) : status === "unclaimed" && viewer === "public" ? (
             <a
               href={`/signin?next=${encodeURIComponent(`/coaches/${coach.id}`)}`}
