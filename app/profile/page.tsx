@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import ProfilePage from "@/components/profile/ProfilePage";
 import { requireUser } from "@/lib/auth";
+import { getCoachReviews } from "@/lib/coach-reviews-db";
 import { toProfileView } from "@/lib/profile-view";
 import { getCommunitySkills } from "@/lib/superpowers-server";
 
@@ -20,12 +21,14 @@ export default async function MyProfilePage({
     toProfileView(user, { canSeePrivateResume: true }),
     getCommunitySkills(),
   ]);
+  const reviews = view.coach ? await getCoachReviews(view.coach.id) : [];
   return (
     <ProfilePage
       view={view}
       viewer="owner"
       initialSide={side === "coach" ? "coach" : "player"}
       communitySkills={communitySkills}
+      reviews={reviews}
     />
   );
 }

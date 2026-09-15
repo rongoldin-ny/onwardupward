@@ -9,6 +9,7 @@ import { trackElementClick } from "@/app/actions/engage";
 import { saveProfilePage } from "@/app/actions/profile";
 import { fillProfileWithAI, reenrichProfile } from "@/app/actions/settings";
 import { CtaLink, PageFrame } from "@/components/ui";
+import type { CoachReview } from "@/lib/coach-reviews-db";
 import type { Profile } from "@/lib/db";
 import type { ProfileView } from "@/lib/profile-view";
 import CoachCard from "./CoachCard";
@@ -29,6 +30,8 @@ export default function ProfilePage({
   communitySkills = [],
   topMatch = null,
   hasPendingClaim = false,
+  reviews = [],
+  ownReview = null,
 }: {
   view: ProfileView;
   viewer: Viewer;
@@ -36,6 +39,8 @@ export default function ProfilePage({
   communitySkills?: string[];
   topMatch?: { isTopMatch: boolean; reason: string | null } | null;
   hasPendingClaim?: boolean;
+  reviews?: CoachReview[];
+  ownReview?: CoachReview | null;
 }) {
   const router = useRouter();
   const [v, setV] = useState(view);
@@ -236,6 +241,8 @@ export default function ProfilePage({
           submitting={submitting}
           topMatch={topMatch}
           hasPendingClaim={hasPendingClaim}
+          reviews={reviews}
+          ownReview={ownReview}
         />
       }
     />
@@ -246,6 +253,8 @@ export default function ProfilePage({
       onStartCoaching={() => {}}
       topMatch={topMatch}
       hasPendingClaim={hasPendingClaim}
+      reviews={reviews}
+      ownReview={ownReview}
     />
   );
 

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { requireUser } from "@/lib/auth";
+import { getReviewCounts } from "@/lib/coach-reviews-db";
 import { getCoachMatches } from "@/lib/coach-match";
 import { getDirectoryCoaches } from "@/lib/coaches-db";
 import { Eyebrow, Logo, PageFrame } from "@/components/ui";
@@ -15,7 +16,10 @@ export const metadata = { title: "Coaches — onward/upward" };
 export default async function CoachesPage() {
   const user = await requireUser();
   const coaches = await getDirectoryCoaches();
-  const matches = user.role === "candidate" ? await getCoachMatches(user, coaches) : {};
+  const [matches, reviewCounts] = await Promise.all([
+    user.role === "candidate" ? getCoachMatches(user, coaches) : Promise.resolve({}),
+    getReviewCounts(coaches.map((c) => c.id)),
+  ]);
 
   return (
     <PageFrame size="wide">
@@ -40,7 +44,7 @@ export default async function CoachesPage() {
             once they do.
           </p>
 
-          <CoachesDirectory coaches={coaches} matches={matches} />
+          <CoachesDirectory coaches={coaches} matches={matches} reviewCounts={reviewCounts} />
 
           <p className="mt-8 text-[12px] text-muted">
             Unclaimed coaches can&apos;t be contacted through onward/upward yet.

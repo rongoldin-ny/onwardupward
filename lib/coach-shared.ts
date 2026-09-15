@@ -17,6 +17,8 @@ export type CoachRow = {
   disciplines: CoachDiscipline | null;
   /** Which of the platform's role types (lib/taxonomy.ts ROLE_TYPES) this coach specializes in. */
   specialties: string[];
+  /** Custom headline overriding the auto-derived "<company> · <discipline>" line when set. */
+  title: string | null;
   best_for: string | null;
   photo_url: string | null;
   booking_url: string | null;

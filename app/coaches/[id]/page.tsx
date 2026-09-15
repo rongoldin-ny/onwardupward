@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import ProfilePage from "@/components/profile/ProfilePage";
 import { currentUser } from "@/lib/auth";
 import type { CoachRow } from "@/lib/coach-shared";
+import { getCoachReviews, getOwnReview } from "@/lib/coach-reviews-db";
 import { getCoachMatches } from "@/lib/coach-match";
 import type { Profile } from "@/lib/db";
 import { isPublishable } from "@/lib/profile-required";
@@ -56,6 +57,11 @@ export default async function CoachDetailPage({
     hasPendingClaim = !!claim;
   }
 
+  const [reviews, ownReview] = await Promise.all([
+    getCoachReviews(coach.id),
+    user ? getOwnReview(coach.id, user.id) : Promise.resolve(null),
+  ]);
+
   if (coach.profile_id) {
     const { data: p } = await admin
       .from("profiles")
@@ -73,6 +79,8 @@ export default async function CoachDetailPage({
           initialSide="coach"
           topMatch={topMatch}
           hasPendingClaim={hasPendingClaim}
+          reviews={reviews}
+          ownReview={ownReview}
         />
       );
     }
@@ -85,6 +93,8 @@ export default async function CoachDetailPage({
       initialSide="coach"
       topMatch={topMatch}
       hasPendingClaim={hasPendingClaim}
+      reviews={reviews}
+      ownReview={ownReview}
     />
   );
 }

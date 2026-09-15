@@ -24,6 +24,8 @@ export type Coach = {
   disciplines?: "design" | "product" | "both";
   /** Role types (lib/taxonomy.ts ROLE_TYPES values) this coach specializes in, if known. */
   specialties?: string[];
+  /** Custom headline overriding the auto-derived "<org> · <discipline>" line. */
+  title?: string;
 };
 
 const STORAGE = "https://ziaylaegutxikckewwnq.supabase.co/storage/v1/object/public/profile-assets/coaches";

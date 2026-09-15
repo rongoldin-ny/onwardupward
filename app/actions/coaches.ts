@@ -86,6 +86,7 @@ export async function saveCoachAttributes(
     photo_url: user.photo_url ?? existing?.photo_url ?? null,
     short_description: user.bio,
     website: user.website_url,
+    title: str("title") || null,
     offering: str("offering") || null,
     target_mentees: mentees,
     specialties,

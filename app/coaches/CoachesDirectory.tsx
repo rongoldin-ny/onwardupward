@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Search, Sparkles } from "lucide-react";
+import { MessageSquare, Search, Sparkles } from "lucide-react";
 import { trackCoachImpressions } from "@/app/actions/track";
 import {
   coachFormats,
@@ -37,9 +37,11 @@ function matchesDiscipline(coach: CoachRow, active: string[]): boolean {
 export default function CoachesDirectory({
   coaches,
   matches = {},
+  reviewCounts = {},
 }: {
   coaches: CoachRow[];
   matches?: Record<string, CoachMatch>;
+  reviewCounts?: Record<string, number>;
 }) {
   const router = useRouter();
   const [q, setQ] = useState("");
@@ -146,6 +148,12 @@ export default function CoachesDirectory({
                     <p className="mt-1 truncate text-[13px] text-secondary">
                       {[coach.company, disciplineLabel(coach.disciplines)].filter(Boolean).join(" · ")}
                     </p>
+                    {reviewCounts[coach.id] > 0 && (
+                      <p className="mt-1 flex items-center gap-1 text-[12px] text-muted">
+                        <MessageSquare size={11} strokeWidth={1.5} />
+                        {reviewCounts[coach.id]} {reviewCounts[coach.id] === 1 ? "review" : "reviews"}
+                      </p>
+                    )}
                   </div>
                 </div>
 
