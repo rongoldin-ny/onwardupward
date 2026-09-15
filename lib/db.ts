@@ -34,6 +34,7 @@ export type Profile = {
   bio: string | null;
   ai_bio: string | null;
   dream_job: string | null;
+  growth_goal: string | null;
   last_role_text: string | null;
   brags: string[];
   portfolio_url: string | null;

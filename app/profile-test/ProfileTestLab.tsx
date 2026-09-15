@@ -34,6 +34,7 @@ function fillToView(fill: AiFillResult, portfolioUrl: string | null): ProfileVie
       companies: uniqueCompanies(fill.work.map((w) => w.company)),
       brags: fill.brags,
       dreamJob: null,
+      growthGoal: null,
       lastRole: fill.last_role_text,
       portfolioImages: fill.images.map((img) => ({
         url: img.url,

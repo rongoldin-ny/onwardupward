@@ -135,6 +135,7 @@ export default function PlayerCard({
     player.aiSuperpowers.length === 0 &&
     player.companies.length === 0 &&
     !player.dreamJob &&
+    !player.growthGoal &&
     !player.lastRole &&
     player.brags.length === 0 &&
     player.references.length === 0 &&
@@ -299,6 +300,22 @@ export default function PlayerCard({
                   <Tag key={c}>{c}</Tag>
                 ))}
               </div>
+            )}
+          </Section>
+        )}
+
+        {(editing || player.growthGoal) && (
+          <Section title="Where I hope to grow">
+            {editing ? (
+              <TextArea
+                key={`growth-${ver}`}
+                name="growth_goal"
+                rows={3}
+                placeholder="What would you want a coach's help with?"
+                defaultValue={p.growth_goal ?? ""}
+              />
+            ) : (
+              <p className="text-[15px] leading-[1.5] text-body">{player.growthGoal}</p>
             )}
           </Section>
         )}

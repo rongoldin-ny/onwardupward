@@ -46,7 +46,15 @@ export async function searchCandidates(filters: SearchFilters): Promise<ResultCa
   if (filters.q) {
     const q = filters.q.toLowerCase();
     rows = rows.filter((p) =>
-      [p.bio, p.ai_bio, p.dream_job, p.last_role_text, p.brags.join(" "), p.industries.join(" ")]
+      [
+        p.bio,
+        p.ai_bio,
+        p.dream_job,
+        p.growth_goal,
+        p.last_role_text,
+        p.brags.join(" "),
+        p.industries.join(" "),
+      ]
         .filter(Boolean)
         .some((text) => text!.toLowerCase().includes(q)),
     );

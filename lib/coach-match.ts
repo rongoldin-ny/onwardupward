@@ -32,6 +32,9 @@ export type CoachMatch = { isTopMatch: boolean; reason: string | null };
 
 function candidateSummary(candidate: Profile): string {
   return [
+    // Their own words on what they want coaching help with — the strongest
+    // signal we have, so it leads.
+    candidate.growth_goal && `Wants a coach's help with: ${candidate.growth_goal}`,
     candidate.role_type && `Role: ${candidate.role_type}`,
     candidate.career_stage && `Career stage: ${candidate.career_stage}`,
     candidate.dream_job && `Looking for: ${candidate.dream_job}`,
@@ -60,10 +63,12 @@ async function scoreMatches(
       system:
         "You match a candidate on a design/product leadership network to coaches on its bench. " +
         "For each coach, judge whether there's a STRONG, specific signal that this coach fits " +
-        "what the candidate is looking for — not just a generic subject-matter overlap. Only " +
-        "mark is_top_match true for a genuinely strong, specific fit; most coaches should be " +
-        "false. When true, write one short, concrete, plain-language sentence explaining the " +
-        "fit — never restate the coach's bio or use marketing language.",
+        "what the candidate is looking for — not just a generic subject-matter overlap. When " +
+        "the candidate says what they want a coach's help with, that's the strongest signal — " +
+        "weigh it more than role or career stage alone. Only mark is_top_match true for a " +
+        "genuinely strong, specific fit; most coaches should be false. When true, write one " +
+        "short, concrete, plain-language sentence explaining the fit — never restate the " +
+        "coach's bio or use marketing language.",
       messages: [
         {
           role: "user",

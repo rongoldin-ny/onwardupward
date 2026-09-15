@@ -40,6 +40,7 @@ function candidateDataBlock(profile: Profile, work: WorkHistoryRow[]): string {
     `Bio: ${profile.bio ?? "none"}`,
     `Recent role: ${profile.last_role_text ?? "none"}`,
     `Dream job: ${profile.dream_job ?? "none"}`,
+    `Wants a coach's help with: ${profile.growth_goal ?? "none"}`,
     `Brags: ${profile.brags.join(" | ") || "none"}`,
     `AI superpowers: ${(profile.ai_superpowers ?? []).map((s) => `${s.skill} (${s.xp})`).join(", ") || "none"}`,
   ].join("\n");

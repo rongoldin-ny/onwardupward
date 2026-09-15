@@ -191,6 +191,7 @@ export async function saveStory(formData: FormData) {
       bio: str(formData, "bio"),
       last_role_text: str(formData, "last_role_text"),
       dream_job: str(formData, "dream_job"),
+      growth_goal: str(formData, "growth_goal"),
       brags,
     })
     .eq("id", user.id);

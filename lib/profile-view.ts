@@ -26,6 +26,7 @@ export type PlayerView = {
   companies: string[];
   brags: string[];
   dreamJob: string | null;
+  growthGoal: string | null;
   lastRole: string | null;
   portfolioImages: PortfolioImage[];
   references: { name: string; title: string; linkedin: string | null }[];
@@ -97,6 +98,7 @@ export function buildProfileView(
       companies: uniqueCompanies(work.map((w) => w.company)),
       brags: profile.brags,
       dreamJob: profile.dream_job,
+      growthGoal: profile.growth_goal,
       lastRole: profile.last_role_text,
       portfolioImages: profile.portfolio_images,
       references: references.map((r) => ({
