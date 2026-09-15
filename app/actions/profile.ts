@@ -42,6 +42,7 @@ export async function saveProfilePage(formData: FormData): Promise<SaveProfileRe
   const patch: Partial<Profile> = {
     website_url: website,
     open_to_coaching_outreach: formData.get("open_to_coaching_outreach") === "on",
+    resume_public: formData.get("resume_public") === "on",
     contact_preference: "email",
   };
   const photo = formData.get("photo");

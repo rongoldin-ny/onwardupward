@@ -118,6 +118,18 @@ export default function IdentityPanel({ view, ver }: { view: ProfileView; ver: n
                 />
                 <span className="shrink-0 pl-3 text-[13px] font-bold text-gold">Browse</span>
               </label>
+              <label className="flex cursor-pointer items-start gap-3 rounded-[20px] border border-border-1 bg-surface-2 p-4">
+                <input
+                  type="checkbox"
+                  name="resume_public"
+                  defaultChecked={p.resume_public}
+                  className="mt-0.5 h-5 w-5 shrink-0 accent-[#E8C987]"
+                />
+                <span className="text-[13px] leading-[1.5] text-body-2">
+                  Make my résumé public. Off by default — it&apos;s still used to generate better
+                  AI summaries and matches either way.
+                </span>
+              </label>
             </div>
           </Labeled>
           <label className="flex cursor-pointer items-start gap-3 rounded-[20px] border border-border-1 bg-surface-2 p-4">
