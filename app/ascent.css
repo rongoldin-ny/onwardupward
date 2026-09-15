@@ -100,7 +100,10 @@
   background: radial-gradient(closest-side, rgba(232, 201, 135, 0.14), transparent);
   pointer-events: none;
 }
-.ascent .eyebrow-hero { font-weight: 700; font-size: 12px; letter-spacing: 0.2em; color: var(--a-secondary); }
+.ascent .eyebrow-hero {
+  font-weight: 700; font-size: 12px; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--a-secondary);
+}
 .ascent .hero h1 {
   margin: 26px 0 0; font-weight: 900; font-size: clamp(52px, 10.5vw, 148px);
   line-height: 0.94; letter-spacing: -0.035em; text-wrap: balance;
@@ -132,6 +135,7 @@
   line-height: 1.25; letter-spacing: -0.02em; color: var(--a-text);
   text-wrap: balance;
 }
+.ascent .open-note .gold { color: var(--a-gold); }
 
 /* levels */
 .ascent .levels {
