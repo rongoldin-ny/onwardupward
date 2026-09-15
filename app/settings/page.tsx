@@ -111,11 +111,6 @@ export default async function SettingsPage() {
           <p className="mb-3 text-center text-[12px] text-muted">
             onward/upward is free while we&apos;re in beta — no billing yet.
           </p>
-          <p className="mb-6 text-center text-[12px] text-muted">
-            <a href="mailto:hello@onwardupward.io" className="text-secondary">
-              Contact
-            </a>
-          </p>
           <form action={signOut}>
             <button
               type="submit"
