@@ -36,14 +36,25 @@ function ReviewForm({
     if (!formRef.current) return;
     setSubmitting(true);
     setError(null);
-    const formData = new FormData(formRef.current);
-    const result = await submitCoachReview(coachId, formData);
-    setSubmitting(false);
-    if (result.error || !result.review) {
-      setError(result.error ?? "Couldn't save your review — try again.");
-      return;
+    try {
+      const formData = new FormData(formRef.current);
+      const result = await submitCoachReview(coachId, formData);
+      if (result.error || !result.review) {
+        setError(result.error ?? "Couldn't save your review — try again.");
+        return;
+      }
+      onSaved(result.review);
+    } catch (err) {
+      // Next's own redirect()/notFound() control-flow "errors" carry this
+      // digest — let those propagate so Next can still act on them.
+      if (err && typeof err === "object" && "digest" in err && typeof err.digest === "string" && err.digest.startsWith("NEXT_REDIRECT")) {
+        throw err;
+      }
+      console.error("submitCoachReview threw:", err);
+      setError("Something went wrong — try again.");
+    } finally {
+      setSubmitting(false);
     }
-    onSaved(result.review);
   }
 
   return (
