@@ -28,16 +28,31 @@ function ReviewForm({
   onSaved: (review: CoachReview) => void;
   onCancel: () => void;
 }) {
-  const formRef = useRef<HTMLFormElement>(null);
+  // A nested <form> here would sit inside ProfilePage's own outer <form>
+  // (used for the profile autosave) — the browser doesn't allow nested
+  // forms and reassociates this one's submit button with the OUTER form
+  // instead, which just calls preventDefault() and does nothing. So this
+  // is a plain div with individually-refed fields, not a <form>.
+  const helpedWithRef = useRef<HTMLInputElement>(null);
+  const outcomeRef = useRef<HTMLInputElement>(null);
+  const commentsRef = useRef<HTMLTextAreaElement>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function submit() {
-    if (!formRef.current) return;
+    const helpedWith = helpedWithRef.current?.value.trim() ?? "";
+    const outcome = outcomeRef.current?.value.trim() ?? "";
+    if (!helpedWith || !outcome) {
+      setError("Add what you got help with and the outcome.");
+      return;
+    }
     setSubmitting(true);
     setError(null);
     try {
-      const formData = new FormData(formRef.current);
+      const formData = new FormData();
+      formData.set("helped_with", helpedWith);
+      formData.set("outcome", outcome);
+      formData.set("comments", commentsRef.current?.value.trim() ?? "");
       const result = await submitCoachReview(coachId, formData);
       if (result.error || !result.review) {
         setError(result.error ?? "Couldn't save your review — try again.");
@@ -58,36 +73,27 @@ function ReviewForm({
   }
 
   return (
-    <form
-      ref={formRef}
-      onSubmit={(e) => {
-        e.preventDefault();
-        void submit();
-      }}
-      className="space-y-3 rounded-[16px] border border-border-1 bg-surface-1 p-4"
-    >
+    <div className="space-y-3 rounded-[16px] border border-border-1 bg-surface-1 p-4">
       <div>
         <p className="mb-2 text-[12.5px] font-bold text-secondary">What did you get help with?</p>
         <TextField
-          name="helped_with"
+          ref={helpedWithRef}
           placeholder="e.g. Portfolio review, leveling up to manager…"
           defaultValue={existing?.helpedWith ?? ""}
-          required
         />
       </div>
       <div>
         <p className="mb-2 text-[12.5px] font-bold text-secondary">What was the outcome?</p>
         <TextField
-          name="outcome"
+          ref={outcomeRef}
           placeholder="e.g. Landed a senior role within 3 months"
           defaultValue={existing?.outcome ?? ""}
-          required
         />
       </div>
       <div>
         <p className="mb-2 text-[12.5px] font-bold text-secondary">Anything else about your experience?</p>
         <TextArea
-          name="comments"
+          ref={commentsRef}
           rows={3}
           placeholder="Optional — share more detail"
           defaultValue={existing?.comments ?? ""}
@@ -95,7 +101,12 @@ function ReviewForm({
       </div>
       {error && <p className="text-[12.5px] text-gold">{error}</p>}
       <div className="flex gap-2">
-        <Cta type="submit" disabled={submitting} className="!h-[42px] flex-1 text-[13.5px]">
+        <Cta
+          type="button"
+          onClick={() => void submit()}
+          disabled={submitting}
+          className="!h-[42px] flex-1 text-[13.5px]"
+        >
           {submitting ? "Saving…" : existing ? "Update review" : "Post review"}
         </Cta>
         <button
@@ -106,7 +117,7 @@ function ReviewForm({
           Cancel
         </button>
       </div>
-    </form>
+    </div>
   );
 }
 
