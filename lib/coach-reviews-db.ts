@@ -12,7 +12,10 @@ export type CoachReview = {
   createdAt: string;
 };
 
-type ReviewRow = {
+export const REVIEW_SELECT =
+  "id, coach_id, reviewer_id, helped_with, outcome, comments, created_at, reviewer:profiles(id, name, photo_url)";
+
+export type ReviewRow = {
   id: string;
   coach_id: string;
   reviewer_id: string;
@@ -23,7 +26,7 @@ type ReviewRow = {
   reviewer: { id: string; name: string | null; photo_url: string | null } | null;
 };
 
-function toReview(r: ReviewRow): CoachReview {
+export function toReview(r: ReviewRow): CoachReview {
   return {
     id: r.id,
     coachId: r.coach_id,
@@ -41,7 +44,7 @@ function toReview(r: ReviewRow): CoachReview {
 export async function getCoachReviews(coachId: string): Promise<CoachReview[]> {
   const { data } = await supabaseAdmin()
     .from("coach_reviews")
-    .select("id, coach_id, reviewer_id, helped_with, outcome, comments, created_at, reviewer:profiles(id, name, photo_url)")
+    .select(REVIEW_SELECT)
     .eq("coach_id", coachId)
     .order("created_at", { ascending: false });
   return ((data ?? []) as unknown as ReviewRow[]).map(toReview);
@@ -65,7 +68,7 @@ export async function getReviewCounts(coachIds: string[]): Promise<Record<string
 export async function getOwnReview(coachId: string, reviewerId: string): Promise<CoachReview | null> {
   const { data } = await supabaseAdmin()
     .from("coach_reviews")
-    .select("id, coach_id, reviewer_id, helped_with, outcome, comments, created_at, reviewer:profiles(id, name, photo_url)")
+    .select(REVIEW_SELECT)
     .eq("coach_id", coachId)
     .eq("reviewer_id", reviewerId)
     .maybeSingle();
