@@ -34,6 +34,14 @@ export type CoachRow = {
   updated_at: string;
 };
 
+/**
+ * A coach row safe to hand to the browser: the listing's contact email is only
+ * used server-side (request emails, claims), never rendered.
+ */
+export function publicCoach(coach: CoachRow): CoachRow {
+  return { ...coach, email: null };
+}
+
 export const TARGET_MENTEE_OPTIONS = [
   "Early career",
   "Senior ICs",
