@@ -50,6 +50,21 @@ export function isPublishable(p: RequiredFields, opts: { isCoach: boolean }): bo
 }
 
 /**
+ * Whether the /p/<id> share page renders for this profile: vetted (or an
+ * approved coach) and publishable. Anything that links to a share page
+ * should check this first, or the link lands on a 404.
+ */
+export function hasPublicProfile(
+  p: RequiredFields & Pick<Profile, "vetting_status">,
+  { approvedCoach }: { approvedCoach: boolean },
+): boolean {
+  return (
+    (p.vetting_status === "approved" || approvedCoach) &&
+    isPublishable(p, { isCoach: approvedCoach })
+  );
+}
+
+/**
  * Every field counts once, across the whole profile surface a user fills in.
  * Weighting the required fields double (as this used to) overstated brand-new
  * accounts, whose name, email, and photo arrive pre-filled from OAuth: three

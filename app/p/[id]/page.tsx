@@ -3,7 +3,7 @@ import ProfilePage from "@/components/profile/ProfilePage";
 import { currentUser } from "@/lib/auth";
 import { getCoachReviews, getOwnReview } from "@/lib/coach-reviews-db";
 import type { Profile } from "@/lib/db";
-import { isPublishable } from "@/lib/profile-required";
+import { hasPublicProfile } from "@/lib/profile-required";
 import { toProfileView } from "@/lib/profile-view";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
@@ -35,8 +35,7 @@ export default async function PublicProfilePage({
   });
   // Drafts and pending listings are only visible to their owner.
   if (view.coach && view.coach.status !== "approved") view.coach = null;
-  const approved = profile.vetting_status === "approved" || view.coach?.status === "approved";
-  if (!approved || !isPublishable(profile, { isCoach: !!view.coach })) notFound();
+  if (!hasPublicProfile(profile, { approvedCoach: !!view.coach })) notFound();
 
   const [reviews, ownReview] = view.coach
     ? await Promise.all([
