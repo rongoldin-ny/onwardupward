@@ -3,8 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { getReadsPageData } from "@/lib/mentorship-posts";
 import { Eyebrow, Logo, PageFrame } from "@/components/ui";
-import CoachReads from "./CoachReads";
-import { PostCard } from "./PostCard";
+import ReadsList from "./ReadsList";
 
 export const metadata = { title: "Reads — onward/upward" };
 
@@ -12,6 +11,11 @@ export const metadata = { title: "Reads — onward/upward" };
 export default async function ReadsPage() {
   await requireUser();
   const { coachPosts, otherPosts } = await getReadsPageData();
+  // One feed, newest first — the "From our coaches" checkbox does the
+  // separating that two hard-coded sections used to.
+  const posts = [...coachPosts, ...otherPosts].sort(
+    (a, b) => b.publishedAtMs - a.publishedAtMs,
+  );
 
   return (
     <PageFrame size="wide">
@@ -35,29 +39,9 @@ export default async function ReadsPage() {
             coaches on our bench.
           </p>
 
-          {coachPosts.length > 0 && (
-            <section className="mt-9">
-              <Eyebrow>From our coaches</Eyebrow>
-              <CoachReads posts={coachPosts} />
-            </section>
-          )}
-
-          <section className="mt-9">
-            <Eyebrow>More reading</Eyebrow>
-            {otherPosts.length > 0 ? (
-              <div className="mt-4 grid gap-4 lg:grid-cols-2">
-                {otherPosts.map((post) => (
-                  <PostCard key={post.url} post={post} />
-                ))}
-              </div>
-            ) : (
-              <p className="mt-4 text-[14px] text-secondary">
-                Nothing fresh right now — check back soon.
-              </p>
-            )}
-          </section>
-
-          {coachPosts.length === 0 && otherPosts.length === 0 && (
+          {posts.length > 0 ? (
+            <ReadsList posts={posts} />
+          ) : (
             <p className="mt-7 text-[14px] text-secondary">
               Nothing fresh right now — check back soon.
             </p>

@@ -31,6 +31,8 @@ export type ReadsPost = {
   publishedLabel: string;
   /** Epoch ms, for callers that need to filter by recency. 0 when unparseable. */
   publishedAtMs: number;
+  /** Written by a coach with a listing on the platform. */
+  isCoach: boolean;
   author?: string;
   disciplines: string[];
 };
@@ -51,6 +53,7 @@ function toReadsPost(p: MentorshipPost): ReadsPost {
     publication: p.publication,
     publishedLabel: publishedLabel(p.publishedAt),
     publishedAtMs: Number.isNaN(ms) ? 0 : ms,
+    isCoach: !!p.isCoach,
     author: p.author,
     disciplines: p.disciplines ?? [],
   };

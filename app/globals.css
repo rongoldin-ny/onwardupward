@@ -203,6 +203,27 @@ body {
   }
 }
 
+/* ---- /reads pagination: the incoming page slides in from the side you're
+   heading toward, so the dots feel like movement through a list. */
+@keyframes reads-slide-from-right {
+  from { opacity: 0; transform: translateX(28px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes reads-slide-from-left {
+  from { opacity: 0; transform: translateX(-28px); }
+  to { opacity: 1; transform: none; }
+}
+.reads-page-forward {
+  animation: reads-slide-from-right 0.34s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.reads-page-back {
+  animation: reads-slide-from-left 0.34s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .reads-page-forward,
+  .reads-page-back { animation: none; }
+}
+
 /* Stacked list rows sharing a `border-b` divider (settings, nav menus,
    etc.): a subtle contained background tint instead of recoloring the
    row's own text, which would fight with icons/labels inside it. */
