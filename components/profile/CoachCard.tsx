@@ -316,12 +316,20 @@ export default function CoachCard({
               This you? Claim your slot
             </button>
           ) : status === "unclaimed" && viewer === "public" ? (
-            <a
-              href={`/signin?next=${encodeURIComponent(`/coaches/${coach.id}`)}`}
-              className="block rounded-full border border-border-2 px-6 py-4 text-center text-[15px] font-bold text-cream"
-            >
-              This you? Sign in to claim your slot
-            </a>
+            <>
+              <a
+                href={`/claim/${coach.id}`}
+                className="gold-gradient cta-glow block rounded-full px-6 py-4 text-center text-[15px] font-bold text-on-gold"
+              >
+                This you? Claim your listing
+              </a>
+              <p className="mt-3 text-center text-[12.5px] leading-[1.5] text-secondary">
+                Create an account and this page becomes yours to edit.{" "}
+                <a href={`/signin?next=${encodeURIComponent(`/coaches/${coach.id}`)}`}>
+                  Already a member?
+                </a>
+              </p>
+            </>
           ) : null}
         </div>
       )}

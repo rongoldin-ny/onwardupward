@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { supabaseRoute } from "@/lib/supabase/server";
 import { homeFor } from "@/lib/auth";
+import { claimListing, COACH_CLAIM_COOKIE } from "@/lib/claims";
 import type { Profile } from "@/lib/db";
 
 /**
@@ -36,16 +37,30 @@ export async function GET(request: NextRequest) {
   // on a blank page pretending they're signed in.
   if (!profile) return fail("google");
 
+  // Arriving from a shared coach listing they say is theirs. Settled here
+  // because it's the one point that runs exactly once per sign-in and the
+  // account definitely exists — /role and the wizard can both be abandoned.
+  const claimCoachId = request.cookies.get(COACH_CLAIM_COOKIE)?.value;
+  let claimed = false;
+  if (claimCoachId) {
+    claimed = (await claimListing(claimCoachId, profile).catch(() => "unavailable")) === "claimed";
+  }
+
   // Only accounts that have never picked a role go to /role. Keying this off
   // onboarding_complete would send anyone who abandoned the wizard back to
   // the picker on every single sign-in.
   const destination = !profile.role_chosen
     ? "/role"
-    : next?.startsWith("/")
-      ? next
-      : homeFor(profile);
+    : claimCoachId
+      ? claimed
+        ? "/profile?side=coach"
+        : `/coaches/${claimCoachId}`
+      : next?.startsWith("/")
+        ? next
+        : homeFor(profile);
 
   const response = NextResponse.redirect(new URL(destination, origin));
   applyCookies(response);
+  if (claimCoachId) response.cookies.delete(COACH_CLAIM_COOKIE);
   return response;
 }
