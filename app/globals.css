@@ -203,6 +203,20 @@ body {
     transition: color 0.15s ease;
   }
 
+  /* Close / remove "X" buttons (any button whose icon is lucide's X):
+     the icon usually carries its own muted color class, which the rule
+     above can't reach, so recolor the icon directly and give bordered
+     circles a gold ring. No background tint — on borderless X's it would
+     read as a stray square. */
+  button:has(> svg.lucide-x):not(:disabled):hover {
+    color: var(--gold);
+    border-color: var(--gold-active);
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  button:has(> svg.lucide-x):not(:disabled):hover > svg {
+    color: var(--gold);
+  }
+
   /* Controls that already carry a solid gold fill (primary CTAs, the
      ascent landing page's button): keep their on-gold text and just lift
      brightness instead of recoloring it. */
