@@ -8,6 +8,7 @@ import { getDirectoryCoaches } from "@/lib/coaches-db";
 import type { Profile } from "@/lib/db";
 import { isPublishable } from "@/lib/profile-required";
 import { coachOnlyProfileView, toProfileView } from "@/lib/profile-view";
+import { accessFor } from "@/lib/viewer-access";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
 /**
@@ -79,10 +80,7 @@ export default async function CoachDetailPage({
     if (p) {
       const profile = p as Profile;
       if (profile.archived_at || !isPublishable(profile, { isCoach: true })) notFound();
-      const view = await toProfileView(profile, {
-        admin: true,
-        canSeePublicResume: user?.role === "coach" || user?.role === "recruiter",
-      });
+      const view = await toProfileView(profile, { admin: true, ...(await accessFor(user)) });
       return (
         <ProfilePage
           view={view}
@@ -110,15 +108,21 @@ export default async function CoachDetailPage({
   );
 }
 
+/**
+ * Coach pages stay out of search engines for now — many listings were built
+ * from public info before the coach joined. Link unfurls (Open Graph) still work.
+ */
+const NO_INDEX = { index: false, follow: false };
+
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  if (!/^[0-9a-f-]{36}$/i.test(id)) return { title: "onward/upward" };
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return { title: "onward/upward", robots: NO_INDEX };
   const { data } = await supabaseAdmin()
     .from("coaches")
     .select("full_name, short_description, best_for, company, photo_url")
     .eq("id", id)
     .maybeSingle();
-  if (!data?.full_name) return { title: "onward/upward" };
+  if (!data?.full_name) return { title: "onward/upward", robots: NO_INDEX };
 
   // These links get pasted into email and Slack, so give the unfurl something
   // to show rather than a bare URL.
@@ -128,6 +132,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return {
     title,
     description,
+    robots: NO_INDEX,
     openGraph: {
       title,
       description,

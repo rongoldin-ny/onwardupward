@@ -18,7 +18,7 @@ export default async function MyProfilePage({
   if (user.role === "recruiter") redirect("/settings/search");
   const { side } = await searchParams;
   const [view, communitySkills] = await Promise.all([
-    toProfileView(user, { canSeePrivateResume: true }),
+    toProfileView(user, { isOwner: true }),
     getCommunitySkills(),
   ]);
   const reviews = view.coach ? await getCoachReviews(view.coach.id) : [];

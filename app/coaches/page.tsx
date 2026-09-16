@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { getReviewCounts } from "@/lib/coach-reviews-db";
 import { getCoachMatches } from "@/lib/coach-match";
+import { publicCoach } from "@/lib/coach-shared";
 import { getDirectoryCoaches } from "@/lib/coaches-db";
 import { Eyebrow, Logo, PageFrame } from "@/components/ui";
 import CoachesDirectory from "./CoachesDirectory";
@@ -45,7 +46,7 @@ export default async function CoachesPage() {
             once they do.
           </p>
 
-          <CoachesDirectory coaches={coaches} matches={matches} reviewCounts={reviewCounts} />
+          <CoachesDirectory coaches={coaches.map(publicCoach)} matches={matches} reviewCounts={reviewCounts} />
 
           <p className="mt-8 text-[12px] text-muted">
             Unclaimed coaches can&apos;t be contacted through onward/upward yet.
