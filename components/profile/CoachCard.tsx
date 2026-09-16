@@ -356,6 +356,10 @@ export default function CoachCard({
   );
 }
 
+/** Every "This you?" claim button: solid gold, dark on-gold text. */
+const claimButtonClass =
+  "gold-gradient cta-glow block w-full rounded-full px-6 py-4 text-center text-[15px] font-bold text-on-gold";
+
 /**
  * "This you?" for unclaimed listings — a pending notice, a member claim
  * button, or a sign-up link for signed-out visitors. Null for anything else.
@@ -389,7 +393,7 @@ export function CoachClaimCta({
       <button
         type="button"
         onClick={() => void claimCoach(coach.id)}
-        className="block w-full rounded-full border border-border-2 px-6 py-4 text-center text-[15px] font-bold text-cream"
+        className={claimButtonClass}
       >
         {label ?? "This you? Claim your slot"}
       </button>
@@ -399,7 +403,7 @@ export function CoachClaimCta({
     <>
       <a
         href={`/claim/${coach.id}`}
-        className="gold-gradient cta-glow block rounded-full px-6 py-4 text-center text-[15px] font-bold text-on-gold"
+        className={claimButtonClass}
       >
         {label ?? "This you? Claim your listing"}
       </a>
