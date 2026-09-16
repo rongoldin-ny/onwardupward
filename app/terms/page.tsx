@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Fill, LegalDoc, LegalList, LegalSection } from "@/components/legal/LegalDoc";
+import { LegalDoc, LegalList, LegalSection } from "@/components/legal/LegalDoc";
 
 export const metadata = { title: "Terms of Service — onward/upward" };
 
@@ -47,7 +47,7 @@ export default function TermsPage() {
     >
       <LegalSection id="agreement" title="Agreeing to these terms">
         <p>
-          These terms are an agreement between you and <Fill>legal entity name, e.g. Formative Labs LLC</Fill>{" "}
+          These terms are an agreement between you and Formative Labs dba Ron Goldin{" "}
           (&ldquo;onward/upward,&rdquo; &ldquo;we,&rdquo; &ldquo;us&rdquo;), which operates
           onwardupward.io. By creating an account or using the site, you agree to these terms and to our{" "}
           <Link href="/privacy">Privacy Policy</Link>. If you don&apos;t agree, don&apos;t use
@@ -242,10 +242,10 @@ export default function TermsPage() {
 
       <LegalSection id="disputes" title="Governing law and disputes">
         <p>
-          These terms are governed by the laws of the State of <Fill>state</Fill>, without regard to
+          These terms are governed by the laws of the State of New York, without regard to
           conflict-of-law rules. Before filing a claim, you agree to email us and try to resolve the
           dispute informally for 30 days. Any claim that isn&apos;t resolved will be brought in the state
-          or federal courts located in <Fill>county, state</Fill>, and you and we consent to their
+          or federal courts located in Kings County, New York, and you and we consent to their
           jurisdiction. Nothing here limits rights you have under the consumer protection laws of the
           place you live.
         </p>
@@ -261,9 +261,9 @@ export default function TermsPage() {
 
       <LegalSection id="contact" title="Contact us">
         <p>
-          <Fill>legal entity name</Fill>
+          Formative Labs dba Ron Goldin
           <br />
-          <Fill>mailing address</Fill>
+          Brooklyn, New York
           <br />
           <a href="mailto:hello@onwardupward.io">hello@onwardupward.io</a>
         </p>

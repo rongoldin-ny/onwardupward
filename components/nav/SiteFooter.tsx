@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { HelpCircle } from "lucide-react";
 import { usePathname } from "next/navigation";
 import FeedbackWidget from "@/components/feedback/FeedbackWidget";
@@ -33,14 +34,22 @@ export default function SiteFooter() {
           hideCopyrightOnMobile ? "hidden md:block" : ""
         }`}
       >
-        <a
-          href="https://formativelabs.co/"
-          target="_blank"
-          rel="noreferrer"
-          className="pointer-events-auto"
-        >
-          © 2026 Formative Labs
-        </a>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <a
+            href="https://formativelabs.co/"
+            target="_blank"
+            rel="noreferrer"
+            className="pointer-events-auto"
+          >
+            © 2026 Formative Labs
+          </a>
+          <Link href="/privacy" className="pointer-events-auto text-muted">
+            Privacy
+          </Link>
+          <Link href="/terms" className="pointer-events-auto text-muted">
+            Terms
+          </Link>
+        </div>
       </div>
       <footer
         className={`pointer-events-none fixed right-5 bottom-4 z-30 items-center gap-2 text-[10px] font-bold tracking-[0.14em] text-muted uppercase md:right-7 md:bottom-5 ${

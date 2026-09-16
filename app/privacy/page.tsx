@@ -1,4 +1,4 @@
-import { Fill, LegalDoc, LegalList, LegalSection } from "@/components/legal/LegalDoc";
+import { LegalDoc, LegalList, LegalSection } from "@/components/legal/LegalDoc";
 
 export const metadata = { title: "Privacy Policy — onward/upward" };
 
@@ -51,7 +51,7 @@ export default function PrivacyPage() {
       <LegalSection id="who-we-are" title="Who we are">
         <p>
           onward/upward (&ldquo;onward/upward,&rdquo; &ldquo;we,&rdquo; &ldquo;us&rdquo;) is a growth
-          network for people in tech, operated by <Fill>legal entity name, e.g. Formative Labs LLC</Fill>.
+          network for people in tech, operated by Formative Labs dba Ron Goldin.
           This policy explains what we collect when you use onwardupward.io, how we use it, and the
           choices you have. It applies to members, coaches, hiring managers and visitors.
         </p>
@@ -296,9 +296,9 @@ export default function PrivacyPage() {
 
       <LegalSection id="contact" title="Contact us">
         <p>
-          <Fill>legal entity name</Fill>
+          Formative Labs dba Ron Goldin
           <br />
-          <Fill>mailing address</Fill>
+          Brooklyn, New York
           <br />
           <a href="mailto:hello@onwardupward.io">hello@onwardupward.io</a>
         </p>

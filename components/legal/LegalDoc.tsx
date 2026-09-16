@@ -86,12 +86,3 @@ export function LegalSection({ id, title, children }: { id: string; title: strin
 export function LegalList({ children }: { children: ReactNode }) {
   return <ul className="list-disc space-y-2 pl-5 marker:text-gold">{children}</ul>;
 }
-
-/** A value the owner still needs to confirm before publishing — highlighted so it can't slip through. */
-export function Fill({ children }: { children: ReactNode }) {
-  return (
-    <mark className="rounded-[4px] bg-gold-tint px-1 font-bold text-gold ring-1 ring-gold-border">
-      [{children}]
-    </mark>
-  );
-}
