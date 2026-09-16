@@ -36,7 +36,10 @@ export default function SiteNavClient({
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const items = isVetter ? [...NAV_ITEMS, { href: "/admin/waitlist", label: "Admin" }] : NAV_ITEMS;
+  // Admins also get the Members directory (next to Coaches) and the Admin area.
+  const items = isVetter
+    ? [NAV_ITEMS[0], { href: "/members", label: "Members" }, ...NAV_ITEMS.slice(1), { href: "/admin/waitlist", label: "Admin" }]
+    : NAV_ITEMS;
 
   return (
     <>
