@@ -9,6 +9,7 @@ import type { Profile } from "@/lib/db";
 import { isPublishable } from "@/lib/profile-required";
 import { coachOnlyProfileView, toProfileView } from "@/lib/profile-view";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { trackingOptedOut } from "@/lib/tracking-consent";
 
 /**
  * Coach detail — the owner's unified profile opened on the Coach face.
@@ -36,7 +37,7 @@ export default async function CoachDetailPage({
   }
   if (coach.profile_id && user?.id === coach.profile_id) redirect("/profile?side=coach");
 
-  await admin.from("analytics_events").insert({
+  if (!(await trackingOptedOut())) await admin.from("analytics_events").insert({
     user_id: user?.id ?? null,
     event_type: "coach_view",
     metadata: { coach_id: coach.id, coach: coach.full_name, kind: "detail" },
