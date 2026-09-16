@@ -204,7 +204,7 @@ export default function AscentHome() {
       <footer>
         <span className="logo ou-logo" style={{ fontSize: 15 }}><LogoMark /></span>
         <div className="links">
-          <a href="mailto:hello@onwardupward.io">Contact</a>
+          {/* Contact now lives in the shared SiteFooter. */}
           {/* <Link href="/terms">Terms</Link>
           <Link href="/privacy">Privacy</Link>
           <Link href="/signup">For companies</Link> */}
