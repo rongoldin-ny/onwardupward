@@ -34,12 +34,12 @@ export default async function WaitlistPage() {
   const total = members.length + pendingCoaches.length + pendingClaims.length;
 
   return (
-    <PageFrame size="narrow">
-      <div className="flex flex-1 flex-col px-7 pt-8 pb-10">
+    <PageFrame size="wide">
+      <div className="flex flex-1 flex-col px-7 pt-8 pb-10 lg:px-10">
         <header>
           <span className="md:hidden"><Logo /></span>
         </header>
-        <main>
+        <main className="mx-auto w-full max-w-[640px] lg:max-w-none">
           <AdminTabs />
           <h1 className="mt-8 text-[30px] leading-[1.1] font-black tracking-[-0.02em] text-cream">
             {total === 0 ? "Queue's clear." : `${total} waiting.`}

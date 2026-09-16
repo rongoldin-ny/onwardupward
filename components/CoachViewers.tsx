@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Sparkles } from "lucide-react";
 import { Avatar, Card } from "@/components/ui";
 import type { CoachViewer } from "@/lib/coach-analytics";
-import type { CoachMatch } from "@/lib/coach-match";
+import type { ViewerMatch } from "@/lib/coach-match";
 import { labelForCareerStage, labelForRoleType } from "@/lib/taxonomy";
 
 /** Signed-in members who opened this coach's listing, with an optional AI-scored "possible match" note. */
@@ -11,7 +11,7 @@ export default function CoachViewers({
   matches = {},
 }: {
   viewers: CoachViewer[];
-  matches?: Record<string, CoachMatch>;
+  matches?: Record<string, ViewerMatch>;
 }) {
   if (viewers.length === 0) {
     return (

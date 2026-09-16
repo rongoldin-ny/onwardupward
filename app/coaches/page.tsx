@@ -16,10 +16,10 @@ export const metadata = { title: "Coaches — onward/upward" };
 export default async function CoachesPage() {
   const user = await requireUser();
   const coaches = await getDirectoryCoaches();
-  const [matches, reviewCounts] = await Promise.all([
-    user.role === "candidate" ? getCoachMatches(user, coaches) : Promise.resolve({}),
-    getReviewCounts(coaches.map((c) => c.id)),
-  ]);
+  // Not awaited: the directory renders right away and the match badges and
+  // ordering stream in once Claude has read the member's profile.
+  const matches = user.role === "candidate" ? getCoachMatches(user, coaches) : null;
+  const reviewCounts = await getReviewCounts(coaches.map((c) => c.id));
 
   return (
     <PageFrame size="wide">
