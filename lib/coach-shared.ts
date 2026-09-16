@@ -62,7 +62,7 @@ export function disciplineLabel(d: CoachDiscipline | null): string {
   return "";
 }
 
-/** A coach's newsletter plus the facets /reads attributes and filters posts by. */
+/** A coach's newsletter plus the facets their posts are attributed and tagged with. */
 export type CoachFeed = {
   substack_url: string;
   full_name: string;

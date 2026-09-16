@@ -2,8 +2,8 @@
  * Design-mentorship reading for the candidate home and the /reads page.
  * Substack's search API is authwalled, so we aggregate a curated set of
  * design-leadership Substack RSS feeds — plus every coach's own newsletter
- * from the `coaches` table, tagged so /reads can give coach writing its own
- * section — rank recent posts by mentorship relevance, and cache for an
+ * from the `coaches` table, tagged so coach writing can be told apart
+ * downstream — rank recent posts by mentorship relevance, and cache for an
  * hour via Next's fetch revalidation.
  */
 
@@ -20,7 +20,7 @@ export type MentorshipPost = {
   isCoach?: boolean;
   /** The coach who writes this feed, when the post came from one. */
   author?: string;
-  /** Discipline facets inherited from that coach, for the /reads filters. */
+  /** Discipline facets inherited from that coach, for the digest in lib/notifications.ts. */
   disciplines?: string[];
 };
 
