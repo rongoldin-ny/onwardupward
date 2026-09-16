@@ -25,5 +25,8 @@ export async function GET(request: Request): Promise<Response> {
   }
 
   const result = await sendWeeklyDigests();
+  // Counts only, no addresses — a weekly job nobody watches needs to leave a
+  // trace in the logs saying what it actually did.
+  console.log(`weekly-digest: ${JSON.stringify(result)}`);
   return Response.json({ ok: true, ...result });
 }
