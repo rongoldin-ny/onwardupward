@@ -4,8 +4,9 @@ import { supabaseServer } from "@/lib/supabase/server";
 import OnboardingWizard from "./OnboardingWizard";
 import RecruiterWizard from "./RecruiterWizard";
 
-// Enrichment runs post-response via after(); give the function time to finish it.
-export const maxDuration = 60;
+// Finishing sign-up kicks off Claude auto fill (fetches the portfolio, mirrors
+// images) and enrichment post-response via after(); give them room to finish.
+export const maxDuration = 300;
 export default async function OnboardingPage() {
   const user = await requireUser();
   if (user.onboarding_complete) redirect(homeFor(user));
