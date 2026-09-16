@@ -36,34 +36,6 @@ export default async function Dashboard() {
         <div>
           <GrowthGoalCard goal={user.growth_goal} />
 
-          {completionPct < 100 && (
-            // Solid gold: the one card on home that asks for action. Styled on
-            // the link itself (not <Card> + card-hover) — card-hover's tinted
-            // hover background would replace the gold fill.
-            <Link
-              href="/profile"
-              className="gold-gradient cta-glow mt-4 block rounded-[20px] p-5 text-on-gold"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <h2 className="text-[18px] font-black tracking-[-0.02em]">
-                  {completionPct}% complete — finish your profile
-                </h2>
-                <ArrowRight size={18} strokeWidth={2} className="shrink-0" />
-              </div>
-              <p className="mt-1.5 text-[13px] font-medium text-on-gold/75">
-                {missing.length > 0
-                  ? `Add ${missing.join(", ")} to make your profile visible.`
-                  : "Add detail to help with matching and discovery."}
-              </p>
-              <div className="mt-3 h-[4px] w-full overflow-hidden rounded-full bg-on-gold/15">
-                <div
-                  className="h-full rounded-full bg-on-gold"
-                  style={{ width: `${completionPct}%` }}
-                />
-              </div>
-            </Link>
-          )}
-
           {!mentorListing ? (
             <Link href="/profile?side=coach" className="mt-4 block">
               <Card className="card-hover">
@@ -91,6 +63,34 @@ export default async function Dashboard() {
                   Impressions, views, and requests on your coach listing.
                 </p>
               </Card>
+            </Link>
+          )}
+
+          {completionPct < 100 && (
+            // Solid gold: the one card on home that asks for action. Styled on
+            // the link itself (not <Card> + card-hover) — card-hover's tinted
+            // hover background would replace the gold fill.
+            <Link
+              href="/profile"
+              className="gold-gradient cta-glow mt-4 block rounded-[20px] p-5 text-on-gold"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-[18px] font-black tracking-[-0.02em]">
+                  {completionPct}% complete — finish your profile
+                </h2>
+                <ArrowRight size={18} strokeWidth={2} className="shrink-0" />
+              </div>
+              <p className="mt-1.5 text-[13px] font-medium text-on-gold/75">
+                {missing.length > 0
+                  ? `Add ${missing.join(", ")} to make your profile visible.`
+                  : "Add detail to help with matching and discovery."}
+              </p>
+              <div className="mt-3 h-[4px] w-full overflow-hidden rounded-full bg-on-gold/15">
+                <div
+                  className="h-full rounded-full bg-on-gold"
+                  style={{ width: `${completionPct}%` }}
+                />
+              </div>
             </Link>
           )}
 
