@@ -13,7 +13,6 @@ import {
   type CoachRow,
 } from "@/lib/coach-shared";
 import type { CoachMatch } from "@/lib/coach-match";
-import { WithCoachBadge } from "@/components/CoachBadge";
 import { Card } from "@/components/ui";
 import { MatchReason } from "@/components/MatchReason";
 import { FilterRow, MultiSelect } from "@/components/MultiSelect";
@@ -161,24 +160,22 @@ export default function CoachesDirectory({
             >
               <Card className="flex h-full min-w-0 flex-col">
                 <div className="flex min-w-0 items-center gap-4">
-                  <WithCoachBadge show size="sm">
-                    {coach.photo_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={coach.photo_url}
-                        alt={coach.full_name}
-                        className="h-[64px] w-[64px] shrink-0 rounded-full object-cover"
-                      />
-                    ) : (
-                      <span className="flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-full border border-border-2 bg-surface-2 text-[20px] font-black text-secondary">
-                        {coach.full_name
-                          .split(" ")
-                          .map((w) => w[0])
-                          .slice(0, 2)
-                          .join("")}
-                      </span>
-                    )}
-                  </WithCoachBadge>
+                  {coach.photo_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={coach.photo_url}
+                      alt={coach.full_name}
+                      className="h-[64px] w-[64px] shrink-0 rounded-full object-cover"
+                    />
+                  ) : (
+                    <span className="flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-full border border-border-2 bg-surface-2 text-[20px] font-black text-secondary">
+                      {coach.full_name
+                        .split(" ")
+                        .map((w) => w[0])
+                        .slice(0, 2)
+                        .join("")}
+                    </span>
+                  )}
                   <div className="min-w-0 flex-1">
                     <h2 className="truncate text-[19px] font-black tracking-[-0.02em] text-cream">
                       {coach.full_name}
