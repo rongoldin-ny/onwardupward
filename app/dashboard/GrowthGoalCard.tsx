@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { Sparkles } from "lucide-react";
 import { saveGrowthGoal } from "@/app/actions/settings";
 import { Card, Eyebrow } from "@/components/ui";
 
@@ -13,13 +14,18 @@ export default function GrowthGoalCard({ goal }: { goal: string | null }) {
   const [text, setText] = useState("");
   const [state, setState] = useState<"idle" | "saving">("idle");
   const [error, setError] = useState<string | null>(null);
+  // Set once a save lands, so the confirmation survives the switch to the saved card.
+  const [justSaved, setJustSaved] = useState(false);
 
   async function save() {
     setState("saving");
     setError(null);
+    // The action revalidates /dashboard, so it resolves once the re-matched
+    // recommended coaches are ready.
     const result = await saveGrowthGoal(text);
     setState("idle");
     if (result.error) setError(result.error);
+    else setJustSaved(true);
   }
 
   const intro = (
@@ -38,6 +44,12 @@ export default function GrowthGoalCard({ goal }: { goal: string | null }) {
         <Card className="card-hover p-6">
           {intro}
           <p className="mt-5 text-[20px] leading-[1.4] font-bold text-cream">{goal}</p>
+          {justSaved && (
+            <p className="mt-4 flex items-center gap-2 text-[13px] text-gold">
+              <Sparkles size={14} strokeWidth={1.75} className="shrink-0" />
+              Saved — your recommended coaches are now matched to this.
+            </p>
+          )}
           <span className="mt-4 inline-block text-[13px] font-bold text-gold">Edit in profile</span>
         </Card>
       </Link>
@@ -61,7 +73,7 @@ export default function GrowthGoalCard({ goal }: { goal: string | null }) {
         disabled={state === "saving" || !text.trim()}
         className="gold-gradient mt-3 h-[44px] rounded-full px-6 text-[14px] font-bold text-on-gold disabled:opacity-50"
       >
-        {state === "saving" ? "Saving…" : "Save"}
+        {state === "saving" ? "Saving & rematching coaches…" : "Save"}
       </button>
       {error && <p className="mt-3 text-[13px] text-gold">{error}</p>}
     </Card>

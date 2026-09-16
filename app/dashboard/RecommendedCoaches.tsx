@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Sparkles } from "lucide-react";
 import { getCoachMatches, type CoachMatch } from "@/lib/coach-match";
 import { getDirectoryCoaches, type CoachRow } from "@/lib/coaches-db";
 import type { Profile } from "@/lib/db";
@@ -21,12 +22,20 @@ export default async function RecommendedCoaches({ user }: { user: Profile }) {
   );
   const coaches = [...matched, ...curated].slice(0, SHOWN);
 
+  // Keyed on the goal: saving a new one remounts the list so the re-matched
+  // tiles animate in rather than silently swapping.
   return (
-    <>
+    <div key={user.growth_goal ?? ""} className="recs-in space-y-3">
+      {user.growth_goal && matched.length > 0 && (
+        <p className="flex items-center gap-1.5 text-[12px] text-gold">
+          <Sparkles size={12} strokeWidth={1.75} className="shrink-0" />
+          Matched to where you hope to grow
+        </p>
+      )}
       {coaches.map((coach) => (
         <CoachTile key={coach.id} coach={coach} match={matches[coach.id]} />
       ))}
-    </>
+    </div>
   );
 }
 

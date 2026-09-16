@@ -274,3 +274,19 @@ body {
     display: none;
   }
 }
+
+/* Home's recommended coaches: tiles rise in one after another whenever the
+   list re-renders for a new growth goal (the list is keyed on the goal). */
+@keyframes recs-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+.recs-in > * {
+  animation: recs-in 0.45s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+.recs-in > :nth-child(2) { animation-delay: 0.07s; }
+.recs-in > :nth-child(3) { animation-delay: 0.14s; }
+.recs-in > :nth-child(4) { animation-delay: 0.21s; }
+@media (prefers-reduced-motion: reduce) {
+  .recs-in > * { animation: none; }
+}
