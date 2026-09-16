@@ -125,9 +125,22 @@ export function Eyebrow({
   return <p className={`eyebrow text-secondary ${className}`}>{children}</p>;
 }
 
-export function Tag({ children }: { children: ReactNode }) {
+type TagVariant = "gold" | "neutral";
+
+const tagStyles: Record<TagVariant, string> = {
+  gold: "border-gold-border text-gold",
+  neutral: "border-border-2 text-secondary",
+};
+
+export function Tag({
+  variant = "gold",
+  children,
+}: {
+  variant?: TagVariant;
+  children: ReactNode;
+}) {
   return (
-    <span className="rounded-full border border-gold-border px-3 py-1.5 text-[11px] font-medium text-gold">
+    <span className={`rounded-full border px-3 py-1.5 text-[11px] font-medium ${tagStyles[variant]}`}>
       {children}
     </span>
   );
