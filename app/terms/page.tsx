@@ -47,7 +47,7 @@ export default function TermsPage() {
     >
       <LegalSection id="agreement" title="Agreeing to these terms">
         <p>
-          These terms are an agreement between you and Ron Goldin dba Formative Labs{" "}
+          These terms are an agreement between you and Ron Goldin{" "}
           (&ldquo;onward/upward,&rdquo; &ldquo;we,&rdquo; &ldquo;us&rdquo;), which operates
           onwardupward.io. By creating an account or using the site, you agree to these terms and to our{" "}
           <Link href="/privacy">Privacy Policy</Link>. If you don&apos;t agree, don&apos;t use
@@ -261,7 +261,7 @@ export default function TermsPage() {
 
       <LegalSection id="contact" title="Contact us">
         <p>
-          Ron Goldin dba Formative Labs
+          Ron Goldin
           <br />
           Brooklyn, New York
           <br />
