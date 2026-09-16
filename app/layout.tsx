@@ -12,7 +12,7 @@ const schibsted = Schibsted_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "onward/upward — A private talent network",
+  title: "Onward/Upward - a growth network for people in tech.",
   description: "Vetted product designers and PMs, found by taste — not keywords.",
 };
 
