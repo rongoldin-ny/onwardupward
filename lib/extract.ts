@@ -14,11 +14,45 @@ export type ExtractedProfile = {
   roleType?: string;
   careerStage?: string;
   city?: string;
+  state?: string;
   country?: string;
   yearsExperience?: number;
   industries: string[];
   work: { title: string; company: string }[];
 };
+
+/** US state abbreviation → name, for "Brooklyn, NY"-style résumé headers. */
+const US_STATES: Record<string, string> = {
+  AL: "Alabama", AK: "Alaska", AZ: "Arizona", AR: "Arkansas", CA: "California", CO: "Colorado",
+  CT: "Connecticut", DE: "Delaware", DC: "District of Columbia", FL: "Florida", GA: "Georgia",
+  HI: "Hawaii", ID: "Idaho", IL: "Illinois", IN: "Indiana", IA: "Iowa", KS: "Kansas",
+  KY: "Kentucky", LA: "Louisiana", ME: "Maine", MD: "Maryland", MA: "Massachusetts",
+  MI: "Michigan", MN: "Minnesota", MS: "Mississippi", MO: "Missouri", MT: "Montana",
+  NE: "Nebraska", NV: "Nevada", NH: "New Hampshire", NJ: "New Jersey", NM: "New Mexico",
+  NY: "New York", NC: "North Carolina", ND: "North Dakota", OH: "Ohio", OK: "Oklahoma",
+  OR: "Oregon", PA: "Pennsylvania", RI: "Rhode Island", SC: "South Carolina", SD: "South Dakota",
+  TN: "Tennessee", TX: "Texas", UT: "Utah", VT: "Vermont", VA: "Virginia", WA: "Washington",
+  WV: "West Virginia", WI: "Wisconsin", WY: "Wyoming",
+};
+const US_STATE_NAMES = new Set(Object.values(US_STATES));
+
+/** "NY" / "New York" → "New York"; anything else → undefined. */
+function usState(token: string | undefined): string | undefined {
+  if (!token) return undefined;
+  const t = token.trim().replace(/\.$/, "");
+  return US_STATES[t.toUpperCase()] && t.length === 2 ? US_STATES[t.toUpperCase()] : US_STATE_NAMES.has(t) ? t : undefined;
+}
+
+/** Words that start multi-word city names ("San Francisco", "Salt Lake City"). */
+const CITY_PREFIXES = new Set(["San", "Santa", "Los", "Las", "New", "Salt", "Lake", "St.", "Saint", "Fort", "Palo", "Mountain", "Long", "El", "Des", "Baton", "Grand", "Kansas", "Oklahoma", "Jersey"]);
+
+/** Résumé text runs lines together ("Karim Saleh Brooklyn"): keep just the city words. */
+function trailingCity(words: string): string {
+  const parts = words.split(" ");
+  let start = parts.length - 1;
+  while (start > 0 && CITY_PREFIXES.has(parts[start - 1])) start--;
+  return parts.slice(start).join(" ");
+}
 
 const FETCH_TIMEOUT_MS = 8000;
 const MAX_BYTES = 800_000;
@@ -244,14 +278,35 @@ export function extractProfile(html: string): ExtractedProfile {
 
   // "based in Copenhagen, Denmark" / "living in London"
   let city: string | undefined;
+  let state: string | undefined;
   let country: string | undefined;
   const loc = searchable.match(
     /(?:based|living|working) in ([A-ZÀ-Þ][\wÀ-ÿ]+(?: [A-ZÀ-Þ][\wÀ-ÿ]+)?)(?:,\s*([A-ZÀ-Þ][\wÀ-ÿ]+(?: [A-ZÀ-Þ][\wÀ-ÿ]+)?))?/,
   );
   if (loc) {
     city = loc[1];
-    country = loc[2];
+    // "based in Brooklyn, New York" — the second part is a US state, not a country.
+    state = usState(loc[2]);
+    country = state ? "United States" : loc[2];
   }
+  // Résumé headers: "Brooklyn, NY" / "Austin, Texas"
+  if (!state) {
+    const us = searchable.match(
+      // City words are Capitalized (not ALL CAPS) so headings like "SKILLS, IN" don't match.
+      /\b([A-Z][a-z][a-zA-Z.]*(?: [A-Z][a-z][a-zA-Z.]*){0,2}),\s*([A-Z]{2}|[A-Z][a-z]+(?: [A-Z][a-z]+)?)\b/g,
+    );
+    for (const m of us ?? []) {
+      const [c, s] = m.split(/,\s*/);
+      const name = usState(s);
+      if (name) {
+        city = city ?? trailingCity(c);
+        state = name;
+        country = country ?? "United States";
+        break;
+      }
+    }
+  }
+  if (country && !COUNTRIES.some((c) => c.value === country)) country = undefined;
   if (!country) {
     country = COUNTRIES.map((c) => c.value).find((c) => searchable.includes(c));
   }
@@ -341,5 +396,5 @@ export function extractProfile(html: string): ExtractedProfile {
     work.push({ title: m[1].trim(), company });
   }
 
-  return { name, bio, roleType, careerStage, city, country, yearsExperience, industries, work };
+  return { name, bio, roleType, careerStage, city, state, country, yearsExperience, industries, work };
 }

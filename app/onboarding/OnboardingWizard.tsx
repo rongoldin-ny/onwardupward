@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Check, LoaderCircle } from "lucide-react";
 import { saveCoachAttributes } from "@/app/actions/coaches";
 import { importFromLinks, finishOnboarding } from "@/app/actions/onboarding";
 import { DisciplineChips, MenteeChips } from "@/components/CoachFormFields";
@@ -49,6 +49,10 @@ export default function OnboardingWizard({ profile, exitHref = "/role" }: Props)
   const [pending, startTransition] = useTransition();
   const [profileData, setProfileData] = useState(profile);
   const [importedNote, setImportedNote] = useState<string | null>(null);
+  // Chosen résumé file name, for the upload field's filled state.
+  const [resumeName, setResumeName] = useState<string | null>(null);
+  // What step 1 is reading, e.g. "your résumé and portfolio" — shown while it works.
+  const [readingWhat, setReadingWhat] = useState<string | null>(null);
   const [outreach, setOutreach] = useState(profile.open_to_coaching_outreach ?? false);
   const [discipline, setDiscipline] = useState<CoachDiscipline | null>(null);
   const [mentees, setMentees] = useState<string[]>([]);
@@ -75,6 +79,13 @@ export default function OnboardingWizard({ profile, exitHref = "/role" }: Props)
     const formData = new FormData(form);
     setError(null);
     if (index === 0) {
+      const resume = formData.get("resume");
+      const sources = [
+        resume instanceof File && resume.size > 0 ? "résumé" : null,
+        String(formData.get("portfolio_url") ?? "").trim() ? "portfolio" : null,
+      ].filter(Boolean) as string[];
+      const what = sources.length > 0 ? `your ${sources.join(" and ")}` : null;
+      setReadingWhat(what);
       startTransition(async () => {
         const result = await importFromLinks(formData);
         if (result.error) {
@@ -84,7 +95,7 @@ export default function OnboardingWizard({ profile, exitHref = "/role" }: Props)
         if (result.profile) setProfileData(result.profile);
         setImportedNote(
           result.found.length > 0
-            ? `From your portfolio we pre-filled: ${result.found.join(", ")}. Check it over — everything can be edited.`
+            ? `From ${what ?? "your links"} we pre-filled: ${result.found.join(", ")}. Check it over — everything can be edited.`
             : null,
         );
         setStep(1);
@@ -111,7 +122,7 @@ export default function OnboardingWizard({ profile, exitHref = "/role" }: Props)
   const p = profileData;
 
   return (
-    <PageFrame size="narrow">
+    <PageFrame size="narrow" centered>
     <div className="flex flex-1 flex-col px-7 pt-7 pb-8">
       <header>
         <div className="relative flex items-center justify-center">
@@ -150,47 +161,75 @@ export default function OnboardingWizard({ profile, exitHref = "/role" }: Props)
             submitStep(e.currentTarget, step);
           }}
         >
-          <div className={step === 0 ? "space-y-4" : "hidden"}>
-            <TextField
-              name="linkedin_url"
-              placeholder="linkedin.com/in/…"
-              defaultValue={p.linkedin_url ?? ""}
-            />
-            <TextField
-              name="portfolio_url"
-              placeholder="Your portfolio URL"
-              defaultValue={p.portfolio_url ?? ""}
-            />
-            <TextField
-              name="portfolio_password"
-              placeholder="Portfolio password, if it has one"
-              defaultValue={p.portfolio_password ?? ""}
-            />
-            <label className="flex h-[58px] w-full cursor-pointer items-center justify-between rounded-full border border-border-1 bg-surface-2 px-6 text-[15px] text-muted">
-              <span data-resume-label>
-                {p.resume_url ? "Résumé on file — tap to replace" : "Upload your résumé (PDF)"}
-              </span>
-              <input
-                type="file"
-                name="resume"
-                accept="application/pdf"
-                className="hidden"
-                onChange={(e) => {
-                  const label = e.currentTarget
-                    .closest("label")
-                    ?.querySelector("[data-resume-label]");
-                  const f = e.currentTarget.files?.[0];
-                  if (label && f) label.textContent = f.name;
-                }}
+          <div className={step === 0 ? "" : "hidden"}>
+            {/* Locked while importing so nothing changes under the reader. */}
+            <fieldset disabled={pending} className="space-y-4 transition-opacity disabled:opacity-60">
+              <TextField
+                name="linkedin_url"
+                placeholder="linkedin.com/in/…"
+                defaultValue={p.linkedin_url ?? ""}
               />
-              <span className="text-[13px] font-bold text-gold">Browse</span>
-            </label>
-            <p className="pt-1 text-[13px] leading-[1.5] text-secondary">
-              Add at least one of LinkedIn, your résumé, or your portfolio and
-              we&apos;ll pull in your name, bio, roles, experience, and location —
-              you review everything before it goes live. If your portfolio is
-              password-protected, the password lets us read it too.
-            </p>
+              <TextField
+                name="portfolio_url"
+                placeholder="Your portfolio URL"
+                defaultValue={p.portfolio_url ?? ""}
+              />
+              <TextField
+                name="portfolio_password"
+                placeholder="Portfolio password, if it has one"
+                defaultValue={p.portfolio_password ?? ""}
+              />
+              <label
+                className={`flex h-[58px] w-full items-center justify-between rounded-full border px-6 text-[15px] transition-colors ${
+                  resumeName || p.resume_url
+                    ? "border-gold-border bg-gold-tint text-cream"
+                    : "border-border-1 bg-surface-2 text-muted"
+                }`}
+              >
+                <span className="flex min-w-0 items-center gap-2.5">
+                  {(resumeName || p.resume_url) && (
+                    <span className="gold-gradient flex h-5 w-5 shrink-0 items-center justify-center rounded-full">
+                      <Check size={12} strokeWidth={3} className="text-on-gold" />
+                    </span>
+                  )}
+                  <span className="truncate">
+                    {resumeName ?? (p.resume_url ? "Résumé on file" : "Upload your résumé (PDF)")}
+                  </span>
+                </span>
+                <input
+                  type="file"
+                  name="resume"
+                  accept="application/pdf"
+                  className="hidden"
+                  onChange={(e) => setResumeName(e.currentTarget.files?.[0]?.name ?? null)}
+                />
+                <span className="shrink-0 pl-3 text-[13px] font-bold text-gold">
+                  {resumeName || p.resume_url ? "Replace" : "Browse"}
+                </span>
+              </label>
+              <p className="pt-1 text-[13px] leading-[1.5] text-secondary">
+                Add at least one of LinkedIn, your résumé, or your portfolio and
+                we&apos;ll pull in your name, bio, roles, experience, and location —
+                you review everything before it goes live. If your portfolio is
+                password-protected, the password lets us read it too.
+              </p>
+            </fieldset>
+            {pending && step === 0 && (
+              <div
+                role="status"
+                className="mt-6 flex items-start gap-3 rounded-[16px] border border-gold-border bg-gold-tint px-5 py-4"
+              >
+                <LoaderCircle size={18} strokeWidth={2} className="mt-0.5 shrink-0 animate-spin text-gold" />
+                <div>
+                  <p className="text-[14px] font-bold text-gold">
+                    {readingWhat ? `Reading ${readingWhat}…` : "Saving your links…"}
+                  </p>
+                  <p className="mt-1 text-[13px] leading-[1.5] text-secondary">
+                    Pulling in your name, role, experience and location — this takes a few seconds.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           <div key={`about-${p.updated_at}`} className={step === 1 ? "space-y-4" : "hidden"}>
@@ -212,6 +251,20 @@ export default function OnboardingWizard({ profile, exitHref = "/role" }: Props)
               options={COUNTRIES}
               defaultValue={p.location_country ?? ""}
             />
+            <div className="flex gap-3">
+              <TextField
+                name="state"
+                placeholder="State / province"
+                defaultValue={p.location_state ?? ""}
+                className="min-w-0 flex-1"
+              />
+              <TextField
+                name="city"
+                placeholder="City"
+                defaultValue={p.location_city ?? ""}
+                className="min-w-0 flex-1"
+              />
+            </div>
             {!isCoach && (
               <label className="flex cursor-pointer items-start gap-3 rounded-[20px] border border-border-1 bg-surface-2 p-5">
                 <input
@@ -247,13 +300,16 @@ export default function OnboardingWizard({ profile, exitHref = "/role" }: Props)
 
           <div className="mt-10">
             <Cta type="submit" disabled={pending}>
-              {pending
-                ? step === 0
-                  ? "Reading your portfolio…"
-                  : "Saving…"
-                : step === lastStep
-                  ? "Finish"
-                  : "Continue"}
+              {pending ? (
+                <span className="inline-flex items-center gap-2">
+                  <LoaderCircle size={16} strokeWidth={2.25} className="animate-spin" />
+                  {step === 0 ? (readingWhat ? "Reading…" : "Saving…") : "Saving…"}
+                </span>
+              ) : step === lastStep ? (
+                "Finish"
+              ) : (
+                "Continue"
+              )}
             </Cta>
             {!steps[step].required && (
               <button

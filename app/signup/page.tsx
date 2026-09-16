@@ -10,7 +10,7 @@ export default async function SignUpPage() {
   if (user) redirect(homeFor(user));
 
   return (
-    <PageFrame size="narrow" chromeLogo={false}>
+    <PageFrame size="narrow" chromeLogo={false} centered>
       <div className="flex flex-1 flex-col px-7 pt-8 pb-8 text-center">
         <main className="flex flex-1 flex-col justify-center">
           {/* Centered as a unit: a bare flex item would stretch and left-align the lockup. */}

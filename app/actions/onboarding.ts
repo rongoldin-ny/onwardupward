@@ -92,6 +92,7 @@ export async function importFromLinks(formData: FormData): Promise<ImportResult>
         roleType: extractions.find((e) => e.roleType)?.roleType,
         careerStage: extractions.find((e) => e.careerStage)?.careerStage,
         city: extractions.find((e) => e.city)?.city,
+        state: extractions.find((e) => e.state)?.state,
         country: extractions.find((e) => e.country)?.country,
         yearsExperience: extractions.find((e) => e.yearsExperience)?.yearsExperience,
         industries: extractions.find((e) => e.industries.length > 0)?.industries ?? [],
@@ -108,6 +109,7 @@ export async function importFromLinks(formData: FormData): Promise<ImportResult>
       set("role_type", extracted.roleType, user.role_type, "role");
       set("career_stage", extracted.careerStage, user.career_stage, "career stage");
       set("location_city", extracted.city, user.location_city, "city");
+      set("location_state", extracted.state, user.location_state, "state");
       set("location_country", extracted.country, user.location_country, "country");
       if (extracted.yearsExperience && user.years_experience == null) {
         patch.years_experience = extracted.yearsExperience;
@@ -316,6 +318,8 @@ export async function finishOnboarding(formData: FormData) {
       career_stage: str(formData, "career_stage") ?? user.career_stage,
       role_type: str(formData, "role_type") ?? user.role_type,
       location_country: str(formData, "country") ?? user.location_country,
+      location_state: str(formData, "state") ?? user.location_state,
+      location_city: str(formData, "city") ?? user.location_city,
       open_to_coaching_outreach: formData.get("open_to_coaching_outreach") === "on",
       onboarding_complete: true,
     })

@@ -23,7 +23,7 @@ export default function RoleSelect() {
   const [pending, startTransition] = useTransition();
 
   return (
-    <PageFrame size="narrow">
+    <PageFrame size="narrow" centered>
     <div className="flex flex-1 flex-col px-7 pt-8 pb-8">
       <header>
         <span className="md:hidden"><Logo /></span>
