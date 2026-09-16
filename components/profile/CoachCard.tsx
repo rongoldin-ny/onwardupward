@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { GraduationCap } from "lucide-react";
 import { claimCoach } from "@/app/actions/claims";
 import CoachBookLink from "@/components/CoachBookLink";
+import CoachRequestForm from "@/components/CoachRequestForm";
 import { MatchReason } from "@/components/MatchReason";
 import { DisciplineChips, MenteeChips, SpecialtyChips } from "@/components/CoachFormFields";
 import { TextArea, TextField } from "@/components/fields";
@@ -340,16 +341,44 @@ export default function CoachCard({
         </div>
       )}
 
-      {!editing && viewer !== "owner" && approved && coach?.booking_url && (
+      {/* Booking for live listings. Claimed coaches can always be reached
+          through the platform (with their own booking link, if any, as a
+          secondary route); curated seeds only have the external link.
+          Unclaimed listings' claim CTA sits under the card title instead. */}
+      {!editing && viewer !== "owner" && approved && coach && (coach.profile_id || coach.booking_url) && (
         <div className="mt-8">
-          <CoachBookLink
-            coachId={coach.id}
-            coachName={coach.full_name}
-            href={coach.booking_url}
-            className="gold-gradient cta-glow block rounded-full px-6 py-4 text-center text-[15px] font-bold text-on-gold"
-          >
-            Book a session
-          </CoachBookLink>
+          {coach.profile_id && viewer === "member" ? (
+            <>
+              <CoachRequestForm coachId={coach.id} coachName={coach.full_name} />
+              {coach.booking_url && (
+                <p className="mt-3 text-center text-[12.5px] text-secondary">
+                  <CoachBookLink
+                    coachId={coach.id}
+                    coachName={coach.full_name}
+                    href={coach.booking_url}
+                  >
+                    Or book directly →
+                  </CoachBookLink>
+                </p>
+              )}
+            </>
+          ) : coach.profile_id && viewer === "public" ? (
+            <a
+              href={`/signin?next=${encodeURIComponent(`/coaches/${coach.id}`)}`}
+              className="gold-gradient cta-glow block rounded-full px-6 py-4 text-center text-[15px] font-bold text-on-gold"
+            >
+              Sign in to book a session
+            </a>
+          ) : coach.booking_url ? (
+            <CoachBookLink
+              coachId={coach.id}
+              coachName={coach.full_name}
+              href={coach.booking_url}
+              className="gold-gradient cta-glow block rounded-full px-6 py-4 text-center text-[15px] font-bold text-on-gold"
+            >
+              Book a session
+            </CoachBookLink>
+          ) : null}
         </div>
       )}
     </div>
