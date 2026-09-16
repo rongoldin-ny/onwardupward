@@ -13,9 +13,12 @@ import { requestCoaching } from "@/app/actions/coach-requests";
 export default function CoachRequestForm({
   coachId,
   coachName,
+  label = "Book a session",
 }: {
   coachId: string;
   coachName: string;
+  /** Text on the collapsed button. */
+  label?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
@@ -54,7 +57,7 @@ export default function CoachRequestForm({
         onClick={() => setOpen(true)}
         className="gold-gradient cta-glow block w-full rounded-full px-6 py-4 text-center text-[15px] font-bold text-on-gold"
       >
-        Book a session
+        {label}
       </button>
     );
   }
