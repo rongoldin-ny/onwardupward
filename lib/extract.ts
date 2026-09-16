@@ -1,4 +1,5 @@
 import { COUNTRIES, INDUSTRIES } from "./taxonomy";
+import { decodeHtmlEntities } from "./html-entities";
 
 /**
  * Best-effort profile extraction from a portfolio site (import-first
@@ -183,25 +184,14 @@ function meta(html: string, name: string): string | null {
   ];
   for (const re of patterns) {
     const m = html.match(re);
-    if (m) return decodeEntities(m[1].trim());
+    if (m) return decodeHtmlEntities(m[1].trim());
   }
   return null;
 }
 
-function decodeEntities(s: string): string {
-  return s
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#0?39;|&apos;/g, "'")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&mdash;/g, "—")
-    .replace(/&ndash;/g, "–");
-}
 
 export function visibleText(html: string): string {
-  return decodeEntities(
+  return decodeHtmlEntities(
     html
       .replace(/<script[\s\S]*?<\/script>/gi, " ")
       .replace(/<style[\s\S]*?<\/style>/gi, " ")
@@ -242,8 +232,8 @@ export function extractProfile(html: string): ExtractedProfile {
 
   const name =
     (meta(html, "og:site_name") && nameFromTitle(meta(html, "og:site_name")!)) ||
-    nameFromTitle(decodeEntities(title)) ||
-    nameFromTitle(decodeEntities(h1)) ||
+    nameFromTitle(decodeHtmlEntities(title)) ||
+    nameFromTitle(decodeHtmlEntities(h1)) ||
     undefined;
 
   const bio = meta(html, "description") ?? meta(html, "og:description") ?? undefined;

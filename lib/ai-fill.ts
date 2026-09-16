@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
 import { fetchPortfolioHtml, visibleText } from "./extract";
+import { decodeHtmlEntities } from "./html-entities";
 import { makeLogoCards } from "./logo-card";
 import { CAREER_STAGES, COUNTRIES, ROLE_TYPES, uniqueCompanies } from "./taxonomy";
 
@@ -114,7 +115,7 @@ function collectImages(
     if (!rawSrc || rawSrc.startsWith("data:")) continue;
     // Attribute values HTML-encode ampersands; decode so the url is fetchable
     // and matches how the model echoes it back.
-    const src = rawSrc.replace(/&amp;/g, "&").replace(/&#0?38;/g, "&");
+    const src = decodeHtmlEntities(rawSrc);
     let abs: string;
     try {
       abs = new URL(src, baseUrl).href;

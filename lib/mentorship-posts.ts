@@ -8,6 +8,7 @@
  */
 
 import { getCoachFeeds } from "./coaches-db";
+import { decodeHtmlEntities } from "./html-entities";
 import { coachDisciplineLabels } from "./coach-shared";
 
 export type MentorshipPost = {
@@ -87,11 +88,11 @@ function tag(xml: string, name: string): string {
 function parseFeed(xml: string): Omit<MentorshipPost, "house" | "isCoach">[] {
   // The channel title is the publication name — self-labeling survives
   // feed redirects, unlike a hardcoded name.
-  const publication = tag(xml.split("<item>")[0], "title") || "Substack";
+  const publication = decodeHtmlEntities(tag(xml.split("<item>")[0], "title")) || "Substack";
   const items = xml.match(/<item>[\s\S]*?<\/item>/g) ?? [];
   return items
     .map((item) => ({
-      title: tag(item, "title").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#0?39;|&apos;/g, "'"),
+      title: decodeHtmlEntities(tag(item, "title")),
       url: tag(item, "link"),
       publication,
       publishedAt: new Date(tag(item, "pubDate") || 0),
