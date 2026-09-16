@@ -27,6 +27,11 @@ const MAX_MATCHES = 6;
 /** Scores at or above this are a "Top match"; the model omits anything below 65. */
 const STRONG_SCORE = 80;
 const BATCH_SIZE = 50;
+/**
+ * Part of every stored row's hash. Bump when the prompt or scoring changes in
+ * a way members should see — each member is re-scored once on their next visit.
+ */
+const MATCH_VERSION = "2";
 
 export type CoachFit = "strong" | "good";
 /** A coach picked for this member. `rank` is 0 for the best fit. */
@@ -53,7 +58,11 @@ Score each coach who fits on an absolute 0–100 scale, since scores from differ
 - 65–79: a real but broader fit.
 - Below 65: leave the coach out. Generic overlap, like both being in design, is not a fit. Most coaches should be left out.
 
-For each coach you include, write one plain-language sentence of at most 25 words, addressed to the member as "you", that names the specific link between their profile and the coach. Refer to the coach by first name, never with a gendered pronoun. Don't restate the coach's bio or use marketing language. Example: "You're aiming for your first design manager role, and Sam coaches ICs through that exact transition."`;
+For each coach you include, write one plain-language sentence of at most 25 words, addressed to the member as "you", that names the specific link between their profile and the coach. Don't restate the coach's bio or use marketing language.
+
+Naming: call a person by their first name only — "Jesse", never "Jesse James Garrett" — even when two coaches share a first name, since each sentence is shown on that coach's own card. Never use a gendered pronoun for them. Call a company or collective by its name ("Design Leadership Guild").
+
+Example: "You're aiming for your first design manager role, and Sam coaches ICs through that exact transition."`;
 
 /** Everything on a member's profile that says where they are and where they want to go. */
 function profileSummary(p: Profile, work: WorkHistoryRow[] = []): string {
@@ -164,12 +173,14 @@ export async function getCoachMatches(
   member: Profile,
   coaches: CoachRow[],
 ): Promise<Record<string, CoachMatch>> {
+  // A member who also coaches shouldn't be matched with their own listing.
+  coaches = coaches.filter((c) => c.profile_id !== member.id);
   if (coaches.length === 0) return {};
   try {
     const work = await getWorkHistory(member.id);
     const summary = profileSummary(member, work);
     if (!summary.trim()) return {};
-    const profileHash = createHash("sha256").update(summary).digest("hex");
+    const profileHash = createHash("sha256").update(MATCH_VERSION).update(summary).digest("hex");
 
     const { data, error } = await supabaseAdmin()
       .from("coach_matches")
@@ -177,7 +188,7 @@ export async function getCoachMatches(
       .eq("profile_id", member.id);
     if (error) throw new Error(`coach_matches read failed: ${error.message}`);
 
-    // Rows scored against an older version of the profile count as unscored.
+    // Rows scored against an older profile (or MATCH_VERSION) count as unscored.
     const rows: MatchRow[] = ((data ?? []) as (MatchRow & { profile_hash: string })[]).filter(
       (r) => r.profile_hash === profileHash,
     );
