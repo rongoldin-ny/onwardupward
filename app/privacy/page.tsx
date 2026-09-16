@@ -174,8 +174,11 @@ export default function PrivacyPage() {
           <li>
             <strong>Signed-in members</strong> can see your profile: name, photo, location, experience,
             background, links, work history, highlights, industries, portfolio images, where you hope to
-            grow and references. If you add a portfolio password, members viewing your profile can see it
-            so they can open your portfolio.
+            grow and references.
+          </li>
+          <li>
+            <strong>Your portfolio password</strong>, if you add one, is visible only to coaches on
+            onward/upward and our team, so they can open your portfolio.
           </li>
           <li>
             <strong>Your résumé</strong> is visible only to you and our team, unless you turn on
@@ -184,10 +187,12 @@ export default function PrivacyPage() {
           </li>
           <li>
             <strong>Anyone with your share link</strong> can view your profile once it&apos;s approved.
+            We ask search engines not to list share links.
           </li>
           <li>
             <strong>Coach listings and reviews are public.</strong> Coach pages, including reviews and
-            the reviewer&apos;s name and photo, can be viewed by anyone and may appear in search engines.
+            the reviewer&apos;s name and photo, can be viewed by anyone with the link. We currently ask
+            search engines not to list them.
           </li>
           <li>
             <strong>Coaches you contact</strong> receive your message, your email address so they can
