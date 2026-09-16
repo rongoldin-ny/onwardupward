@@ -54,6 +54,7 @@ export type Profile = {
   role_chosen: boolean;
   onboarding_complete: boolean;
   vetting_status: "pending" | "approved";
+  last_digest_sent_at: string | null;
   last_sign_in_at: string | null;
   created_at: string;
   updated_at: string;

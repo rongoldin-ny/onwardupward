@@ -13,7 +13,7 @@ const OPTIONS: { key: keyof NotificationPrefs; label: string; note: string }[] =
   {
     key: "weekly_digest",
     label: "Weekly profile digest",
-    note: "Views, ranking, and who's been looking.",
+    note: "Your views and how they rank, every Monday.",
   },
   {
     key: "product_updates",
