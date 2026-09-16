@@ -8,12 +8,12 @@ const OPTIONS: { key: keyof NotificationPrefs; label: string; note: string }[] =
   {
     key: "messages",
     label: "New message alerts",
-    note: "An email the moment a company writes to you.",
+    note: "A notification the moment someone tries to connect.",
   },
   {
     key: "weekly_digest",
     label: "Weekly profile digest",
-    note: "Views, ranking, and who's been looking.",
+    note: "Your views and how they rank, every Monday.",
   },
   {
     key: "product_updates",
