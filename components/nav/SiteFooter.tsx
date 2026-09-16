@@ -14,10 +14,12 @@ const NO_COPYRIGHT_ON_MOBILE = ["/signin", "/signup"];
  * PageFrame's card hugs its content, so corners are always free.
  *
  * Mobile: nothing may sit on top of page content. The copyright drops into
- * the flow at the very bottom of the page, and Feedback/Help shrink to
- * icon-only circles (hidden entirely on the signed-out home, which has its
- * own CTA-led footer). Each fixed wrapper ignores pointer events so it can
- * never swallow a click meant for the page — only the buttons opt back in.
+ * the flow at the very bottom of the page, and Feedback/Help are hidden on
+ * the signed-out home, which has its own CTA-led footer.
+ *
+ * Feedback/Help are icon-only circles at every size (labels via tooltip).
+ * Each fixed wrapper ignores pointer events so it can never swallow a click
+ * meant for the page — only the buttons opt back in.
  */
 export default function SiteFooter() {
   const pathname = usePathname();
@@ -49,11 +51,10 @@ export default function SiteFooter() {
         <a
           href="mailto:hello@onwardupward.io"
           aria-label="Help"
-          className="pointer-events-auto flex h-9 w-9 items-center justify-center gap-1.5 rounded-full border border-gold-border bg-surface-2 text-gold shadow-[0_4px_16px_rgba(0,0,0,0.35)] md:h-8 md:w-auto md:px-3"
+          title="Help"
+          className="pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full border border-gold-border bg-surface-2 text-gold shadow-[0_4px_16px_rgba(0,0,0,0.35)]"
         >
-          <HelpCircle size={15} strokeWidth={2} className="md:hidden" />
-          <HelpCircle size={12} strokeWidth={2} className="hidden md:block" />
-          <span className="hidden md:inline">Help</span>
+          <HelpCircle size={15} strokeWidth={2} />
         </a>
       </footer>
     </>
