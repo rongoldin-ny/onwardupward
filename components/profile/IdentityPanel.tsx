@@ -158,11 +158,6 @@ export default function IdentityPanel({ view, ver }: { view: ProfileView; ver: n
           {viewer === "owner" && view.email && (
             <p className="mt-1 text-[13px] text-muted">{view.email}</p>
           )}
-          {viewer === "owner" && view.missingRequired.length > 0 && (
-            <p className="mt-4 rounded-[14px] border border-gold-border bg-gold-tint px-4 py-3 text-[12.5px] leading-[1.5] text-gold">
-              {`Add ${view.missingRequired.join(", ")} to make your profile visible.`}
-            </p>
-          )}
           {view.background && (
             <div className="mt-6 w-full">
               <p className="eyebrow text-secondary">Background</p>
