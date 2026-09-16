@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MultiSelect } from "@/components/MultiSelect";
 import { DISCIPLINE_FILTERS } from "@/lib/coach-shared";
 import type { ReadsPost } from "@/lib/mentorship-posts";
@@ -66,6 +66,22 @@ export default function ReadsList({ posts }: { posts: ReadsPost[] }) {
     set(next);
     setBack(false);
     setPage(0);
+  }
+
+  // Mobile swipe between pages — horizontal drags only, so a vertical
+  // scroll (or a tap that opens a PostCard link) never gets hijacked.
+  const touchStart = useRef({ x: 0, y: 0 });
+  const SWIPE_THRESHOLD = 48;
+
+  function onTouchStart(e: React.TouchEvent) {
+    touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }
+
+  function onTouchEnd(e: React.TouchEvent) {
+    const dx = e.changedTouches[0].clientX - touchStart.current.x;
+    const dy = e.changedTouches[0].clientY - touchStart.current.y;
+    if (Math.abs(dx) < SWIPE_THRESHOLD || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    goTo(dx < 0 ? current + 1 : current - 1);
   }
 
   return (
@@ -148,7 +164,9 @@ export default function ReadsList({ posts }: { posts: ReadsPost[] }) {
         // Keyed by page so React remounts the grid and replays the slide.
         <div
           key={current}
-          className={`mt-4 grid gap-4 lg:grid-cols-2 ${
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+          className={`mt-4 grid touch-pan-y gap-4 lg:grid-cols-2 ${
             back ? "reads-page-back" : "reads-page-forward"
           }`}
         >
