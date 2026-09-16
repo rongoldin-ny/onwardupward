@@ -12,7 +12,10 @@ export async function accessFor(viewer: Profile | null) {
     return { isAdmin: false, isCoach: false, canSeePortfolioPassword: false, canSeePublicResume: false };
   }
   const admin = isVetter(viewer);
-  const listing = viewer.role === "coach" || admin ? null : await getCoachByProfileId(viewer.id);
+  // Admins used to skip this lookup, which was harmless while everything they
+  // could see was granted by `admin` anyway — but it also made an admin who
+  // coaches read as not-a-coach, and isCoach now decides who can reach members.
+  const listing = viewer.role === "coach" ? null : await getCoachByProfileId(viewer.id);
   const isCoach = viewer.role === "coach" || listing?.status === "approved";
   return {
     isAdmin: admin,
