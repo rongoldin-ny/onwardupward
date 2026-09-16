@@ -6,15 +6,18 @@ import { Logo, PageFrame } from "@/components/ui";
 export default function SettingsShell({
   title,
   subtitle,
+  size = "narrow",
   children,
 }: {
   title: string;
   subtitle?: string;
+  /** "wide" matches the Coaches directory, for data-heavy subpages. */
+  size?: "narrow" | "wide";
   children: React.ReactNode;
 }) {
   return (
-    <PageFrame size="narrow">
-      <div className="flex flex-1 flex-col px-7 pt-7 pb-8">
+    <PageFrame size={size}>
+      <div className="flex flex-1 flex-col px-7 pt-7 pb-8 lg:px-10">
         <header className="relative flex items-center justify-center">
           <div className="absolute left-0 flex items-center gap-4">
             <Link href="/settings" aria-label="Back to settings" className="text-cream">

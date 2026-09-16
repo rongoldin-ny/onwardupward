@@ -29,6 +29,8 @@ export type ReadsPost = {
   url: string;
   publication: string;
   publishedLabel: string;
+  /** Epoch ms, for callers that need to filter by recency. 0 when unparseable. */
+  publishedAtMs: number;
   author?: string;
   disciplines: string[];
 };
@@ -42,11 +44,13 @@ function publishedLabel(d: Date): string {
 }
 
 function toReadsPost(p: MentorshipPost): ReadsPost {
+  const ms = p.publishedAt.getTime();
   return {
     title: p.title,
     url: p.url,
     publication: p.publication,
     publishedLabel: publishedLabel(p.publishedAt),
+    publishedAtMs: Number.isNaN(ms) ? 0 : ms,
     author: p.author,
     disciplines: p.disciplines ?? [],
   };

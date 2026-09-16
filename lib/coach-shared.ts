@@ -63,6 +63,18 @@ export type CoachFeed = {
 /** The discipline facets a reader can filter by, matching the coaches directory. */
 export const DISCIPLINE_FILTERS = ["Design", "Product", "Content Design", "Research"] as const;
 
+/** A member's own role, expressed in the same vocabulary as coach facets. */
+const ROLE_TYPE_DISCIPLINE: Record<string, string> = {
+  product_design: "Design",
+  content_design: "Content Design",
+  user_research: "Research",
+  product_management: "Product",
+};
+
+export function disciplineForRoleType(roleType: string | null): string | null {
+  return roleType ? (ROLE_TYPE_DISCIPLINE[roleType] ?? null) : null;
+}
+
 /**
  * Which discipline filters a coach answers to. "both" (and no answer yet, for
  * curated seeds) covers Design and Product; the finer-grained specialty tags
@@ -70,14 +82,15 @@ export const DISCIPLINE_FILTERS = ["Design", "Product", "Content Design", "Resea
  */
 export function coachDisciplineLabels(c: {
   disciplines: CoachDiscipline | null;
-  specialties: string[];
+  specialties: string[] | null;
 }): string[] {
   const out: string[] = [];
   if (c.disciplines === "design") out.push("Design");
   else if (c.disciplines === "product") out.push("Product");
   else out.push("Design", "Product");
-  if (c.specialties.includes("content_design")) out.push("Content Design");
-  if (c.specialties.includes("user_research")) out.push("Research");
+  const specialties = c.specialties ?? [];
+  if (specialties.includes("content_design")) out.push("Content Design");
+  if (specialties.includes("user_research")) out.push("Research");
   return out;
 }
 
