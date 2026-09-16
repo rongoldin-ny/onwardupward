@@ -1,13 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { MultiSelect } from "@/components/MultiSelect";
 import { DISCIPLINE_FILTERS } from "@/lib/coach-shared";
 import type { ReadsPost } from "@/lib/mentorship-posts";
 import { PostCard } from "./PostCard";
 
-/** Two columns by four rows on desktop. */
-const PAGE_SIZE = 8;
+/** Two columns by four rows on desktop (matches the lg breakpoint below). */
+const PAGE_SIZE_DESKTOP = 8;
+/** A single column of cards has to fit a phone viewport with no scroll. */
+const PAGE_SIZE_MOBILE = 3;
 
 /** The byline a reader sees, so the Author filter matches what's on screen. */
 const bylineOf = (p: ReadsPost) => p.author ?? p.publication;
@@ -18,6 +21,17 @@ export default function ReadsList({ posts }: { posts: ReadsPost[] }) {
   const [authors, setAuthors] = useState<string[]>([]);
   const [page, setPage] = useState(0);
   const [back, setBack] = useState(false);
+  // Desktop by default so the server-rendered grid isn't cut down, then
+  // corrected on mount for phones — matches the lg:grid-cols-2 breakpoint.
+  const [pageSize, setPageSize] = useState(PAGE_SIZE_DESKTOP);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const update = () => setPageSize(mq.matches ? PAGE_SIZE_DESKTOP : PAGE_SIZE_MOBILE);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
 
   const authorOptions = useMemo(
     () => [...new Set(posts.map(bylineOf))].sort(),
@@ -38,11 +52,12 @@ export default function ReadsList({ posts }: { posts: ReadsPost[] }) {
 
   // Clamp rather than reset, so narrowing the list can never strand the reader
   // on a page that no longer exists.
-  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
   const current = Math.min(page, pageCount - 1);
-  const shown = filtered.slice(current * PAGE_SIZE, current * PAGE_SIZE + PAGE_SIZE);
+  const shown = filtered.slice(current * pageSize, current * pageSize + pageSize);
 
   function goTo(next: number) {
+    if (next < 0 || next > pageCount - 1) return;
     setBack(next < current);
     setPage(next);
   }
@@ -90,6 +105,45 @@ export default function ReadsList({ posts }: { posts: ReadsPost[] }) {
         {filtered.length !== posts.length && ` of ${posts.length}`}
       </p>
 
+      {pageCount > 1 && (
+        <div className="mt-4 flex items-center justify-center gap-1">
+          <button
+            type="button"
+            aria-label="Previous page"
+            disabled={current === 0}
+            onClick={() => goTo(current - 1)}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-secondary disabled:opacity-30"
+          >
+            <ChevronLeft size={16} strokeWidth={2} />
+          </button>
+          {Array.from({ length: pageCount }, (_, i) => (
+            <button
+              key={i}
+              type="button"
+              aria-label={`Page ${i + 1} of ${pageCount}`}
+              aria-current={i === current ? "true" : undefined}
+              onClick={() => goTo(i)}
+              className="flex h-9 w-9 shrink-0 items-center justify-center"
+            >
+              <span
+                className={`h-2.5 w-2.5 rounded-full transition-colors ${
+                  i === current ? "gold-gradient" : "bg-border-2 hover:bg-gold-border"
+                }`}
+              />
+            </button>
+          ))}
+          <button
+            type="button"
+            aria-label="Next page"
+            disabled={current === pageCount - 1}
+            onClick={() => goTo(current + 1)}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-secondary disabled:opacity-30"
+          >
+            <ChevronRight size={16} strokeWidth={2} />
+          </button>
+        </div>
+      )}
+
       {shown.length > 0 ? (
         // Keyed by page so React remounts the grid and replays the slide.
         <div
@@ -106,23 +160,6 @@ export default function ReadsList({ posts }: { posts: ReadsPost[] }) {
         <p className="mt-4 text-[14px] text-secondary">
           Nothing matches those filters — try loosening them.
         </p>
-      )}
-
-      {pageCount > 1 && (
-        <div className="mt-6 flex items-center justify-center gap-2.5">
-          {Array.from({ length: pageCount }, (_, i) => (
-            <button
-              key={i}
-              type="button"
-              aria-label={`Page ${i + 1} of ${pageCount}`}
-              aria-current={i === current ? "true" : undefined}
-              onClick={() => goTo(i)}
-              className={`h-2.5 w-2.5 rounded-full transition-colors ${
-                i === current ? "gold-gradient" : "bg-border-2"
-              }`}
-            />
-          ))}
-        </div>
       )}
     </div>
   );

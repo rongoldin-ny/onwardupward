@@ -77,6 +77,8 @@ export async function saveCoachAttributes(
   const substackRaw = str("substack_url");
   const substackUrl = substackRaw ? normalizeUrl(substackRaw) : null;
   if (substackRaw && !substackUrl) return { error: "That newsletter link doesn't look right." };
+  const yearsRaw = str("years_coaching");
+  const yearsCoaching = yearsRaw ? Math.max(0, Math.min(60, Number(yearsRaw) || 0)) : null;
 
   const existing = await getCoachByProfileId(user.id);
   const row = {
@@ -95,6 +97,8 @@ export async function saveCoachAttributes(
     booking_url: booking,
     company: str("company") || null,
     pricing: str("pricing") || null,
+    credentials: str("credentials") || null,
+    years_coaching: yearsCoaching,
     substack_url: substackUrl,
   };
 

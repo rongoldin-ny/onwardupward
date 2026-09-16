@@ -148,6 +148,24 @@ export default function CoachCard({
                 />
               </div>
             </Section>
+            <Section title="Coaching credentials">
+              <div className="space-y-3">
+                <TextField
+                  name="years_coaching"
+                  type="number"
+                  min={0}
+                  max={60}
+                  placeholder="Years of coaching experience"
+                  defaultValue={coach?.years_coaching ?? ""}
+                />
+                <TextArea
+                  name="credentials"
+                  rows={3}
+                  placeholder="Certifications, training, or other credentials (optional)"
+                  defaultValue={coach?.credentials ?? ""}
+                />
+              </div>
+            </Section>
             <Section title="The offering">
               <TextArea
                 name="offering"
@@ -214,6 +232,17 @@ export default function CoachCard({
                   </Tag>
                 ))}
               </div>
+            )}
+            {(coach?.years_coaching || coach?.credentials) && (
+              <Section title="Coaching credentials">
+                <p className="text-[15px] leading-[1.6] text-body">
+                  {coach?.years_coaching
+                    ? `${coach.years_coaching} ${coach.years_coaching === 1 ? "year" : "years"} of coaching experience`
+                    : null}
+                  {coach?.years_coaching && coach?.credentials ? " — " : null}
+                  {coach?.credentials}
+                </p>
+              </Section>
             )}
             {coach?.offering && (
               <Section title="The offering">

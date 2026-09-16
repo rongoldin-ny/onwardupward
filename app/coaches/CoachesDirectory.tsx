@@ -149,7 +149,7 @@ export default function CoachesDirectory({
                       {[coach.company, disciplineLabel(coach.disciplines)].filter(Boolean).join(" · ")}
                     </p>
                     {reviewCounts[coach.id] > 0 && (
-                      <p className="mt-1 flex items-center gap-1 text-[12px] text-muted">
+                      <p className="mt-1 flex items-center gap-1 text-[12px] text-success">
                         <MessageSquare size={11} strokeWidth={1.5} />
                         {reviewCounts[coach.id]} {reviewCounts[coach.id] === 1 ? "review" : "reviews"}
                       </p>

@@ -1,7 +1,9 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { currentUser } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { requireVetter } from "@/lib/vetting";
 
 /**
  * Stores a bug report or feature idea from the footer widget. Written via the
@@ -26,5 +28,20 @@ export async function submitFeedback(input: {
     console.error("submitFeedback failed:", error.message);
     return { error: "Couldn't send that — try again." };
   }
+  return {};
+}
+
+/** Toggle a feedback row's resolved flag — the admin feedback tab only. */
+export async function setFeedbackResolved(
+  id: string,
+  resolved: boolean,
+): Promise<{ error?: string }> {
+  await requireVetter();
+  const { error } = await supabaseAdmin().from("feedback").update({ resolved }).eq("id", id);
+  if (error) {
+    console.error("setFeedbackResolved failed:", error.message);
+    return { error: "Couldn't update that — try again." };
+  }
+  revalidatePath("/admin/feedback");
   return {};
 }
