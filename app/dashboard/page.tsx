@@ -53,7 +53,7 @@ export default async function Dashboard() {
               <p className="mt-1.5 text-[13px] font-medium text-on-gold/75">
                 {missing.length > 0
                   ? `Add ${missing.join(", ")} to make your profile visible.`
-                  : "Review and add detail to get discovered."}
+                  : "Add detail to help with matching and discovery."}
               </p>
               <div className="mt-3 h-[4px] w-full overflow-hidden rounded-full bg-on-gold/15">
                 <div
