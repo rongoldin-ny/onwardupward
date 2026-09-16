@@ -6,6 +6,7 @@ import { syncCoachIdentity } from "@/lib/coaches-db";
 import { supabaseServer, supabaseAdmin } from "@/lib/supabase/server";
 import { getWorkHistory, type PortfolioImage, type Profile, type WorkHistoryRow } from "@/lib/db";
 import { emailShell, sendEmail } from "@/lib/email";
+import { triggerAutoFillThenEnrich } from "@/lib/auto-fill";
 import { triggerEnrichment } from "@/lib/enrich";
 import { extractProfile, fetchPortfolioHtml, normalizeUrl } from "@/lib/extract";
 import { resumeTextFromBytes } from "@/lib/resume";
@@ -319,7 +320,10 @@ export async function finishOnboarding(formData: FormData) {
       onboarding_complete: true,
     })
     .eq("id", user.id);
-  triggerEnrichment(user.id); // async — does not block navigation
+  // First completion: have Claude fill in the rest from their portfolio /
+  // résumé (empty fields only), then enrich. Re-saves just re-enrich.
+  if (!user.onboarding_complete) triggerAutoFillThenEnrich(user.id);
+  else triggerEnrichment(user.id); // async — does not block navigation
 
   // First completion of a pending application → tell the vetting inbox.
   if (user.vetting_status === "pending" && !user.onboarding_complete) {
