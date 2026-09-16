@@ -26,7 +26,10 @@ export default async function SignInPage({
     <PageFrame size="narrow" chromeLogo={false}>
       <div className="flex flex-1 flex-col px-7 pt-8 pb-8 text-center">
         <main className="flex flex-1 flex-col justify-center">
-          <Logo />
+          {/* Centered as a unit: a bare flex item would stretch and left-align the lockup. */}
+          <span className="self-center">
+            <Logo />
+          </span>
 
           <h1 className="mt-9 text-[34px] leading-[1.08] font-black tracking-[-0.02em] text-cream">
             Welcome back.
@@ -56,14 +59,16 @@ export default async function SignInPage({
             </Link>
             .
           </p>
-        </main>
 
-        <footer className="pt-10 text-[15px] text-secondary">
-          New here?{" "}
-          <Link href="/signup" className="font-bold">
-            Create an account
-          </Link>
-        </footer>
+          {/* Inside <main> so it sits with the form rather than pinned to the
+              bottom edge, where mobile browser chrome cut it off. */}
+          <p className="mt-10 text-[15px] text-secondary">
+            New here?{" "}
+            <Link href="/signup" className="font-bold">
+              Create an account
+            </Link>
+          </p>
+        </main>
       </div>
     </PageFrame>
   );

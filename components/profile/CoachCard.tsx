@@ -7,13 +7,13 @@ import CoachBookLink from "@/components/CoachBookLink";
 import { MatchReason } from "@/components/MatchReason";
 import { DisciplineChips, MenteeChips, SpecialtyChips } from "@/components/CoachFormFields";
 import { TextArea, TextField } from "@/components/fields";
-import { Cta, Eyebrow, Tag } from "@/components/ui";
+import { Cta, Tag } from "@/components/ui";
 import { coachLevels, disciplineLabel, type CoachDiscipline } from "@/lib/coach-shared";
 import type { CoachMatch } from "@/lib/coach-match";
 import type { CoachReview } from "@/lib/coach-reviews-db";
 import type { ProfileView } from "@/lib/profile-view";
 import { labelForRoleType } from "@/lib/taxonomy";
-import { CardSection as Section, useEdit } from "./edit-context";
+import { CardSection as Section, useEdit, type Viewer } from "./edit-context";
 import CoachReviews from "./CoachReviews";
 
 /** The back of the card — coaching attributes. */
@@ -100,16 +100,15 @@ export default function CoachCard({
     <div className={shell}>
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <Eyebrow className="text-gold">Coach card</Eyebrow>
           {editing ? (
             <TextField
               name="title"
               placeholder={autoSubtitle || "Your coaching"}
               defaultValue={coach?.title ?? ""}
-              className="mt-2 !h-auto !py-2.5 text-[18px] font-black tracking-[-0.02em]"
+              className="!h-auto !py-2.5 text-[18px] font-black tracking-[-0.02em]"
             />
           ) : (
-            <h2 className="mt-2 text-[22px] leading-[1.15] font-black tracking-[-0.02em] text-cream">
+            <h2 className="text-[22px] leading-[1.15] font-black tracking-[-0.02em] text-cream">
               {subtitle || `Coaching with ${view.firstName}`}
             </h2>
           )}
@@ -329,7 +328,9 @@ export default function CoachCard({
       )}
 
       {!editing && viewer !== "owner" && coach && (
-        <div className="mt-8">
+        // Below lg the claim CTA renders under the profile links in
+        // IdentityPanel instead — down here it's a long scroll away.
+        <div className={approved && coach.booking_url ? "mt-8" : "mt-8 hidden lg:block"}>
           {approved && coach.booking_url ? (
             <CoachBookLink
               coachId={coach.id}
@@ -339,40 +340,66 @@ export default function CoachCard({
             >
               Book a session
             </CoachBookLink>
-          ) : status === "unclaimed" && hasPendingClaim ? (
-            <p className="rounded-full border border-border-2 px-6 py-4 text-center text-[15px] font-bold text-secondary">
-              Claim pending review
-            </p>
-          ) : status === "unclaimed" && viewer === "member" ? (
-            // A <form> here would nest inside ProfilePage's own outer <form>
-            // (the autosave form) — browsers don't allow nested forms and
-            // reassociate the submit button with the outer one instead, so
-            // this calls the server action directly from a plain button.
-            <button
-              type="button"
-              onClick={() => void claimCoach(coach.id)}
-              className="block w-full rounded-full border border-border-2 px-6 py-4 text-center text-[15px] font-bold text-cream"
-            >
-              This you? Claim your slot
-            </button>
-          ) : status === "unclaimed" && viewer === "public" ? (
-            <>
-              <a
-                href={`/claim/${coach.id}`}
-                className="gold-gradient cta-glow block rounded-full px-6 py-4 text-center text-[15px] font-bold text-on-gold"
-              >
-                This you? Claim your listing
-              </a>
-              <p className="mt-3 text-center text-[12.5px] leading-[1.5] text-secondary">
-                Create an account and this page becomes yours to edit.{" "}
-                <a href={`/signin?next=${encodeURIComponent(`/coaches/${coach.id}`)}`}>
-                  Already a member?
-                </a>
-              </p>
-            </>
-          ) : null}
+          ) : (
+            <CoachClaimCta coach={coach} viewer={viewer} hasPendingClaim={hasPendingClaim} />
+          )}
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * "This you?" for unclaimed listings — a pending notice, a member claim
+ * button, or a sign-up link for signed-out visitors. Null for anything else.
+ */
+export function CoachClaimCta({
+  coach,
+  viewer,
+  hasPendingClaim,
+  label,
+}: {
+  coach: NonNullable<ProfileView["coach"]>;
+  viewer: Viewer;
+  hasPendingClaim: boolean;
+  /** Overrides the default per-viewer CTA copy. */
+  label?: string;
+}) {
+  if (coach.status !== "unclaimed" || viewer === "owner") return null;
+  if (hasPendingClaim) {
+    return (
+      <p className="rounded-full border border-border-2 px-6 py-4 text-center text-[15px] font-bold text-secondary">
+        Claim pending review
+      </p>
+    );
+  }
+  if (viewer === "member") {
+    return (
+      // A <form> here would nest inside ProfilePage's own outer <form>
+      // (the autosave form) — browsers don't allow nested forms and
+      // reassociate the submit button with the outer one instead, so
+      // this calls the server action directly from a plain button.
+      <button
+        type="button"
+        onClick={() => void claimCoach(coach.id)}
+        className="block w-full rounded-full border border-border-2 px-6 py-4 text-center text-[15px] font-bold text-cream"
+      >
+        {label ?? "This you? Claim your slot"}
+      </button>
+    );
+  }
+  return (
+    <>
+      <a
+        href={`/claim/${coach.id}`}
+        className="gold-gradient cta-glow block rounded-full px-6 py-4 text-center text-[15px] font-bold text-on-gold"
+      >
+        {label ?? "This you? Claim your listing"}
+      </a>
+      <p className="mt-3 text-center text-[12.5px] leading-[1.5] text-secondary">
+        Create an account and this page becomes yours to edit.{" "}
+        <a href={`/signin?next=${encodeURIComponent(`/coaches/${coach.id}`)}`}>Already a member?</a>
+      </p>
+    </>
   );
 }

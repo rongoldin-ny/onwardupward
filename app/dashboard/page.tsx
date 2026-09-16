@@ -24,7 +24,7 @@ export default async function Dashboard() {
     <PageFrame size="wide">
     <div className="flex flex-1 flex-col px-7 pt-8 pb-8 lg:px-10 lg:pb-10">
       <header className="md:hidden">
-        <Logo />
+        <Logo full />
       </header>
 
       <h1 className="mt-10 text-[38px] leading-[1.15] font-black tracking-[-0.02em] text-cream md:mt-0">

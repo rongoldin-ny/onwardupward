@@ -21,7 +21,7 @@ export default async function CoachHubPage() {
     <PageFrame size="narrow">
       <div className="flex flex-1 flex-col px-7 pt-8 pb-10">
         <header className="flex items-center justify-between">
-          <span className="md:hidden"><Logo /></span>
+          <span className="md:hidden"><Logo full /></span>
           <form action={signOut} className="ml-auto">
             <button type="submit" className="text-[13px] text-muted">
               Sign out

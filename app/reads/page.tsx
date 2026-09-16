@@ -29,12 +29,13 @@ export default async function ReadsPage() {
           </span>
         </header>
 
-        <main className="mt-9">
+        <main className="mt-7 md:mt-9">
           <Eyebrow>Mentorship reads</Eyebrow>
-          <h1 className="mt-4 text-[30px] leading-[1.1] font-black tracking-[-0.02em] text-cream">
+          {/* Mobile keeps just the eyebrow — the list is the page. */}
+          <h1 className="mt-4 hidden text-[30px] leading-[1.1] font-black tracking-[-0.02em] text-cream md:block">
             Today&apos;s reading, curated for you.
           </h1>
-          <p className="mt-3 max-w-[560px] text-[15px] leading-[1.5] text-secondary">
+          <p className="mt-3 hidden max-w-[560px] text-[15px] leading-[1.5] text-secondary md:block">
             Fresh posts from design and product leadership newsletters — including the
             coaches on our bench.
           </p>

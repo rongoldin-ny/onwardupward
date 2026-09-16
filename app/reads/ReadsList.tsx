@@ -2,7 +2,7 @@
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MultiSelect } from "@/components/MultiSelect";
+import { FilterRow, MultiSelect } from "@/components/MultiSelect";
 import { DISCIPLINE_FILTERS } from "@/lib/coach-shared";
 import type { ReadsPost } from "@/lib/mentorship-posts";
 import { PostCard } from "./PostCard";
@@ -86,9 +86,9 @@ export default function ReadsList({ posts }: { posts: ReadsPost[] }) {
 
   return (
     <div>
-      <div className="mt-4 flex flex-wrap items-center gap-2">
+      <FilterRow className="mt-4">
         <label
-          className={`flex shrink-0 cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-[13px] ${
+          className={`flex shrink-0 cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-[13px] whitespace-nowrap ${
             coachOnly ? "border-gold-active font-bold text-gold" : "border-border-2 text-body-2"
           }`}
         >
@@ -114,7 +114,7 @@ export default function ReadsList({ posts }: { posts: ReadsPost[] }) {
             onChange={(next) => changeFilter(next, setAuthors)}
           />
         )}
-      </div>
+      </FilterRow>
 
       <p className="mt-4 text-[12px] text-secondary">
         {filtered.length} {filtered.length === 1 ? "post" : "posts"}

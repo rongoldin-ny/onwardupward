@@ -28,8 +28,14 @@ export default function AscentHome() {
       return { p, len, rate: parseFloat(p.dataset.rate || "1") };
     });
 
+    const nav = root.querySelector<HTMLElement>(".nav");
+
     function onScroll() {
       const d = document.documentElement;
+      // Mobile keeps sign-up CTAs out of the first screen; the nav's Join
+      // fades in once the reader starts scrolling (same threshold as the logo
+      // collapse, so it slides into the room the lockup frees up).
+      nav?.classList.toggle("scrolled", d.scrollTop > 40);
       const max = d.scrollHeight - d.clientHeight;
       const pr = max > 0 ? Math.min(1, d.scrollTop / max) : 0;
       if (lvl) lvl.textContent = String(Math.round(1 + pr * 98)).padStart(3, "0");
@@ -95,7 +101,7 @@ export default function AscentHome() {
             <span className="outline-gold">Get a coach.</span>
           </h1>
           <div className="hero-row">
-            <a className="btn btn-lg" href="#join">Sign up</a>
+            <a className="btn btn-lg hero-signup" href="#join">Sign up</a>
             <span className="hero-sub">
               Get started exploring potential mentors, advertising your coaching
               practice, or both.

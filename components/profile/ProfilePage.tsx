@@ -19,6 +19,10 @@ import FlipCard, { type CardSide } from "./FlipCard";
 import IdentityPanel from "./IdentityPanel";
 import PlayerCard, { type PlayerCardHandle } from "./PlayerCard";
 
+/** Owner header actions: share a row evenly on mobile, natural width on desktop. */
+const actionClass =
+  "flex h-11 flex-auto items-center justify-center gap-2 rounded-full px-4 text-[14px] font-bold whitespace-nowrap md:flex-none md:px-5";
+
 /**
  * One profile for every user type. The owner edits in place — every field
  * lives in a single form that autosaves; visitors get the same layout
@@ -134,6 +138,13 @@ export default function ProfilePage({
     await flushSave();
     setEditing(false);
     router.refresh();
+  }
+
+  /** Mobile close: save anything pending, then leave the way they came. */
+  async function close() {
+    if (editing) await flushSave();
+    if (window.history.length > 1) router.back();
+    else router.push("/");
   }
 
   async function handleSubmitApplication() {
@@ -286,53 +297,75 @@ export default function ProfilePage({
           <header className="flex flex-wrap items-center justify-end gap-3">
             {isOwner && (
               <>
-                <span className="mr-auto text-[12px] text-secondary" aria-live="polite">
-                  {saveState === "saving"
-                    ? "Saving…"
-                    : saveState === "saved"
-                      ? "Saved ✓ — autosaves as you type"
-                      : editing
-                        ? "Autosaves as you type"
-                        : ""}
-                </span>
-                {editing && (
+                {/* Mobile: close + save status on one row, actions on their own
+                    row below. The site's hamburger menu is hidden on profile
+                    pages (SiteNavClient), so this X is the way back out. */}
+                <div className="flex w-full items-center gap-3 md:mr-auto md:w-auto">
                   <button
                     type="button"
-                    onClick={handleAiFill}
-                    disabled={aiPending}
-                    className="flex h-11 items-center gap-2 rounded-full border border-gold-border px-5 text-[14px] font-bold text-gold disabled:opacity-60"
+                    aria-label="Close"
+                    onClick={close}
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border-2 md:hidden"
                   >
-                    <Sparkles size={15} strokeWidth={1.75} />
-                    {aiPending ? "Reading your portfolio…" : "Fill with AI"}
+                    <X size={16} strokeWidth={1.5} className="text-secondary" />
                   </button>
-                )}
-                <button
-                  type="button"
-                  onClick={share}
-                  className="flex h-11 items-center gap-2 rounded-full border border-border-2 px-5 text-[14px] font-bold text-cream"
-                >
-                  <Link2 size={15} strokeWidth={1.75} />
-                  Share
-                </button>
-                {editing ? (
+                  <span className="text-[12px] text-secondary" aria-live="polite">
+                    {saveState === "saving"
+                      ? "Saving…"
+                      : saveState === "saved"
+                        ? "Saved ✓ — autosaves as you type"
+                        : editing
+                          ? "Autosaves as you type"
+                          : ""}
+                  </span>
+                </div>
+                <div className="flex w-full gap-2 md:w-auto md:gap-3">
+                  {editing && (
+                    <button
+                      type="button"
+                      onClick={handleAiFill}
+                      disabled={aiPending}
+                      className={`${actionClass} border border-gold-border text-gold disabled:opacity-60`}
+                    >
+                      <Sparkles size={15} strokeWidth={1.75} />
+                      {aiPending ? (
+                        <>
+                          <span className="md:hidden">Reading…</span>
+                          <span className="hidden md:inline">Reading your portfolio…</span>
+                        </>
+                      ) : (
+                        "Fill with AI"
+                      )}
+                    </button>
+                  )}
                   <button
                     type="button"
-                    onClick={finishEditing}
-                    className="gold-gradient cta-glow flex h-11 items-center gap-2 rounded-full px-5 text-[14px] font-bold text-on-gold"
+                    onClick={share}
+                    className={`${actionClass} border border-border-2 text-cream`}
                   >
-                    <Check size={15} strokeWidth={2.25} />
-                    Done editing
+                    <Link2 size={15} strokeWidth={1.75} />
+                    Share
                   </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setEditing(true)}
-                    className="flex h-11 items-center gap-2 rounded-full border border-gold-border px-5 text-[14px] font-bold text-gold"
-                  >
-                    <Pencil size={14} strokeWidth={1.75} />
-                    Edit
-                  </button>
-                )}
+                  {editing ? (
+                    <button
+                      type="button"
+                      onClick={finishEditing}
+                      className={`${actionClass} gold-gradient cta-glow text-on-gold`}
+                    >
+                      <Check size={15} strokeWidth={2.25} />
+                      Done<span className="hidden md:inline"> editing</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setEditing(true)}
+                      className={`${actionClass} border border-gold-border text-gold`}
+                    >
+                      <Pencil size={14} strokeWidth={1.75} />
+                      Edit
+                    </button>
+                  )}
+                </div>
               </>
             )}
             {viewer === "member" && (
@@ -351,7 +384,7 @@ export default function ProfilePage({
 
           <EditContext.Provider value={{ editing: isOwner && editing, viewer, scheduleSave, track }}>
             <main className="mt-4 lg:mt-6 lg:grid lg:grid-cols-[300px_1fr] lg:items-start lg:gap-12">
-              <IdentityPanel view={v} ver={ver} />
+              <IdentityPanel view={v} ver={ver} hasPendingClaim={hasPendingClaim} />
               <div className="mt-9 lg:mt-0">{card}</div>
             </main>
           </EditContext.Provider>
@@ -362,11 +395,6 @@ export default function ProfilePage({
             <footer className="mt-10">
               <CtaLink href="/signup">Join the network</CtaLink>
             </footer>
-          )}
-          {editing && (
-            <p className="mt-8 text-[12px] text-muted">
-              Changes save automatically as you edit — &ldquo;Done editing&rdquo; just closes the editor.
-            </p>
           )}
         </form>
 

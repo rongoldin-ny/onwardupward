@@ -48,7 +48,7 @@
 }
 .ascent .logo { font-weight: 900; font-size: 20px; color: var(--a-text); letter-spacing: -0.02em; }
 .ascent .nav-right { display: flex; align-items: center; gap: 22px; }
-.ascent .nav-signin { font-size: 14px; font-weight: 500; }
+.ascent .nav-signin { font-size: 14px; font-weight: 500; white-space: nowrap; }
 .ascent .btn {
   display: inline-block; background: var(--a-gold-grad); color: var(--a-on-gold);
   font-weight: 700; border-radius: 999px; box-shadow: var(--a-glow);
@@ -232,6 +232,24 @@
 }
 .ascent footer .links { display: flex; gap: 24px; }
 .ascent footer a { font-size: 12px; color: var(--a-secondary); }
+
+/* Mobile: no sign-up CTA on the first screen. The hero button goes away and
+   the nav's Join waits for the first scroll (.scrolled, set in AscentHome). */
+@media (max-width: 767.98px) {
+  .ascent .hero-signup { display: none; }
+  .ascent .hero-row { margin-top: 28px; }
+  /* Hidden Join takes no room (width, padding and the flex gap collapse),
+     so "Sign in" sits flush right until Join slides in beside it. */
+  .ascent .nav .btn-sm {
+    max-width: 0; padding-left: 0; padding-right: 0; margin-left: -22px;
+    overflow: hidden; white-space: nowrap; opacity: 0; pointer-events: none;
+    transition: max-width 0.35s ease, padding 0.35s ease, margin 0.35s ease, opacity 0.3s ease;
+  }
+  .ascent .nav.scrolled .btn-sm {
+    max-width: 120px; padding-left: 22px; padding-right: 22px; margin-left: 0;
+    opacity: 1; pointer-events: auto;
+  }
+}
 
 /* reveal */
 .ascent .reveal { opacity: 0; transform: translateY(50px); transition: opacity 0.9s, transform 0.9s; }
