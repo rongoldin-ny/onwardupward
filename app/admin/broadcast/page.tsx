@@ -1,4 +1,4 @@
-import { requireAdmin } from "@/lib/auth";
+import { requireVetter } from "@/lib/vetting";
 import { productUpdateAudience } from "@/lib/notifications";
 import { Logo, PageFrame } from "@/components/ui";
 import AdminTabs from "../AdminTabs";
@@ -7,7 +7,7 @@ import BroadcastForm from "./BroadcastForm";
 export const metadata = { title: "Broadcast — onward/upward" };
 
 export default async function BroadcastPage() {
-  await requireAdmin();
+  await requireVetter();
   const audience = await productUpdateAudience();
 
   return (
