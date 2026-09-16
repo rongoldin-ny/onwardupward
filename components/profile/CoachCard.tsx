@@ -122,6 +122,19 @@ export default function CoachCard({
         </span>
       </div>
 
+      {/* Unclaimed listings: "This you?" is the page's main call to action,
+          so it leads the card instead of trailing the whole listing. */}
+      {!editing && coach && status === "unclaimed" && viewer !== "owner" && (
+        <div className="mt-5">
+          <CoachClaimCta
+            coach={coach}
+            viewer={viewer}
+            hasPendingClaim={hasPendingClaim}
+            label="This you? Claim your profile"
+          />
+        </div>
+      )}
+
       {viewer === "owner" && (
         <p className="mt-3 text-[12.5px] leading-[1.5] text-secondary">
           {isDraft
@@ -327,22 +340,16 @@ export default function CoachCard({
         </div>
       )}
 
-      {!editing && viewer !== "owner" && coach && (
-        // Below lg the claim CTA renders under the profile links in
-        // IdentityPanel instead — down here it's a long scroll away.
-        <div className={approved && coach.booking_url ? "mt-8" : "mt-8 hidden lg:block"}>
-          {approved && coach.booking_url ? (
-            <CoachBookLink
-              coachId={coach.id}
-              coachName={coach.full_name}
-              href={coach.booking_url}
-              className="gold-gradient cta-glow block rounded-full px-6 py-4 text-center text-[15px] font-bold text-on-gold"
-            >
-              Book a session
-            </CoachBookLink>
-          ) : (
-            <CoachClaimCta coach={coach} viewer={viewer} hasPendingClaim={hasPendingClaim} />
-          )}
+      {!editing && viewer !== "owner" && approved && coach?.booking_url && (
+        <div className="mt-8">
+          <CoachBookLink
+            coachId={coach.id}
+            coachName={coach.full_name}
+            href={coach.booking_url}
+            className="gold-gradient cta-glow block rounded-full px-6 py-4 text-center text-[15px] font-bold text-on-gold"
+          >
+            Book a session
+          </CoachBookLink>
         </div>
       )}
     </div>

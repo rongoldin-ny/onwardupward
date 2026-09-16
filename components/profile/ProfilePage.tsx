@@ -234,6 +234,9 @@ export default function ProfilePage({
   );
 
   const isOwner = viewer === "owner";
+  // Unclaimed coach listings lead with "This you? Claim your profile" (in
+  // CoachCard), so the generic sign-up buttons step aside.
+  const claimable = v.coach?.status === "unclaimed";
   const hasPlayer = !!v.player;
 
   const card = hasPlayer ? (
@@ -278,12 +281,14 @@ export default function ProfilePage({
             <p className="text-[14px] font-bold text-gold">
               onward/upward — a growth network for product designers and PMs.
             </p>
-            <Link
-              href="/signup"
-              className="gold-gradient cta-glow shrink-0 rounded-full px-5 py-2.5 text-[14px] font-bold text-on-gold"
-            >
-              Sign up to join the network
-            </Link>
+            {!claimable && (
+              <Link
+                href="/signup"
+                className="gold-gradient cta-glow shrink-0 rounded-full px-5 py-2.5 text-[14px] font-bold text-on-gold"
+              >
+                Sign up to join the network
+              </Link>
+            )}
           </div>
         )}
 
@@ -384,14 +389,14 @@ export default function ProfilePage({
 
           <EditContext.Provider value={{ editing: isOwner && editing, viewer, scheduleSave, track }}>
             <main className="mt-4 lg:mt-6 lg:grid lg:grid-cols-[300px_1fr] lg:items-start lg:gap-12">
-              <IdentityPanel view={v} ver={ver} hasPendingClaim={hasPendingClaim} />
+              <IdentityPanel view={v} ver={ver} />
               <div className="mt-9 lg:mt-0">{card}</div>
             </main>
           </EditContext.Provider>
 
           <input type="hidden" name="coaching_enabled" value={coachingEnabled ? "1" : ""} />
 
-          {viewer === "public" && (
+          {viewer === "public" && !claimable && (
             <footer className="mt-10">
               <CtaLink href="/signup">Join the network</CtaLink>
             </footer>
