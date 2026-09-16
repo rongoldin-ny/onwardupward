@@ -1,0 +1,65 @@
+"use client";
+
+import Link from "next/link";
+import { useState } from "react";
+import { saveGrowthGoal } from "@/app/actions/settings";
+import { Card, Eyebrow } from "@/components/ui";
+
+/**
+ * The goal is what coach matching reads, so members who skipped it during
+ * onboarding can fill it in here rather than being sent off to the profile.
+ */
+export default function GrowthGoalCard({ goal }: { goal: string | null }) {
+  const [text, setText] = useState("");
+  const [state, setState] = useState<"idle" | "saving">("idle");
+  const [error, setError] = useState<string | null>(null);
+
+  async function save() {
+    setState("saving");
+    setError(null);
+    const result = await saveGrowthGoal(text);
+    setState("idle");
+    if (result.error) setError(result.error);
+  }
+
+  return (
+    <Card className="p-6">
+      <Eyebrow>Where you hope to grow</Eyebrow>
+      <p className="mt-2 text-[13px] leading-[1.5] text-secondary">
+        This will help you match to the right mentors and coaches.
+      </p>
+
+      {goal ? (
+        <>
+          <p className="mt-5 text-[20px] leading-[1.4] font-bold text-cream">{goal}</p>
+          <Link
+            href="/profile"
+            className="mt-4 inline-block text-[12px] font-bold text-secondary"
+          >
+            Edit in profile
+          </Link>
+        </>
+      ) : (
+        <>
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            rows={3}
+            maxLength={500}
+            placeholder="What do you want to get better at this year?"
+            className="mt-5 w-full rounded-[16px] border border-border-1 bg-surface-1 p-4 text-[15px] leading-[1.5] text-cream placeholder:text-muted focus:border-gold-active focus:outline-none"
+          />
+          <button
+            type="button"
+            onClick={save}
+            disabled={state === "saving" || !text.trim()}
+            className="gold-gradient mt-3 h-[44px] rounded-full px-6 text-[14px] font-bold text-on-gold disabled:opacity-50"
+          >
+            {state === "saving" ? "Saving…" : "Save"}
+          </button>
+          {error && <p className="mt-3 text-[13px] text-gold">{error}</p>}
+        </>
+      )}
+    </Card>
+  );
+}

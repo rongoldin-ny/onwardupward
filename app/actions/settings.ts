@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth";
 import { supabaseAdmin, supabaseServer } from "@/lib/supabase/server";
 import { aiFillFromSources, type AiFillResult } from "@/lib/ai-fill";
@@ -119,6 +120,24 @@ export async function testProfileFill(formData: FormData): Promise<{
     console.error("test fill failed:", e);
     return { error: "Fill hit a snag — try again in a minute." };
   }
+}
+
+/** Set the growth goal inline from the dashboard, for members who skipped it. */
+export async function saveGrowthGoal(text: string): Promise<{ error?: string }> {
+  const user = await requireUser();
+  const goal = text.trim().slice(0, 500);
+  if (!goal) return { error: "Write a line or two first." };
+
+  const supabase = await supabaseServer();
+  const { error } = await supabase
+    .from("profiles")
+    .update({ growth_goal: goal })
+    .eq("id", user.id);
+  if (error) return { error: "Couldn't save — try again." };
+
+  triggerEnrichment(user.id);
+  revalidatePath("/dashboard");
+  return {};
 }
 
 /** Persist the three notification toggles. */

@@ -3,16 +3,16 @@ import { ArrowRight } from "lucide-react";
 import { requireCandidate } from "@/lib/auth";
 import { getCoachByProfileId, getDirectoryCoaches, type CoachRow } from "@/lib/coaches-db";
 import { getMentorshipPosts } from "@/lib/mentorship-posts";
-import { candidateStats, missingRequired, profileCompletionPct } from "@/lib/stats";
+import { missingRequired, profileCompletionPct } from "@/lib/stats";
 import { greeting } from "@/lib/greeting";
 import { Card, CtaLink, Eyebrow, Logo, PageFrame } from "@/components/ui";
+import GrowthGoalCard from "./GrowthGoalCard";
 
 const RECOMMENDED_COACH_SLUGS = ["andy-polaine", "mia-blume", "judd-garratt"];
 
 export default async function Dashboard() {
   const user = await requireCandidate();
-  const [stats, posts, mentorListing] = await Promise.all([
-    candidateStats(user.id),
+  const [posts, mentorListing] = await Promise.all([
     getMentorshipPosts(),
     getCoachByProfileId(user.id),
   ]);
@@ -62,43 +62,7 @@ export default async function Dashboard() {
             </Link>
           )}
 
-          <Card className="p-6">
-            <Eyebrow>Your profile, this week</Eyebrow>
-            <div className="mt-4 flex items-end gap-3">
-              <span className="text-[56px] leading-none font-black tracking-[-0.02em] text-cream">
-                {stats.viewsThisWeek}
-              </span>
-              {stats.deltaPct !== null && (
-                <span
-                  className={`pb-1.5 text-[15px] font-bold ${
-                    stats.deltaPct >= 0 ? "text-success" : "text-secondary"
-                  }`}
-                >
-                  {stats.deltaPct >= 0 ? "▲" : "▼"} {Math.abs(stats.deltaPct)}% vs last week
-                </span>
-              )}
-            </div>
-            <p className="mt-2 text-[15px] text-secondary">
-              views · {stats.viewsToday} today
-            </p>
-            <hr className="my-5 border-border-1" />
-            {stats.viewsThisWeek > 0 ? (
-              <p className="text-[15px] text-body">
-                You&apos;re in the{" "}
-                <span className="font-bold text-gold">top {stats.topPct}%</span> of profiles
-                this week.
-              </p>
-            ) : user.vetting_status === "pending" ? (
-              <p className="text-[15px] text-secondary">
-                Your profile is under review — we&apos;ll email you the moment
-                you&apos;re in.
-              </p>
-            ) : (
-              <p className="text-[15px] text-secondary">
-                Your profile is live — views will show up here.
-              </p>
-            )}
-          </Card>
+          <GrowthGoalCard goal={user.growth_goal} />
 
           {!mentorListing ? (
             <Link href="/profile?side=coach" className="mt-4 block">
