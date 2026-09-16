@@ -13,7 +13,10 @@ export default async function NotificationsSettingsPage() {
   const user = await requireUser();
   return (
     <SettingsShell title="Notifications." subtitle="Choose what lands in your inbox.">
-      <NotificationsForm initial={{ ...DEFAULTS, ...(user.notification_prefs ?? {}) }} />
+      <NotificationsForm
+        initial={{ ...DEFAULTS, ...(user.notification_prefs ?? {}) }}
+        allowCoachContact={user.allow_coach_contact}
+      />
     </SettingsShell>
   );
 }

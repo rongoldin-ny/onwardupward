@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ArrowUpRight } from "lucide-react";
 import { COUNTRIES, SelectField, TextArea, TextField } from "@/components/fields";
+import MemberContactForm from "@/components/MemberContactForm";
 import type { ProfileView } from "@/lib/profile-view";
 import { CoachConnect } from "./CoachCard";
 import { Labeled, RequiredPill, useEdit } from "./edit-context";
@@ -143,14 +144,16 @@ export default function IdentityPanel({ view, ver }: { view: ProfileView; ver: n
             </div>
           </Labeled>
           <label className="flex cursor-pointer items-start gap-3 rounded-[20px] border border-border-1 bg-surface-2 p-4">
+            <input type="hidden" name="allow_coach_contact_asked" value="1" />
             <input
               type="checkbox"
-              name="open_to_coaching_outreach"
-              defaultChecked={p.open_to_coaching_outreach}
+              name="allow_coach_contact"
+              defaultChecked={p.allow_coach_contact}
               className="mt-0.5 h-5 w-5 shrink-0 accent-[#E8C987]"
             />
             <span className="text-[13px] leading-[1.5] text-body-2">
-              It&apos;s okay for people to reach out to me for coaching opportunities.
+              Allow coaches to contact me. They message you through onward/upward — your
+              email address stays private either way.
             </span>
           </label>
         </div>
@@ -160,9 +163,6 @@ export default function IdentityPanel({ view, ver }: { view: ProfileView; ver: n
             {view.name}
           </h1>
           {metaLine && <p className="mt-2.5 text-[15px] text-secondary">{metaLine}</p>}
-          {viewer === "owner" && view.email && (
-            <p className="mt-1 text-[13px] text-muted">{view.email}</p>
-          )}
           {view.background && (
             <div className="mt-6 w-full">
               <p className="eyebrow text-secondary">Background</p>
@@ -211,6 +211,13 @@ export default function IdentityPanel({ view, ver }: { view: ProfileView; ver: n
           {view.coach && viewer !== "owner" && (
             <div className="mt-6 w-full empty:hidden">
               <CoachConnect coach={view.coach} viewer={viewer} />
+            </div>
+          )}
+          {/* A listing of their own already carries a "Connect with" CTA, so the
+              coach-to-member route only appears where there isn't one. */}
+          {view.canContact && !view.coach && (
+            <div className="mt-6 w-full">
+              <MemberContactForm profileId={view.id} name={view.name} />
             </div>
           )}
         </>

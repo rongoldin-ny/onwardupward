@@ -39,6 +39,22 @@ export async function sendEmail(opts: {
   }
 }
 
+export function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+/** Member-authored text → paragraphs, escaped so it can't break the email. */
+export function toParagraphs(body: string): string {
+  return body
+    .split(/\n{2,}/)
+    .map((p) => `<p style="margin:0 0 10px">${escapeHtml(p.trim()).replace(/\n/g, "<br />")}</p>`)
+    .join("");
+}
+
 /** Shared dark-theme shell for app emails. */
 export function emailShell(title: string, bodyHtml: string, cta?: { label: string; url: string }) {
   return `

@@ -53,7 +53,7 @@ export default function OnboardingWizard({ profile, exitHref = "/role" }: Props)
   const [resumeName, setResumeName] = useState<string | null>(null);
   // What step 1 is reading, e.g. "your résumé and portfolio" — shown while it works.
   const [readingWhat, setReadingWhat] = useState<string | null>(null);
-  const [outreach, setOutreach] = useState(profile.open_to_coaching_outreach ?? false);
+  const [outreach, setOutreach] = useState(profile.allow_coach_contact ?? true);
   const [discipline, setDiscipline] = useState<CoachDiscipline | null>(null);
   const [mentees, setMentees] = useState<string[]>([]);
   const formRef = useRef<HTMLFormElement>(null);
@@ -266,20 +266,21 @@ export default function OnboardingWizard({ profile, exitHref = "/role" }: Props)
                 className="min-w-0 flex-1"
               />
             </div>
-            {!isCoach && (
-              <label className="flex cursor-pointer items-start gap-3 rounded-[20px] border border-border-1 bg-surface-2 p-5">
-                <input
-                  type="checkbox"
-                  name="open_to_coaching_outreach"
-                  checked={outreach}
-                  onChange={(e) => setOutreach(e.target.checked)}
-                  className="mt-0.5 h-5 w-5 shrink-0 accent-[#E8C987]"
-                />
-                <span className="text-[14px] leading-[1.5] text-secondary">
-                  It&apos;s okay for people to reach out to me for coaching opportunities.
-                </span>
-              </label>
-            )}
+            {/* Coaches get asked too — they're on the receiving end of another
+                coach's note as often as a member is. */}
+            <label className="flex cursor-pointer items-start gap-3 rounded-[20px] border border-border-1 bg-surface-2 p-5">
+              <input
+                type="checkbox"
+                name="allow_coach_contact"
+                checked={outreach}
+                onChange={(e) => setOutreach(e.target.checked)}
+                className="mt-0.5 h-5 w-5 shrink-0 accent-[#E8C987]"
+              />
+              <span className="text-[14px] leading-[1.5] text-secondary">
+                Allow coaches to contact me. They message you through onward/upward — your
+                email address stays private either way.
+              </span>
+            </label>
           </div>
 
           {isCoach && (

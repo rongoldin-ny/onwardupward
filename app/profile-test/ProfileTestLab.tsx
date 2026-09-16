@@ -49,6 +49,7 @@ function fillToView(fill: AiFillResult, portfolioUrl: string | null): ProfileVie
       })),
     },
     coach: null,
+    canContact: false,
     missingRequired: [],
     raw: { profile: null, work: [], references: [] },
   };

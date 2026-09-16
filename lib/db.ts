@@ -47,7 +47,7 @@ export type Profile = {
   years_experience: number | null;
   industries: string[];
   contact_preference: "email" | "linkedin";
-  open_to_coaching_outreach: boolean;
+  allow_coach_contact: boolean;
   is_paid: boolean;
   is_supporter: boolean;
   notification_prefs: NotificationPrefs;
