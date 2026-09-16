@@ -72,7 +72,7 @@ export async function saveProfilePage(formData: FormData): Promise<SaveProfileRe
   return {
     images: profile.portfolio_images,
     photoUrl: profile.photo_url,
-    missingRequired: missingRequired(profile),
+    missingRequired: missingRequired(profile, { isCoach: !!coach }),
     coach,
   };
 }

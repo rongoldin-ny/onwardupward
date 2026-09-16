@@ -126,7 +126,7 @@ export function buildProfileView(
       })),
     },
     coach,
-    missingRequired: missingRequired(profile),
+    missingRequired: missingRequired(profile, { isCoach: !!coach }),
     raw: { profile, work, references },
   };
 }

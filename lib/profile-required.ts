@@ -25,7 +25,13 @@ export type RequiredFields = Pick<
   | "years_experience"
 >;
 
-export function missingRequired(p: RequiredFields): RequiredLabel[] {
+/**
+ * `isCoach`: whether the profile has a coach listing (any status). Years of
+ * experience is only required of coaches — members can leave it blank. It's a
+ * required argument so every caller has to decide, rather than silently
+ * holding members to the coach bar.
+ */
+export function missingRequired(p: RequiredFields, { isCoach }: { isCoach: boolean }): RequiredLabel[] {
   const out: RequiredLabel[] = [];
   if (!p.name) out.push("name");
   if (!p.photo_url) out.push("photo");
@@ -33,12 +39,14 @@ export function missingRequired(p: RequiredFields): RequiredLabel[] {
   if (!p.location_country) out.push("location");
   if (!p.linkedin_url && !p.portfolio_url && !p.website_url && !p.resume_url) out.push("a link");
   if (!p.bio) out.push("background");
-  if (p.years_experience === null || p.years_experience === undefined) out.push("years of experience");
+  if (isCoach && (p.years_experience === null || p.years_experience === undefined)) {
+    out.push("years of experience");
+  }
   return out;
 }
 
-export function isPublishable(p: RequiredFields): boolean {
-  return missingRequired(p).length === 0;
+export function isPublishable(p: RequiredFields, opts: { isCoach: boolean }): boolean {
+  return missingRequired(p, opts).length === 0;
 }
 
 /**
