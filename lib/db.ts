@@ -53,7 +53,9 @@ export type Profile = {
   notification_prefs: NotificationPrefs;
   role_chosen: boolean;
   onboarding_complete: boolean;
-  vetting_status: "pending" | "approved";
+  vetting_status: "pending" | "approved" | "rejected";
+  /** Set when an admin removes the member; archived profiles are hidden everywhere. */
+  archived_at: string | null;
   last_digest_sent_at: string | null;
   last_sign_in_at: string | null;
   created_at: string;

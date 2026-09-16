@@ -24,12 +24,13 @@ export async function getDirectoryCoaches(): Promise<CoachRow[]> {
   const { data: profiles } = await admin
     .from("profiles")
     .select(
-      "id, name, photo_url, email, location_country, linkedin_url, portfolio_url, website_url, resume_url, bio, years_experience",
+      "id, name, photo_url, email, location_country, linkedin_url, portfolio_url, website_url, resume_url, bio, years_experience, archived_at",
     )
     .in("id", claimedIds);
+  // An archived owner takes their claimed listing down with them.
   const publishable = new Set(
-    ((profiles ?? []) as (RequiredFields & { id: string })[])
-      .filter((p) => isPublishable(p, { isCoach: true }))
+    ((profiles ?? []) as (RequiredFields & { id: string; archived_at: string | null })[])
+      .filter((p) => !p.archived_at && isPublishable(p, { isCoach: true }))
       .map((p) => p.id),
   );
   return coaches.filter((c) => !c.profile_id || publishable.has(c.profile_id));

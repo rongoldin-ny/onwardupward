@@ -98,6 +98,7 @@ export async function sendWeeklyDigests(): Promise<DigestResult> {
     .select("id, name, email, role_type, notification_prefs, last_digest_sent_at")
     .eq("role", "candidate")
     .eq("vetting_status", "approved")
+    .is("archived_at", null)
     .not("email", "is", null);
 
   const all = (profileRows ?? []) as (Recipient & {
@@ -255,6 +256,7 @@ export async function productUpdateAudience(): Promise<number> {
   const { data } = await supabaseAdmin()
     .from("profiles")
     .select("id, name, email, notification_prefs")
+    .is("archived_at", null)
     .not("email", "is", null);
   return ((data ?? []) as Recipient[]).filter((r) => r.email && optedIn(r, "product_updates"))
     .length;
@@ -268,6 +270,7 @@ export async function sendProductUpdate(
   const { data } = await supabaseAdmin()
     .from("profiles")
     .select("id, name, email, notification_prefs")
+    .is("archived_at", null)
     .not("email", "is", null);
 
   const recipients = ((data ?? []) as Recipient[]).filter(

@@ -50,15 +50,16 @@ export function isPublishable(p: RequiredFields, opts: { isCoach: boolean }): bo
 }
 
 /**
- * Whether the /p/<id> share page renders for this profile: vetted (or an
- * approved coach) and publishable. Anything that links to a share page
- * should check this first, or the link lands on a 404.
+ * Whether the /p/<id> share page renders for this profile: not archived,
+ * vetted (or an approved coach) and publishable. Anything that links to a
+ * share page should check this first, or the link lands on a 404.
  */
 export function hasPublicProfile(
-  p: RequiredFields & Pick<Profile, "vetting_status">,
+  p: RequiredFields & Pick<Profile, "vetting_status" | "archived_at">,
   { approvedCoach }: { approvedCoach: boolean },
 ): boolean {
   return (
+    !p.archived_at &&
     (p.vetting_status === "approved" || approvedCoach) &&
     isPublishable(p, { isCoach: approvedCoach })
   );

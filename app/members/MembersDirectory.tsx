@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { Search, X } from "lucide-react";
+import { archiveMember } from "./actions";
 import { FilterRow, MultiSelect } from "@/components/MultiSelect";
 import { Avatar, Card } from "@/components/ui";
 import { CAREER_STAGES, ROLE_TYPES } from "@/lib/taxonomy";
@@ -19,15 +21,15 @@ export type MemberRow = {
   location_country: string | null;
   growth_goal: string | null;
   bio: string | null;
-  vetting_status: "pending" | "approved";
+  vetting_status: "pending" | "approved" | "rejected";
   onboarding_complete: boolean;
   created_at: string;
   /** The member's own coach listing status, if they have one. */
   coachStatus: string | null;
 };
 
-type Status = "Approved" | "Pending review" | "Onboarding";
-const STATUSES: Status[] = ["Approved", "Pending review", "Onboarding"];
+type Status = "Approved" | "Pending review" | "Rejected" | "Onboarding";
+const STATUSES: Status[] = ["Approved", "Pending review", "Rejected", "Onboarding"];
 const COACHING = ["Coaching", "Not coaching"];
 
 const roleLabel = (v: string | null) => ROLE_TYPES.find((r) => r.value === v)?.label ?? null;
@@ -35,16 +37,97 @@ const stageLabel = (v: string | null) => CAREER_STAGES.find((s) => s.value === v
 
 function statusOf(m: MemberRow): Status {
   if (!m.onboarding_complete) return "Onboarding";
-  return m.vetting_status === "approved" ? "Approved" : "Pending review";
+  if (m.vetting_status === "approved") return "Approved";
+  return m.vetting_status === "rejected" ? "Rejected" : "Pending review";
 }
 
 const statusStyle: Record<Status, string> = {
   Approved: "border-success/35 text-success",
   "Pending review": "border-gold-border text-gold",
+  Rejected: "border-[#e5484d]/40 text-[#e5484d]",
   Onboarding: "border-border-2 text-muted",
 };
 
-export default function MembersDirectory({ members }: { members: MemberRow[] }) {
+/** "Are you sure?" before archiving a member. Escape or the backdrop cancels. */
+function RemoveMemberDialog({
+  member,
+  onCancel,
+  onRemoved,
+}: {
+  member: MemberRow;
+  onCancel: () => void;
+  onRemoved: (id: string) => void;
+}) {
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const name = member.name ?? member.email ?? "this member";
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onCancel();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onCancel]);
+
+  async function remove() {
+    setPending(true);
+    setError(null);
+    const result = await archiveMember(member.id);
+    setPending(false);
+    if (result.error) {
+      setError(result.error);
+      return;
+    }
+    onRemoved(member.id);
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(10,10,12,0.85)] px-6"
+      onClick={onCancel}
+    >
+      <div
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="remove-member-title"
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-[400px] rounded-[28px] border border-border-1 bg-surface-2 p-6"
+      >
+        <h2 id="remove-member-title" className="text-[20px] font-black tracking-[-0.02em] text-cream">
+          Remove {name}?
+        </h2>
+        <p className="mt-2 text-[14px] leading-[1.5] text-secondary">
+          Are you sure? They&apos;ll be archived — hidden from Members, search, public links and
+          emails. Nothing is deleted, so they can be restored later.
+        </p>
+        {error && <p className="mt-3 text-[13px] text-[#e5484d]">{error}</p>}
+        <div className="mt-6 flex gap-3">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="h-[48px] flex-1 rounded-full border border-border-2 text-[14px] font-bold text-cream"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={remove}
+            disabled={pending}
+            autoFocus
+            className="h-[48px] flex-1 rounded-full bg-[#e5484d] text-[14px] font-bold text-white disabled:opacity-60"
+          >
+            {pending ? "Removing…" : "Remove"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function MembersDirectory({ members: initialMembers }: { members: MemberRow[] }) {
+  const router = useRouter();
+  // Local copy so a removed card disappears immediately.
+  const [members, setMembers] = useState(initialMembers);
+  const [removing, setRemoving] = useState<MemberRow | null>(null);
   const [q, setQ] = useState("");
   const [roles, setRoles] = useState<string[]>([]);
   const [stages, setStages] = useState<string[]>([]);
@@ -105,60 +188,84 @@ export default function MembersDirectory({ members }: { members: MemberRow[] }) 
           const headline = [roleLabel(m.role_type), stageLabel(m.career_stage)].filter(Boolean).join(" · ");
           const location = [m.location_city, m.location_state, m.location_country].filter(Boolean).join(", ");
           return (
-            <Link key={m.id} href={`/admin/vetting/${m.id}`} className="block rounded-[20px]">
-              <Card className="card-hover flex h-full min-w-0 flex-col">
-                <div className="flex min-w-0 items-center gap-4">
-                  <Avatar id={m.id} src={m.photo_url} size={64} />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex min-w-0 items-center gap-2">
-                      <h2 className="truncate text-[19px] font-black tracking-[-0.02em] text-cream">
-                        {m.name ?? m.email ?? "Unnamed"}
-                      </h2>
-                      {m.coachStatus && (
-                        <span className="eyebrow shrink-0 rounded-full border border-success/35 px-2 py-1 text-[9px] text-success">
-                          Coach
-                        </span>
-                      )}
+            <div key={m.id} className="relative">
+              <Link href={`/admin/vetting/${m.id}`} className="block h-full rounded-[20px]">
+                <Card className="card-hover flex h-full min-w-0 flex-col">
+                  {/* Right padding keeps the name clear of the remove X. */}
+                  <div className="flex min-w-0 items-center gap-4 pr-7">
+                    <Avatar id={m.id} src={m.photo_url} size={64} />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <h2 className="truncate text-[19px] font-black tracking-[-0.02em] text-cream">
+                          {m.name ?? m.email ?? "Unnamed"}
+                        </h2>
+                        {m.coachStatus && (
+                          <span className="eyebrow shrink-0 rounded-full border border-success/35 px-2 py-1 text-[9px] text-success">
+                            Coach
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-1 truncate text-[13px] text-secondary">
+                        {headline || "No role yet"}
+                        {location && ` · ${location}`}
+                      </p>
+                      <p className="mt-1 truncate text-[12px] text-muted">{m.email}</p>
                     </div>
-                    <p className="mt-1 truncate text-[13px] text-secondary">
-                      {headline || "No role yet"}
-                      {location && ` · ${location}`}
-                    </p>
-                    <p className="mt-1 truncate text-[12px] text-muted">{m.email}</p>
                   </div>
-                </div>
 
-                {(m.growth_goal || m.bio) && (
-                  <p className="mt-4 line-clamp-2 text-[14px] leading-[1.55] text-body-2">
-                    {m.growth_goal ? (
-                      <>
-                        <span className="font-bold text-gold">Hoping to grow:</span> {m.growth_goal}
-                      </>
-                    ) : (
-                      m.bio
-                    )}
-                  </p>
-                )}
+                  {(m.growth_goal || m.bio) && (
+                    <p className="mt-4 line-clamp-2 text-[14px] leading-[1.55] text-body-2">
+                      {m.growth_goal ? (
+                        <>
+                          <span className="font-bold text-gold">Hoping to grow:</span> {m.growth_goal}
+                        </>
+                      ) : (
+                        m.bio
+                      )}
+                    </p>
+                  )}
 
-                <div className="mt-auto flex items-center justify-between gap-3 pt-3.5">
-                  <p className="text-[12px] text-muted">
-                    Joined{" "}
-                    {new Date(m.created_at).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                      timeZone: "UTC",
-                    })}
-                  </p>
-                  <span className={`eyebrow shrink-0 rounded-full border px-2.5 py-1.5 text-[9px] ${statusStyle[status]}`}>
-                    {status}
-                  </span>
-                </div>
-              </Card>
-            </Link>
+                  <div className="mt-auto flex items-center justify-between gap-3 pt-3.5">
+                    <p className="text-[12px] text-muted">
+                      Joined{" "}
+                      {new Date(m.created_at).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                        timeZone: "UTC",
+                      })}
+                    </p>
+                    <span className={`eyebrow shrink-0 rounded-full border px-2.5 py-1.5 text-[9px] ${statusStyle[status]}`}>
+                      {status}
+                    </span>
+                  </div>
+                </Card>
+              </Link>
+              {/* A sibling of the card link, not inside it — a button can't nest in an <a>. */}
+              <button
+                type="button"
+                aria-label={`Remove ${m.name ?? m.email ?? "member"}`}
+                title="Remove member"
+                onClick={() => setRemoving(m)}
+                className="x-danger absolute top-3 right-3 flex h-8 w-8 items-center justify-center rounded-full text-[#e5484d] transition-colors hover:bg-[#e5484d]/15"
+              >
+                <X size={16} strokeWidth={2.25} />
+              </button>
+            </div>
           );
         })}
       </div>
+      {removing && (
+        <RemoveMemberDialog
+          member={removing}
+          onCancel={() => setRemoving(null)}
+          onRemoved={(id) => {
+            setMembers((cur) => cur.filter((m) => m.id !== id));
+            setRemoving(null);
+            router.refresh();
+          }}
+        />
+      )}
       {filtered.length === 0 && (
         <p className="mt-6 rounded-[20px] border border-dashed border-border-2 px-5 py-8 text-center text-[14px] text-secondary">
           No members match — try loosening the filters.
