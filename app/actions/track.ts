@@ -2,6 +2,7 @@
 
 import { currentUser } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { trackingOptedOut } from "@/lib/tracking-consent";
 
 /**
  * Lightweight traffic + coach analytics, written via the admin client so
@@ -13,6 +14,7 @@ const IGNORED = /^\/(api|_next)\//;
 export async function trackPageView(path: string): Promise<void> {
   const clean = String(path ?? "").slice(0, 200);
   if (!clean.startsWith("/") || IGNORED.test(clean)) return;
+  if (await trackingOptedOut()) return;
   const user = await currentUser().catch(() => null);
   await supabaseAdmin()
     .from("analytics_events")
@@ -24,6 +26,7 @@ export async function trackCoachView(
   coachName: string,
   kind: "book" | "claim" | "website",
 ): Promise<void> {
+  if (await trackingOptedOut()) return;
   const user = await currentUser().catch(() => null);
   await supabaseAdmin()
     .from("analytics_events")
@@ -37,7 +40,7 @@ export async function trackCoachView(
 /** Batched "seen in the directory" logging for a rendered/filtered result set. */
 export async function trackCoachImpressions(coachIds: string[]): Promise<void> {
   const ids = [...new Set(coachIds)].slice(0, 200);
-  if (ids.length === 0) return;
+  if (ids.length === 0 || (await trackingOptedOut())) return;
   const user = await currentUser().catch(() => null);
   await supabaseAdmin()
     .from("analytics_events")
