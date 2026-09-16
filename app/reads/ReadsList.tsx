@@ -3,7 +3,6 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FilterRow, MultiSelect } from "@/components/MultiSelect";
-import { DISCIPLINE_FILTERS } from "@/lib/coach-shared";
 import type { ReadsPost } from "@/lib/mentorship-posts";
 import { PostCard } from "./PostCard";
 
@@ -17,7 +16,6 @@ const bylineOf = (p: ReadsPost) => p.author ?? p.publication;
 
 export default function ReadsList({ posts }: { posts: ReadsPost[] }) {
   const [coachOnly, setCoachOnly] = useState(false);
-  const [disciplines, setDisciplines] = useState<string[]>([]);
   const [authors, setAuthors] = useState<string[]>([]);
   const [page, setPage] = useState(0);
   const [back, setBack] = useState(false);
@@ -38,16 +36,19 @@ export default function ReadsList({ posts }: { posts: ReadsPost[] }) {
     [posts],
   );
 
+  // No Discipline facet for now: a post inherits its tags wholesale from the
+  // coach who wrote it, and a "both" coach answers to Design and Product alike,
+  // so research writing surfaced under Design. Curated feeds carry no tags at
+  // all, so any selection hid them entirely. Bring it back once posts are
+  // tagged by their own content.
   const filtered = useMemo(
     () =>
       posts.filter((p) => {
         if (coachOnly && !p.isCoach) return false;
-        if (disciplines.length > 0 && !p.disciplines.some((d) => disciplines.includes(d)))
-          return false;
         if (authors.length > 0 && !authors.includes(bylineOf(p))) return false;
         return true;
       }),
-    [posts, coachOnly, disciplines, authors],
+    [posts, coachOnly, authors],
   );
 
   // Clamp rather than reset, so narrowing the list can never strand the reader
@@ -100,12 +101,6 @@ export default function ReadsList({ posts }: { posts: ReadsPost[] }) {
           />
           From our coaches
         </label>
-        <MultiSelect
-          label="Discipline"
-          options={DISCIPLINE_FILTERS}
-          value={disciplines}
-          onChange={(next) => changeFilter(next, setDisciplines)}
-        />
         {authorOptions.length > 1 && (
           <MultiSelect
             label="Author"
