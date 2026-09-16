@@ -103,7 +103,7 @@ export default function CoachCard({
         </div>
         <span
           className={`eyebrow shrink-0 rounded-full border px-3 py-1.5 ${
-            approved ? "border-gold-border text-gold" : "border-border-2 text-muted"
+            approved ? "border-success/35 text-success" : "border-border-2 text-muted"
           }`}
         >
           {isDraft ? "Draft" : status === "pending" ? "Under review" : approved ? "Live" : "Unclaimed"}
@@ -163,18 +163,23 @@ export default function CoachCard({
                 defaultValue={coach?.best_for ?? ""}
               />
             </Section>
-            <Section title="Booking & pricing">
+            <Section title="Pricing">
+              <TextField
+                name="pricing"
+                placeholder="Pricing — a number or a range is fine"
+                defaultValue={coach?.pricing ?? ""}
+              />
+            </Section>
+            <Section title="Booking or contact link">
               <div className="space-y-3">
                 <TextField
                   name="booking_url"
-                  placeholder="Booking link — Calendly, website, or an email address"
+                  placeholder="Calendly, website, or email"
                   defaultValue={bookingDisplay}
                 />
-                <TextField
-                  name="pricing"
-                  placeholder="Pricing — a number or a range is fine"
-                  defaultValue={coach?.pricing ?? ""}
-                />
+                <p className="px-1 text-[12px] text-muted">
+                  Links, ex. Calendly or your website — or just an email address to book you.
+                </p>
                 <TextField
                   name="company"
                   placeholder="Company or practice (optional)"
@@ -192,20 +197,21 @@ export default function CoachCard({
           </>
         ) : (
           <>
-            {coach && coach.specialties.length > 0 && (
-              <div>
-                <Eyebrow className="text-muted">Specializes in</Eyebrow>
-                <div className="mt-2.5 flex flex-wrap gap-2.5">
-                  {coach.specialties.map((s) => (
-                    <Tag key={s}>{labelForRoleType(s)}</Tag>
-                  ))}
-                </div>
-              </div>
-            )}
-            {levels.length > 0 && (
+            {coach && (coach.specialties.length > 0 || levels.length > 0) && (
               <div className="flex flex-wrap gap-2.5">
+                {coach.specialties.length > 0
+                  ? coach.specialties.map((s) => (
+                      <Tag key={s} variant="neutral">
+                        {labelForRoleType(s)}
+                      </Tag>
+                    ))
+                  : disciplineLabel(coach.disciplines) && (
+                      <Tag variant="neutral">{disciplineLabel(coach.disciplines)}</Tag>
+                    )}
                 {levels.map((l) => (
-                  <Tag key={l}>{l}</Tag>
+                  <Tag key={l} variant="neutral">
+                    {l}
+                  </Tag>
                 ))}
               </div>
             )}

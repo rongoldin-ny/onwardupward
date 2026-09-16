@@ -1,3 +1,5 @@
+import FeedbackWidget from "@/components/feedback/FeedbackWidget";
+
 /**
  * Persistent site-wide footer, mounted once in the root layout. Pinned to the
  * corner rather than sitting in the flow: PageFrame's card is min-h-dvh, so an
@@ -7,6 +9,7 @@
 export default function SiteFooter() {
   return (
     <footer className="pointer-events-none fixed right-5 bottom-4 z-30 flex items-center gap-2 text-[10px] font-bold tracking-[0.14em] text-muted uppercase md:right-7 md:bottom-5">
+      <FeedbackWidget />
       <a
         href="https://formativelabs.co/"
         target="_blank"

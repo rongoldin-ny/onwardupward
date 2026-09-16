@@ -34,7 +34,7 @@ export default function GrowthGoalCard({ goal }: { goal: string | null }) {
           <p className="mt-5 text-[20px] leading-[1.4] font-bold text-cream">{goal}</p>
           <Link
             href="/profile"
-            className="mt-4 inline-block text-[12px] font-bold text-secondary"
+            className="mt-4 inline-block text-[13px] font-bold text-gold"
           >
             Edit in profile
           </Link>

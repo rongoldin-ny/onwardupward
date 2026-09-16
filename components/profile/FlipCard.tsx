@@ -34,7 +34,7 @@ export default function FlipCard({
               side === s ? "gold-gradient text-on-gold" : "text-secondary"
             }`}
           >
-            {s === "player" ? "Player" : "Coach"}
+            {s === "player" ? "Profile" : "Coach"}
           </button>
         ))}
       </div>

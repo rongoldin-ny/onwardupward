@@ -71,7 +71,10 @@ export default async function CoachDetailPage({
     if (p) {
       const profile = p as Profile;
       if (!isPublishable(profile)) notFound();
-      const view = await toProfileView(profile, { admin: true });
+      const view = await toProfileView(profile, {
+        admin: true,
+        canSeePublicResume: user?.role === "coach" || user?.role === "recruiter",
+      });
       return (
         <ProfilePage
           view={view}

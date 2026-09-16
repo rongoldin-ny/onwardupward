@@ -52,8 +52,10 @@ export type ProfileView = {
 /**
  * Résumés are private by default (only used server-side for AI summaries and
  * matching) — the link only appears here for the owner, an admin/vetter
- * reviewing an application, or when the owner has opted in via
- * `resume_public`. `canSeePrivateResume` covers the first two.
+ * reviewing an application (`canSeePrivateResume`), or when the owner has
+ * opted in via `resume_public` AND the viewer is a coach or hiring manager
+ * (`canSeePublicResume`) — regular members never get a resume link, opted in
+ * or not.
  */
 export function profileUrls(
   p: {
@@ -63,13 +65,16 @@ export function profileUrls(
     resume_url: string | null;
     resume_public: boolean;
   },
-  opts: { canSeePrivateResume?: boolean } = {},
+  opts: { canSeePrivateResume?: boolean; canSeePublicResume?: boolean } = {},
 ): ProfileUrl[] {
   const out: ProfileUrl[] = [];
   if (p.linkedin_url) out.push({ label: "LinkedIn", href: p.linkedin_url });
   if (p.portfolio_url) out.push({ label: "Portfolio", href: p.portfolio_url });
   if (p.website_url) out.push({ label: "Website", href: p.website_url });
-  if (p.resume_url && (p.resume_public || opts.canSeePrivateResume)) {
+  if (
+    p.resume_url &&
+    (opts.canSeePrivateResume || (p.resume_public && opts.canSeePublicResume))
+  ) {
     out.push({ label: "Résumé", href: p.resume_url });
   }
   return out;
@@ -89,7 +94,7 @@ export function buildProfileView(
   work: WorkHistoryRow[],
   references: ReferenceRow[],
   coach: CoachRow | null,
-  opts: { canSeePrivateResume?: boolean } = {},
+  opts: { canSeePrivateResume?: boolean; canSeePublicResume?: boolean } = {},
 ): ProfileView {
   const name = profile.name ?? "Unnamed";
   return {
@@ -128,7 +133,7 @@ export function buildProfileView(
 
 export async function toProfileView(
   profile: Profile,
-  opts: { admin?: boolean; canSeePrivateResume?: boolean } = {},
+  opts: { admin?: boolean; canSeePrivateResume?: boolean; canSeePublicResume?: boolean } = {},
 ): Promise<ProfileView> {
   // Public pages have no signed-in viewer, so RLS-scoped reads come back
   // empty — those callers fetch with the admin client instead.
@@ -153,6 +158,7 @@ export async function toProfileView(
   ]);
   return buildProfileView(profile, work, references, coach, {
     canSeePrivateResume: opts.canSeePrivateResume,
+    canSeePublicResume: opts.canSeePublicResume,
   });
 }
 

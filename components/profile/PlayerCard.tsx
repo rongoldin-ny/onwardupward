@@ -145,7 +145,7 @@ export default function PlayerCard({
     <div className="overflow-hidden rounded-[24px] border border-border-1 bg-surface-2 p-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <Eyebrow className="text-gold">Player card</Eyebrow>
+          <Eyebrow className="text-gold">Profile card</Eyebrow>
           {editing ? (
             <div key={`headline-${ver}`} className="mt-3 flex flex-col gap-3 sm:flex-row">
               <SelectField
