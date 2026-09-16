@@ -13,11 +13,14 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 export async function GET(request: Request): Promise<Response> {
-  const secret = process.env.CRON_SECRET;
+  // Trimmed on both sides: a value pasted into a dashboard field can pick up a
+  // trailing newline, and an exact compare would then reject every caller
+  // forever with no way to tell that from a genuinely wrong token.
+  const secret = process.env.CRON_SECRET?.trim();
   if (!secret) {
     return Response.json({ error: "CRON_SECRET is not configured" }, { status: 503 });
   }
-  if (request.headers.get("authorization") !== `Bearer ${secret}`) {
+  if (request.headers.get("authorization")?.trim() !== `Bearer ${secret}`) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
