@@ -298,8 +298,13 @@ export default function ProfilePage({
   // CoachCard), so the generic sign-up buttons step aside.
   const claimable = v.coach?.status === "unclaimed";
   const hasPlayer = !!v.player;
+  // Visitors only get the Profile/Coach tabs when there's a live coach listing
+  // to show. Owners always see both — their Coach side invites them to start.
+  const showCoachSide = isOwner || v.coach?.status === "approved";
 
-  const card = hasPlayer ? (
+  const card = hasPlayer && !showCoachSide ? (
+    <PlayerCard ref={playerRef} view={v} ver={ver} communitySkills={communitySkills} />
+  ) : hasPlayer ? (
     <FlipCard
       side={side}
       onSide={setSide}
