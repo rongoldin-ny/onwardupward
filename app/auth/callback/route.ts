@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { supabaseRoute } from "@/lib/supabase/server";
 import { homeFor } from "@/lib/auth";
-import { claimListing, COACH_CLAIM_COOKIE } from "@/lib/claims";
+import { adoptClaimant, claimListing, COACH_CLAIM_COOKIE } from "@/lib/claims";
 import type { Profile } from "@/lib/db";
 
 /**
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
   if (!user) return fail("google");
 
   const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
-  const profile = data as Profile | null;
+  let profile = data as Profile | null;
 
   // No profile row means the signup trigger didn't fire — don't strand them
   // on a blank page pretending they're signed in.
@@ -44,17 +44,25 @@ export async function GET(request: NextRequest) {
   let claimed = false;
   if (claimCoachId) {
     claimed = (await claimListing(claimCoachId, profile).catch(() => "unavailable")) === "claimed";
+    // Settles their role and skips the member wizard — see adoptClaimant.
+    profile = await adoptClaimant(profile, { becomesCoach: claimed });
   }
 
-  // Only accounts that have never picked a role go to /role. Keying this off
-  // onboarding_complete would send anyone who abandoned the wizard back to
-  // the picker on every single sign-in.
-  const destination = !profile.role_chosen
-    ? "/role"
-    : claimCoachId
-      ? claimed
-        ? "/profile?side=coach"
-        : `/coaches/${claimCoachId}`
+  // A claimant is never sent to the role picker: they told us who they are by
+  // claiming. Everyone else who has never picked a role still goes to /role —
+  // keying that off onboarding_complete would send anyone who abandoned the
+  // wizard back to the picker on every single sign-in.
+  const destination = claimCoachId
+    ? claimed
+      ? // A brand-new claimant is now a coach account, so this is the coach
+        // home. A member who already had an account keeps their own role, and
+        // their listing lives on their profile's Coach side.
+        profile.role === "coach"
+        ? "/coach?welcome=coach"
+        : "/profile?side=coach&welcome=coach"
+      : `/coaches/${claimCoachId}?welcome=claim`
+    : !profile.role_chosen
+      ? "/role"
       : next?.startsWith("/")
         ? next
         : homeFor(profile);

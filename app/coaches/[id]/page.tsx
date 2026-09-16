@@ -1,12 +1,11 @@
 import { notFound, redirect } from "next/navigation";
 import ProfilePage from "@/components/profile/ProfilePage";
 import { currentUser } from "@/lib/auth";
-import type { CoachRow } from "@/lib/coach-shared";
+import { coachListingVisible, type CoachRow } from "@/lib/coach-shared";
 import { getCoachReviews, getOwnReview } from "@/lib/coach-reviews-db";
 import { getCoachMatches } from "@/lib/coach-match";
 import { getDirectoryCoaches } from "@/lib/coaches-db";
 import type { Profile } from "@/lib/db";
-import { isPublishable } from "@/lib/profile-required";
 import { coachOnlyProfileView, toProfileView } from "@/lib/profile-view";
 import { accessFor } from "@/lib/viewer-access";
 import { supabaseAdmin } from "@/lib/supabase/server";
@@ -19,10 +18,18 @@ import { trackingOptedOut } from "@/lib/tracking-consent";
  */
 export default async function CoachDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | undefined>>;
 }) {
   const { id } = await params;
+  // Landing here straight from a claim that still needs a look — see
+  // app/auth/callback/route.ts.
+  const notice =
+    (await searchParams).welcome === "claim"
+      ? "You're in! We're confirming this listing is yours — we'll email you the moment it's yours to edit."
+      : undefined;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
 
   const admin = supabaseAdmin();
@@ -80,7 +87,7 @@ export default async function CoachDetailPage({
       .maybeSingle();
     if (p) {
       const profile = p as Profile;
-      if (profile.archived_at || !isPublishable(profile, { isCoach: true })) notFound();
+      if (!coachListingVisible(coach, profile)) notFound();
       const view = await toProfileView(profile, { admin: true, ...(await accessFor(user)) });
       return (
         <ProfilePage
@@ -91,6 +98,7 @@ export default async function CoachDetailPage({
           hasPendingClaim={hasPendingClaim}
           reviews={reviews}
           ownReview={ownReview}
+          notice={notice}
         />
       );
     }
@@ -105,6 +113,7 @@ export default async function CoachDetailPage({
       hasPendingClaim={hasPendingClaim}
       reviews={reviews}
       ownReview={ownReview}
+      notice={notice}
     />
   );
 }

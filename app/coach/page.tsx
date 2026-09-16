@@ -4,12 +4,18 @@ import { getCoachByProfileId } from "@/lib/coaches-db";
 import { coachAnalytics } from "@/lib/coach-analytics";
 import { signOut } from "@/app/actions/auth";
 import CoachAnalyticsTiles from "@/components/CoachAnalyticsTiles";
+import FlashToast from "@/components/FlashToast";
 import { CtaLink, Eyebrow, Logo, PageFrame } from "@/components/ui";
 
 export const metadata = { title: "Coach — onward/upward" };
 
 /** Coach home: listing status and analytics; editing lives on the profile. */
-export default async function CoachHubPage() {
+export default async function CoachHubPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
+  const { welcome } = await searchParams;
   const user = await requireUser();
   if (user.role !== "coach") redirect("/");
   const listing = await getCoachByProfileId(user.id);
@@ -30,6 +36,12 @@ export default async function CoachHubPage() {
         </header>
 
         <main className="mt-10">
+          {/* Landing here straight from a claim — no role picker, no wizard. */}
+          {welcome === "coach" && (
+            <div className="mb-7">
+              <FlashToast message="You're in! Check your coaching profile and refine it as you like." />
+            </div>
+          )}
           <Eyebrow>Coaching on onward/upward</Eyebrow>
           <h1 className="mt-4 text-[32px] leading-[1.1] font-black tracking-[-0.02em] text-cream">
             {listing.status === "draft"

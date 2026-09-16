@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, Pencil } from "lucide-react";
 import { claimCoach } from "@/app/actions/claims";
 import CoachBookLink from "@/components/CoachBookLink";
 import CoachRequestForm from "@/components/CoachRequestForm";
@@ -9,7 +9,14 @@ import { MatchReason } from "@/components/MatchReason";
 import { DisciplineChips, MenteeChips, SpecialtyChips } from "@/components/CoachFormFields";
 import { TextArea, TextField } from "@/components/fields";
 import { Cta, Tag } from "@/components/ui";
-import { coachLevels, disciplineLabel, type CoachDiscipline } from "@/lib/coach-shared";
+import {
+  coachChecklist,
+  coachCompletionPct,
+  coachLevels,
+  disciplineLabel,
+  type CoachDiscipline,
+  type CoachRow,
+} from "@/lib/coach-shared";
 import type { CoachMatch } from "@/lib/coach-match";
 import type { CoachReview } from "@/lib/coach-reviews-db";
 import type { ProfileView } from "@/lib/profile-view";
@@ -22,6 +29,7 @@ export default function CoachCard({
   view,
   coachingEnabled,
   onStartCoaching,
+  onEdit,
   onSubmitApplication,
   submitting = false,
   topMatch = null,
@@ -32,6 +40,7 @@ export default function CoachCard({
   view: ProfileView;
   coachingEnabled: boolean;
   onStartCoaching: () => void;
+  onEdit?: () => void;
   onSubmitApplication?: () => void;
   submitting?: boolean;
   /** Streams in from the server for members; resolves null when this coach isn't one of their matches. */
@@ -144,6 +153,10 @@ export default function CoachCard({
               ? "Under review — you'll get an email the moment you're approved. Edits save to your application."
               : "Edits go live immediately."}
         </p>
+      )}
+
+      {viewer === "owner" && coach && !editing && onEdit && (
+        <CoachChecklist coach={coach} onEdit={onEdit} />
       )}
 
       <div className="mt-6 space-y-6">
@@ -342,6 +355,54 @@ export default function CoachCard({
       )}
 
     </div>
+  );
+}
+
+/**
+ * Owner-only "what's left" card, matching the one on the Profile side. Nothing
+ * here gates the listing — these are the fields matching reads, so a thin
+ * listing is one that rarely reaches a member's home page.
+ */
+function CoachChecklist({ coach, onEdit }: { coach: CoachRow; onEdit: () => void }) {
+  const missing = coachChecklist(coach)
+    .filter((i) => !i.done)
+    .map((i) => i.label);
+  if (missing.length === 0) return null;
+  const pct = coachCompletionPct(coach);
+
+  return (
+    <section className="mt-5 rounded-[20px] border border-gold-border bg-gold-tint p-5">
+      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-4">
+        <div className="w-full min-w-0 sm:w-auto sm:flex-1">
+          <p className="eyebrow text-gold">{pct}% complete</p>
+          <h2 className="mt-2 text-[18px] leading-[1.2] font-black tracking-[-0.02em] text-cream">
+            Fuller listings get matched with more members
+          </h2>
+          <div className="mt-2.5 h-[4px] w-full max-w-[420px] overflow-hidden rounded-full bg-border-1">
+            <div className="gold-gradient h-full rounded-full" style={{ width: `${pct}%` }} />
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={onEdit}
+          className="gold-gradient cta-glow order-last flex h-11 w-full shrink-0 items-center justify-center gap-2 rounded-full px-5 text-[14px] font-bold text-on-gold sm:order-none sm:w-auto"
+        >
+          <Pencil size={14} strokeWidth={2} />
+          <span className="sm:hidden">Add more</span>
+          <span className="hidden sm:inline">Finish your listing</span>
+        </button>
+      </div>
+      <div className="mt-4 flex flex-wrap gap-2">
+        {missing.map((label) => (
+          <span
+            key={label}
+            className="rounded-full border border-border-2 px-3 py-1.5 text-[12px] text-body-2"
+          >
+            {label}
+          </span>
+        ))}
+      </div>
+    </section>
   );
 }
 

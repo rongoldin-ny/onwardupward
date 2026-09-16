@@ -12,11 +12,11 @@ export const maxDuration = 60;
 export default async function MyProfilePage({
   searchParams,
 }: {
-  searchParams: Promise<{ side?: string }>;
+  searchParams: Promise<{ side?: string; welcome?: string }>;
 }) {
   const user = await requireUser();
   if (user.role === "recruiter") redirect("/settings/search");
-  const { side } = await searchParams;
+  const { side, welcome } = await searchParams;
   const [view, communitySkills] = await Promise.all([
     toProfileView(user, { isOwner: true }),
     getCommunitySkills(),
@@ -29,6 +29,13 @@ export default async function MyProfilePage({
       initialSide={side === "coach" ? "coach" : "player"}
       communitySkills={communitySkills}
       reviews={reviews}
+      notice={
+        // A member who already had an account claiming their listing — the
+        // coach home is only for coach accounts, so the toast lands here.
+        welcome === "coach"
+          ? "You're in! Check your coaching profile and refine it as you like."
+          : undefined
+      }
     />
   );
 }

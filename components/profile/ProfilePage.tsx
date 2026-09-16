@@ -8,6 +8,7 @@ import { submitCoachApplication } from "@/app/actions/coaches";
 import { trackElementClick } from "@/app/actions/engage";
 import { saveProfilePage } from "@/app/actions/profile";
 import { fillProfileWithAI, reenrichProfile } from "@/app/actions/settings";
+import FlashToast from "@/components/FlashToast";
 import { CtaLink, PageFrame } from "@/components/ui";
 import { closeTarget } from "@/lib/route-history";
 import type { CoachMatch } from "@/lib/coach-match";
@@ -27,14 +28,17 @@ import PlayerCard, { type PlayerCardHandle } from "./PlayerCard";
  */
 function ProfileChecklist({
   profile,
+  isCoach,
   missingRequired,
   onEdit,
 }: {
   profile: Profile;
+  /** Coaches are held to a looser required set — see lib/profile-required.ts. */
+  isCoach: boolean;
   missingRequired: string[];
   onEdit: () => void;
 }) {
-  const items = profileChecklist(profile);
+  const items = profileChecklist(profile, { isCoach });
   const optional = items.filter((i) => !i.required && !i.done).map((i) => i.label);
   if (missingRequired.length === 0 && optional.length === 0) return null;
   const pct = Math.round((items.filter((i) => i.done).length / items.length) * 100);
@@ -98,6 +102,7 @@ export default function ProfilePage({
   hasPendingClaim = false,
   reviews = [],
   ownReview = null,
+  notice,
 }: {
   view: ProfileView;
   viewer: Viewer;
@@ -107,6 +112,8 @@ export default function ProfilePage({
   hasPendingClaim?: boolean;
   reviews?: CoachReview[];
   ownReview?: CoachReview | null;
+  /** One-shot confirmation for people arriving from a redirect (e.g. a claim). */
+  notice?: string;
 }) {
   const router = useRouter();
   const [v, setV] = useState(view);
@@ -317,6 +324,7 @@ export default function ProfilePage({
             setCoachingEnabled(true);
             setEditing(true);
           }}
+          onEdit={() => setEditing(true)}
           onSubmitApplication={handleSubmitApplication}
           submitting={submitting}
           topMatch={topMatch}
@@ -462,9 +470,16 @@ export default function ProfilePage({
 
           {error && <p className="mt-4 text-[14px] text-gold">{error}</p>}
 
+          {notice && (
+            <div className="mt-5">
+              <FlashToast message={notice} />
+            </div>
+          )}
+
           {isOwner && !editing && v.raw.profile && (
             <ProfileChecklist
               profile={v.raw.profile}
+              isCoach={!!v.coach}
               missingRequired={v.missingRequired}
               onEdit={() => setEditing(true)}
             />

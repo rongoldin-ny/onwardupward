@@ -8,8 +8,7 @@ export type RequiredLabel =
   | "email"
   | "location"
   | "a link"
-  | "background"
-  | "years of experience";
+  | "background";
 
 export type RequiredFields = Pick<
   Profile,
@@ -25,23 +24,25 @@ export type RequiredFields = Pick<
   | "years_experience"
 >;
 
+export function hasAnyLink(p: RequiredFields): boolean {
+  return !!(p.linkedin_url || p.portfolio_url || p.website_url || p.resume_url);
+}
+
 /**
- * `isCoach`: whether the profile has a coach listing (any status). Years of
- * experience is only required of coaches — members can leave it blank. It's a
- * required argument so every caller has to decide, rather than silently
- * holding members to the coach bar.
+ * `isCoach`: whether the profile has a coach listing (any status). Coaches are
+ * held to identity alone — a name, an email and one link. Everything else
+ * about their practice is nagged on the Coach card (see coachChecklist) rather
+ * than hiding a listing someone is trying to be found through. It's a required
+ * argument so every caller has to decide which bar applies.
  */
 export function missingRequired(p: RequiredFields, { isCoach }: { isCoach: boolean }): RequiredLabel[] {
   const out: RequiredLabel[] = [];
   if (!p.name) out.push("name");
-  if (!p.photo_url) out.push("photo");
+  if (!p.photo_url && !isCoach) out.push("photo");
   if (!p.email) out.push("email");
-  if (!p.location_country) out.push("location");
-  if (!p.linkedin_url && !p.portfolio_url && !p.website_url && !p.resume_url) out.push("a link");
-  if (!p.bio) out.push("background");
-  if (isCoach && (p.years_experience === null || p.years_experience === undefined)) {
-    out.push("years of experience");
-  }
+  if (!p.location_country && !isCoach) out.push("location");
+  if (!hasAnyLink(p)) out.push("a link");
+  if (!p.bio && !isCoach) out.push("background");
   return out;
 }
 
@@ -69,21 +70,22 @@ export type ChecklistItem = { label: string; done: boolean; required: boolean };
 
 /**
  * Everything a member can fill in, in the order it appears on the profile.
- * `required` items gate visibility (see missingRequired); the rest round it out.
+ * `required` items gate visibility (see missingRequired); the rest round it
+ * out. `isCoach` has to match what missingRequired was called with, or the
+ * checklist and the banner disagree about which gaps are required.
  */
-export function profileChecklist(profile: Profile): ChecklistItem[] {
+export function profileChecklist(
+  profile: Profile,
+  { isCoach }: { isCoach: boolean } = { isCoach: false },
+): ChecklistItem[] {
   const item = (label: string, done: boolean, required = false) => ({ label, done, required });
   return [
     item("Name", !!profile.name, true),
-    item("Photo", !!profile.photo_url, true),
+    item("Photo", !!profile.photo_url, !isCoach),
     item("Email", !!profile.email, true),
-    item("Location", !!profile.location_country, true),
-    item(
-      "A link or résumé",
-      !!(profile.linkedin_url || profile.portfolio_url || profile.website_url || profile.resume_url),
-      true,
-    ),
-    item("Background", !!profile.bio, true),
+    item("Location", !!profile.location_country, !isCoach),
+    item("A link or résumé", hasAnyLink(profile), true),
+    item("Background", !!profile.bio, !isCoach),
     item("Years of experience", profile.years_experience !== null && profile.years_experience !== undefined),
     item("Role & level", !!profile.role_type && !!profile.career_stage),
     item("Where you hope to grow", !!profile.growth_goal),

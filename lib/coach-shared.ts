@@ -3,6 +3,8 @@
  * client components (directory, listing form) can use them freely.
  */
 
+import type { ChecklistItem, RequiredFields } from "./profile-required";
+
 export type CoachDiscipline = "design" | "product" | "both";
 
 export type CoachRow = {
@@ -133,4 +135,67 @@ export function coachPricing(c: CoachRow): string {
   return /[$£€]\s?\d|\d+\s?(per|\/)\s?session/i.test(c.pricing ?? "")
     ? "Published pricing"
     : "Inquire";
+}
+
+// ------------------------------------------------------- listing visibility
+
+/** What the directory needs to know about a claimed listing's owner. */
+export type ListingOwner = Pick<
+  RequiredFields,
+  "name" | "email" | "linkedin_url" | "portfolio_url" | "website_url" | "resume_url"
+> & { archived_at: string | null };
+
+/**
+ * Whether a listing shows in the directory and on its own page.
+ *
+ * A claimed listing stands on its own fields *and* its owner's profile, so
+ * accepting a claim can never hide a card that was already public: the curated
+ * row it came from already carries a name, an email and a link. An archived
+ * owner still takes their listing down with them.
+ */
+export function coachListingVisible(
+  c: Pick<CoachRow, "profile_id" | "full_name" | "email" | "booking_url" | "website" | "substack_url">,
+  owner: ListingOwner | null | undefined,
+): boolean {
+  if (!c.profile_id) return true;
+  if (!owner || owner.archived_at) return false;
+  const link =
+    c.booking_url ||
+    c.website ||
+    c.substack_url ||
+    owner.linkedin_url ||
+    owner.portfolio_url ||
+    owner.website_url ||
+    owner.resume_url;
+  return !!((c.full_name || owner.name) && (c.email || owner.email) && link);
+}
+
+// --------------------------------------------------------- practice nagging
+
+/**
+ * What a coach still has to say about their practice. None of it gates the
+ * listing — it's what lib/coach-match.ts feeds Claude when it matches members
+ * to coaches, so a thin listing is a listing that rarely gets matched.
+ */
+export function coachChecklist(c: CoachRow): ChecklistItem[] {
+  const item = (label: string, done: boolean) => ({ label, done, required: false });
+  return [
+    item("Photo", !!c.photo_url),
+    item("About you", !!c.short_description),
+    item("Discipline", !!c.disciplines),
+    item("Specialties", c.specialties.length > 0),
+    item("Who you work with", c.target_mentees.length > 0),
+    item("The offering", !!c.offering),
+    item("Best for", !!c.best_for),
+    item("Years coaching", c.years_coaching !== null && c.years_coaching !== undefined),
+    item("Credentials", !!c.credentials),
+    item("Pricing", !!c.pricing),
+    item("Booking link", !!c.booking_url),
+    item("Newsletter", !!c.substack_url),
+  ];
+}
+
+export function coachCompletionPct(c: CoachRow): number {
+  const items = coachChecklist(c);
+  return Math.round((items.filter((i) => i.done).length / items.length) * 100);
 }
