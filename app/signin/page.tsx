@@ -23,16 +23,12 @@ export default async function SignInPage({
   }
 
   return (
-    <PageFrame size="narrow">
-      <div className="flex flex-1 flex-col px-7 pt-8 pb-8">
-        <header>
-          <span className="md:hidden">
-            <Logo />
-          </span>
-        </header>
+    <PageFrame size="narrow" chromeLogo={false}>
+      <div className="flex flex-1 flex-col px-7 pt-8 pb-8 text-center">
+        <main className="flex flex-1 flex-col justify-center">
+          <Logo />
 
-        <main className="mt-[30%]">
-          <h1 className="text-[34px] leading-[1.08] font-black tracking-[-0.02em] text-cream">
+          <h1 className="mt-9 text-[34px] leading-[1.08] font-black tracking-[-0.02em] text-cream">
             Welcome back.
           </h1>
           <p className="mt-3 text-[17px] text-secondary">
@@ -49,7 +45,7 @@ export default async function SignInPage({
             <GoogleButton next={next?.startsWith("/") ? next : undefined} />
           </div>
 
-          <p className="mt-5 text-center text-[13px] leading-[1.5] text-muted">
+          <p className="mt-5 text-[13px] leading-[1.5] text-muted">
             By continuing you agree to our{" "}
             <Link href="/terms" className="text-secondary">
               Terms
@@ -62,7 +58,7 @@ export default async function SignInPage({
           </p>
         </main>
 
-        <footer className="mt-auto pt-10 text-center text-[15px] text-secondary">
+        <footer className="pt-10 text-[15px] text-secondary">
           New here?{" "}
           <Link href="/signup" className="font-bold">
             Create an account
