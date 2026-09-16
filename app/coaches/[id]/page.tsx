@@ -18,10 +18,18 @@ import { trackingOptedOut } from "@/lib/tracking-consent";
  */
 export default async function CoachDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | undefined>>;
 }) {
   const { id } = await params;
+  // Landing here straight from a claim that still needs a look — see
+  // app/auth/callback/route.ts.
+  const notice =
+    (await searchParams).welcome === "claim"
+      ? "You're in! We're confirming this listing is yours — we'll email you the moment it's yours to edit."
+      : undefined;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
 
   const admin = supabaseAdmin();
@@ -90,6 +98,7 @@ export default async function CoachDetailPage({
           hasPendingClaim={hasPendingClaim}
           reviews={reviews}
           ownReview={ownReview}
+          notice={notice}
         />
       );
     }
@@ -104,6 +113,7 @@ export default async function CoachDetailPage({
       hasPendingClaim={hasPendingClaim}
       reviews={reviews}
       ownReview={ownReview}
+      notice={notice}
     />
   );
 }

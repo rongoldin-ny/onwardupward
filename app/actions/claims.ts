@@ -2,10 +2,11 @@
 
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
-import { claimListing } from "@/lib/claims";
+import { adoptClaimant, claimListing } from "@/lib/claims";
 import { syncCoachIdentity } from "@/lib/coaches-db";
 import { emailShell, sendEmail } from "@/lib/email";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import type { Profile } from "@/lib/db";
 import { requireVetter } from "@/lib/vetting";
 
 /**
@@ -18,7 +19,9 @@ export async function claimCoach(coachId: string): Promise<void> {
   if (user.role !== "candidate" && user.role !== "coach") redirect(`/coaches/${coachId}`);
 
   const outcome = await claimListing(coachId, user);
-  redirect(outcome === "claimed" ? "/profile?side=coach" : `/coaches/${coachId}`);
+  redirect(
+    outcome === "claimed" ? "/profile?side=coach&welcome=coach" : `/coaches/${coachId}`,
+  );
 }
 
 /** Hand the listing over to the claimant: link the profile, sync their identity in, and notify them. */
@@ -33,17 +36,21 @@ export async function approveClaim(claimId: string): Promise<void> {
     .maybeSingle();
   if (!claim || claim.status !== "pending") redirect("/admin/waitlist");
 
-  const { data: profile } = await admin
+  const { data } = await admin
     .from("profiles")
-    .select("id, name, email")
+    .select("*")
     .eq("id", claim.profile_id)
     .maybeSingle();
+  const profile = data as Profile | null;
 
   await admin
     .from("coaches")
     .update({ profile_id: claim.profile_id, status: "approved" })
     .eq("id", claim.coach_id);
   await syncCoachIdentity(claim.profile_id);
+  // The listing is theirs now, so the account becomes a coach account — a
+  // claim approved days later shouldn't drop them back at the role picker.
+  if (profile) await adoptClaimant(profile, { becomesCoach: true });
   await admin.from("coach_claims").update({ status: "approved" }).eq("id", claimId);
   // Only one person can own a slot — clear out any other pending requests for it.
   await admin

@@ -1,4 +1,5 @@
 import { syncCoachIdentity } from "./coaches-db";
+import type { Profile } from "./db";
 import { emailShell, sendEmail } from "./email";
 import { supabaseAdmin } from "./supabase/server";
 
@@ -18,6 +19,32 @@ import { supabaseAdmin } from "./supabase/server";
  * claim would be lost exactly in the case this flow exists for.
  */
 export const COACH_CLAIM_COOKIE = "pending_coach_claim";
+
+/**
+ * Someone who arrived to claim a listing has already answered the only two
+ * questions signup asks: they coach, and their listing is their profile.
+ * Asking them anyway — "looking to coach or be coached?", then the whole
+ * member wizard — reads as a form standing between them and work they can see
+ * is already done, so claiming settles both here.
+ *
+ * `becomesCoach` is false while a claim is still in review: the role waits for
+ * the approval that hands them the listing, but they still skip the wizard.
+ * An account that has already picked a role keeps it — claiming a listing
+ * shouldn't quietly turn a member into a coach.
+ */
+export async function adoptClaimant(
+  profile: Profile,
+  { becomesCoach }: { becomesCoach: boolean },
+): Promise<Profile> {
+  if (profile.role_chosen) return profile;
+  const patch = {
+    ...(becomesCoach ? { role: "coach" as const } : {}),
+    role_chosen: true,
+    onboarding_complete: true,
+  };
+  await supabaseAdmin().from("profiles").update(patch).eq("id", profile.id);
+  return { ...profile, ...patch };
+}
 
 export type ClaimOutcome =
   /** Linked to the account there and then. */

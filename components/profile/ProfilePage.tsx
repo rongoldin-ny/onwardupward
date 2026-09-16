@@ -8,6 +8,7 @@ import { submitCoachApplication } from "@/app/actions/coaches";
 import { trackElementClick } from "@/app/actions/engage";
 import { saveProfilePage } from "@/app/actions/profile";
 import { fillProfileWithAI, reenrichProfile } from "@/app/actions/settings";
+import FlashToast from "@/components/FlashToast";
 import { CtaLink, PageFrame } from "@/components/ui";
 import { closeTarget } from "@/lib/route-history";
 import type { CoachMatch } from "@/lib/coach-match";
@@ -101,6 +102,7 @@ export default function ProfilePage({
   hasPendingClaim = false,
   reviews = [],
   ownReview = null,
+  notice,
 }: {
   view: ProfileView;
   viewer: Viewer;
@@ -110,6 +112,8 @@ export default function ProfilePage({
   hasPendingClaim?: boolean;
   reviews?: CoachReview[];
   ownReview?: CoachReview | null;
+  /** One-shot confirmation for people arriving from a redirect (e.g. a claim). */
+  notice?: string;
 }) {
   const router = useRouter();
   const [v, setV] = useState(view);
@@ -465,6 +469,12 @@ export default function ProfilePage({
           </header>
 
           {error && <p className="mt-4 text-[14px] text-gold">{error}</p>}
+
+          {notice && (
+            <div className="mt-5">
+              <FlashToast message={notice} />
+            </div>
+          )}
 
           {isOwner && !editing && v.raw.profile && (
             <ProfileChecklist
