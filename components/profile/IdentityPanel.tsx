@@ -4,20 +4,11 @@ import { useState } from "react";
 import { ArrowUpRight } from "lucide-react";
 import { COUNTRIES, SelectField, TextArea, TextField } from "@/components/fields";
 import type { ProfileView } from "@/lib/profile-view";
-import { CoachClaimCta } from "./CoachCard";
 import { Labeled, RequiredPill, useEdit } from "./edit-context";
 import PhotoField from "./PhotoField";
 
 /** Left panel: the basics every profile shares, required-first. */
-export default function IdentityPanel({
-  view,
-  ver,
-  hasPendingClaim = false,
-}: {
-  view: ProfileView;
-  ver: number;
-  hasPendingClaim?: boolean;
-}) {
+export default function IdentityPanel({ view, ver }: { view: ProfileView; ver: number }) {
   const { editing, viewer, track } = useEdit();
   const [expanded, setExpanded] = useState(false);
   const p = view.raw.profile;
@@ -208,17 +199,6 @@ export default function IdentityPanel({
             <p className="mt-2 text-[12.5px] text-secondary">
               portfolio password: {view.portfolioPassword}
             </p>
-          )}
-          {/* Single-column layouts: claim right under the links, not below the whole card. */}
-          {view.coach?.status === "unclaimed" && viewer !== "owner" && (
-            <div className="mt-6 w-full lg:hidden">
-              <CoachClaimCta
-                coach={view.coach}
-                viewer={viewer}
-                hasPendingClaim={hasPendingClaim}
-                label="This you? Claim your profile"
-              />
-            </div>
           )}
         </>
       )}
