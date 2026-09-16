@@ -121,6 +121,39 @@ function ReviewForm({
   );
 }
 
+/**
+ * The write/edit/sign-in action under the reviews: a standard-size pill,
+ * centered. `featured` (no reviews yet) makes it the solid gold primary.
+ */
+function ReviewAction({
+  featured,
+  label,
+  onClick,
+  href,
+}: {
+  featured: boolean;
+  label: string;
+  onClick?: () => void;
+  href?: string;
+}) {
+  const className = `flex h-11 items-center justify-center rounded-full px-6 text-[14px] font-bold ${
+    featured ? "gold-gradient cta-glow text-on-gold" : "border border-gold-border text-gold"
+  }`;
+  return (
+    <div className="flex justify-center">
+      {href ? (
+        <a href={href} className={className}>
+          {label}
+        </a>
+      ) : (
+        <button type="button" onClick={onClick} className={className}>
+          {label}
+        </button>
+      )}
+    </div>
+  );
+}
+
 export default function CoachReviews({
   coachId,
   reviews,
@@ -196,20 +229,15 @@ export default function CoachReviews({
           {list.length === 0 ? (
             <div className="mt-3 flex flex-col items-center gap-3 rounded-[16px] border border-dashed border-border-2 px-5 py-6 text-center">
               <MessageSquare size={20} strokeWidth={1.5} className="text-muted" />
-              <p className="text-[13px] text-secondary">No reviews yet.</p>
+              <p className="text-[13px] text-secondary">
+                No reviews yet.
+                {(canReview || signInHref) && " Worked with this coach? Be the first."}
+              </p>
               {canReview && (
-                <button
-                  type="button"
-                  onClick={() => setWriting(true)}
-                  className="text-[13px] font-bold text-gold"
-                >
-                  Write a review
-                </button>
+                <ReviewAction featured label="Write a review" onClick={() => setWriting(true)} />
               )}
               {!canReview && signInHref && (
-                <a href={signInHref} className="text-[13px] font-bold text-gold">
-                  Sign in to write a review
-                </a>
+                <ReviewAction featured label="Sign in to write a review" href={signInHref} />
               )}
             </div>
           ) : (
@@ -235,18 +263,18 @@ export default function CoachReviews({
                 </div>
               ))}
               {canReview && (
-                <button
-                  type="button"
-                  onClick={() => setWriting(true)}
-                  className="text-[13px] font-bold text-gold"
-                >
-                  {own ? "Edit your review" : "Write a review"}
-                </button>
+                <div className="pt-2">
+                  <ReviewAction
+                    featured={false}
+                    label={own ? "Edit your review" : "Write a review"}
+                    onClick={() => setWriting(true)}
+                  />
+                </div>
               )}
               {!canReview && signInHref && (
-                <a href={signInHref} className="block text-[13px] font-bold text-gold">
-                  Sign in to write a review
-                </a>
+                <div className="pt-2">
+                  <ReviewAction featured={false} label="Sign in to write a review" href={signInHref} />
+                </div>
               )}
             </div>
           )}

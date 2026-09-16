@@ -16,10 +16,10 @@ export const metadata = { title: "Coaches — onward/upward" };
 export default async function CoachesPage() {
   const user = await requireUser();
   const coaches = await getDirectoryCoaches();
-  const [matches, reviewCounts] = await Promise.all([
-    user.role === "candidate" ? getCoachMatches(user, coaches) : Promise.resolve({}),
-    getReviewCounts(coaches.map((c) => c.id)),
-  ]);
+  // Not awaited: the directory renders right away and the match badges and
+  // ordering stream in once Claude has read the member's profile.
+  const matches = user.role === "candidate" ? getCoachMatches(user, coaches) : null;
+  const reviewCounts = await getReviewCounts(coaches.map((c) => c.id));
 
   return (
     <PageFrame size="wide">
@@ -33,12 +33,13 @@ export default async function CoachesPage() {
           </span>
         </header>
 
-        <main className="mt-10">
+        <main className="mt-7 md:mt-10">
           <Eyebrow>Train with the best</Eyebrow>
-          <h1 className="mt-4 text-[34px] leading-[1.1] font-black tracking-[-0.02em] text-cream">
+          {/* Mobile keeps just the eyebrow — the directory is the page. */}
+          <h1 className="mt-4 hidden text-[34px] leading-[1.1] font-black tracking-[-0.02em] text-cream md:block">
             Coaches and mentors who&apos;ve made the climb.
           </h1>
-          <p className="mt-3 max-w-[560px] text-[15px] leading-[1.5] text-secondary">
+          <p className="mt-3 hidden max-w-[560px] text-[15px] leading-[1.5] text-secondary md:block">
             A curated bench of design and product leadership coaches. Unclaimed
             profiles haven&apos;t joined the network yet — introductions open up
             once they do.

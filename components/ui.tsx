@@ -49,12 +49,19 @@ export function PageFrame({
   );
 }
 
-export function Logo() {
+/**
+ * The site lockup. Subpages show the abbreviated O ↗ U mark on mobile, where
+ * header space is tight; pass `full` on home screens to keep ONWARD ↗ UPWARD.
+ * Desktop always starts full and collapses on scroll.
+ */
+export function Logo({ full = false }: { full?: boolean }) {
   return (
     <Link
       href="/"
       aria-label="onward/upward — home"
-      className="ou-logo text-[19px] font-black tracking-[-0.02em] text-cream hover:text-cream"
+      className={`ou-logo text-[19px] font-black tracking-[-0.02em] text-cream hover:text-cream ${
+        full ? "" : "ou-compact-mobile"
+      }`}
     >
       <CollapsingLogoMark />
     </Link>
@@ -125,9 +132,22 @@ export function Eyebrow({
   return <p className={`eyebrow text-secondary ${className}`}>{children}</p>;
 }
 
-export function Tag({ children }: { children: ReactNode }) {
+type TagVariant = "gold" | "neutral";
+
+const tagStyles: Record<TagVariant, string> = {
+  gold: "border-gold-border text-gold",
+  neutral: "border-border-2 text-secondary",
+};
+
+export function Tag({
+  variant = "gold",
+  children,
+}: {
+  variant?: TagVariant;
+  children: ReactNode;
+}) {
   return (
-    <span className="rounded-full border border-gold-border px-3 py-1.5 text-[11px] font-medium text-gold">
+    <span className={`rounded-full border px-3 py-1.5 text-[11px] font-medium ${tagStyles[variant]}`}>
       {children}
     </span>
   );

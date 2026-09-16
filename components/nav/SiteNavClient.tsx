@@ -12,6 +12,13 @@ const NAV_ITEMS = [
   { href: "/reads", label: "Reads" },
 ];
 
+/**
+ * Profile-style pages (your own profile, coach detail, share links) carry
+ * their own close button and header actions in the top-right corner, where
+ * the fixed mobile menu would sit on top of them.
+ */
+const OWN_CHROME = /^\/(profile|p\/[^/]+|coaches\/[^/]+)\/?$/;
+
 function isActive(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
@@ -68,7 +75,7 @@ export default function SiteNavClient({
       </nav>
 
       {/* Mobile: a persistent corner menu, overlaying whatever the page renders. */}
-      <div className="fixed top-5 right-5 z-40 md:hidden">
+      <div className={`fixed top-5 right-5 z-40 md:hidden ${OWN_CHROME.test(pathname) ? "hidden" : ""}`}>
         <button
           type="button"
           aria-label="Menu"

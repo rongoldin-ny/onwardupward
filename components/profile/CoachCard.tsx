@@ -1,18 +1,20 @@
 "use client";
 
-import { useState } from "react";
-import { GraduationCap, Sparkles } from "lucide-react";
+import { useEffect, useState } from "react";
+import { GraduationCap } from "lucide-react";
 import { claimCoach } from "@/app/actions/claims";
 import CoachBookLink from "@/components/CoachBookLink";
 import CoachRequestForm from "@/components/CoachRequestForm";
+import { MatchReason } from "@/components/MatchReason";
 import { DisciplineChips, MenteeChips, SpecialtyChips } from "@/components/CoachFormFields";
 import { TextArea, TextField } from "@/components/fields";
-import { Cta, Eyebrow, Tag } from "@/components/ui";
+import { Cta, Tag } from "@/components/ui";
 import { coachLevels, disciplineLabel, type CoachDiscipline } from "@/lib/coach-shared";
+import type { CoachMatch } from "@/lib/coach-match";
 import type { CoachReview } from "@/lib/coach-reviews-db";
 import type { ProfileView } from "@/lib/profile-view";
 import { labelForRoleType } from "@/lib/taxonomy";
-import { CardSection as Section, useEdit } from "./edit-context";
+import { CardSection as Section, useEdit, type Viewer } from "./edit-context";
 import CoachReviews from "./CoachReviews";
 
 /** The back of the card — coaching attributes. */
@@ -32,7 +34,8 @@ export default function CoachCard({
   onStartCoaching: () => void;
   onSubmitApplication?: () => void;
   submitting?: boolean;
-  topMatch?: { isTopMatch: boolean; reason: string | null } | null;
+  /** Streams in from the server for members; resolves null when this coach isn't one of their matches. */
+  topMatch?: Promise<CoachMatch | null> | null;
   hasPendingClaim?: boolean;
   reviews?: CoachReview[];
   ownReview?: CoachReview | null;
@@ -42,6 +45,16 @@ export default function CoachCard({
   const [discipline, setDiscipline] = useState<CoachDiscipline | null>(coach?.disciplines ?? null);
   const [mentees, setMentees] = useState<string[]>(coach?.target_mentees ?? []);
   const [specialties, setSpecialties] = useState<string[]>(coach?.specialties ?? []);
+  const [match, setMatch] = useState<CoachMatch | null>(null);
+  useEffect(() => {
+    let live = true;
+    topMatch?.then((m) => {
+      if (live) setMatch(m);
+    });
+    return () => {
+      live = false;
+    };
+  }, [topMatch]);
 
   const shell = "overflow-hidden rounded-[24px] border border-border-1 bg-surface-2 p-6";
 
@@ -88,28 +101,40 @@ export default function CoachCard({
     <div className={shell}>
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <Eyebrow className="text-gold">Coach card</Eyebrow>
           {editing ? (
             <TextField
               name="title"
               placeholder={autoSubtitle || "Your coaching"}
               defaultValue={coach?.title ?? ""}
-              className="mt-2 !h-auto !py-2.5 text-[18px] font-black tracking-[-0.02em]"
+              className="!h-auto !py-2.5 text-[18px] font-black tracking-[-0.02em]"
             />
           ) : (
-            <h2 className="mt-2 text-[22px] leading-[1.15] font-black tracking-[-0.02em] text-cream">
+            <h2 className="text-[22px] leading-[1.15] font-black tracking-[-0.02em] text-cream">
               {subtitle || `Coaching with ${view.firstName}`}
             </h2>
           )}
         </div>
         <span
           className={`eyebrow shrink-0 rounded-full border px-3 py-1.5 ${
-            approved ? "border-gold-border text-gold" : "border-border-2 text-muted"
+            approved ? "border-success/35 text-success" : "border-border-2 text-muted"
           }`}
         >
           {isDraft ? "Draft" : status === "pending" ? "Under review" : approved ? "Live" : "Unclaimed"}
         </span>
       </div>
+
+      {/* Unclaimed listings: "This you?" is the page's main call to action,
+          so it leads the card instead of trailing the whole listing. */}
+      {!editing && coach && status === "unclaimed" && viewer !== "owner" && (
+        <div className="mt-5">
+          <CoachClaimCta
+            coach={coach}
+            viewer={viewer}
+            hasPendingClaim={hasPendingClaim}
+            label="This you? Claim your profile"
+          />
+        </div>
+      )}
 
       {viewer === "owner" && (
         <p className="mt-3 text-[12.5px] leading-[1.5] text-secondary">
@@ -149,6 +174,24 @@ export default function CoachCard({
                 />
               </div>
             </Section>
+            <Section title="Coaching credentials">
+              <div className="space-y-3">
+                <TextField
+                  name="years_coaching"
+                  type="number"
+                  min={0}
+                  max={60}
+                  placeholder="Years of coaching experience"
+                  defaultValue={coach?.years_coaching ?? ""}
+                />
+                <TextArea
+                  name="credentials"
+                  rows={3}
+                  placeholder="Certifications, training, or other credentials (optional)"
+                  defaultValue={coach?.credentials ?? ""}
+                />
+              </div>
+            </Section>
             <Section title="The offering">
               <TextArea
                 name="offering"
@@ -164,18 +207,23 @@ export default function CoachCard({
                 defaultValue={coach?.best_for ?? ""}
               />
             </Section>
-            <Section title="Booking & pricing">
+            <Section title="Pricing">
+              <TextField
+                name="pricing"
+                placeholder="Pricing — a number or a range is fine"
+                defaultValue={coach?.pricing ?? ""}
+              />
+            </Section>
+            <Section title="Booking or contact link">
               <div className="space-y-3">
                 <TextField
                   name="booking_url"
-                  placeholder="Booking link — Calendly, website, or an email address"
+                  placeholder="Calendly, website, or email"
                   defaultValue={bookingDisplay}
                 />
-                <TextField
-                  name="pricing"
-                  placeholder="Pricing — a number or a range is fine"
-                  defaultValue={coach?.pricing ?? ""}
-                />
+                <p className="px-1 text-[12px] text-muted">
+                  Links, ex. Calendly or your website — or just an email address to book you.
+                </p>
                 <TextField
                   name="company"
                   placeholder="Company or practice (optional)"
@@ -193,22 +241,34 @@ export default function CoachCard({
           </>
         ) : (
           <>
-            {coach && coach.specialties.length > 0 && (
-              <div>
-                <Eyebrow className="text-muted">Specializes in</Eyebrow>
-                <div className="mt-2.5 flex flex-wrap gap-2.5">
-                  {coach.specialties.map((s) => (
-                    <Tag key={s}>{labelForRoleType(s)}</Tag>
-                  ))}
-                </div>
-              </div>
-            )}
-            {levels.length > 0 && (
+            {coach && (coach.specialties.length > 0 || levels.length > 0) && (
               <div className="flex flex-wrap gap-2.5">
+                {coach.specialties.length > 0
+                  ? coach.specialties.map((s) => (
+                      <Tag key={s} variant="neutral">
+                        {labelForRoleType(s)}
+                      </Tag>
+                    ))
+                  : disciplineLabel(coach.disciplines) && (
+                      <Tag variant="neutral">{disciplineLabel(coach.disciplines)}</Tag>
+                    )}
                 {levels.map((l) => (
-                  <Tag key={l}>{l}</Tag>
+                  <Tag key={l} variant="neutral">
+                    {l}
+                  </Tag>
                 ))}
               </div>
+            )}
+            {(coach?.years_coaching || coach?.credentials) && (
+              <Section title="Coaching credentials">
+                <p className="text-[15px] leading-[1.6] text-body">
+                  {coach?.years_coaching
+                    ? `${coach.years_coaching} ${coach.years_coaching === 1 ? "year" : "years"} of coaching experience`
+                    : null}
+                  {coach?.years_coaching && coach?.credentials ? " — " : null}
+                  {coach?.credentials}
+                </p>
+              </Section>
             )}
             {coach?.offering && (
               <Section title="The offering">
@@ -242,16 +302,8 @@ export default function CoachCard({
                 Tap Edit to describe your offering and how to book you.
               </p>
             )}
-            {viewer !== "owner" && topMatch?.isTopMatch && (
-              <div className="rounded-[14px] border border-gold-border bg-surface-1 px-4 py-3">
-                <span className="eyebrow flex items-center gap-1.5 text-gold">
-                  <Sparkles size={12} strokeWidth={1.5} />
-                  Top match
-                </span>
-                {topMatch.reason && (
-                  <p className="mt-1.5 text-[13px] leading-[1.5] text-body-2">{topMatch.reason}</p>
-                )}
-              </div>
+            {viewer !== "owner" && match && (
+              <MatchReason match={match} textClassName="text-[13px]" />
             )}
           </>
         )}
@@ -289,9 +341,13 @@ export default function CoachCard({
         </div>
       )}
 
-      {!editing && viewer !== "owner" && coach && (
+      {/* Booking for live listings. Claimed coaches can always be reached
+          through the platform (with their own booking link, if any, as a
+          secondary route); curated seeds only have the external link.
+          Unclaimed listings' claim CTA sits under the card title instead. */}
+      {!editing && viewer !== "owner" && approved && coach && (coach.profile_id || coach.booking_url) && (
         <div className="mt-8">
-          {approved && coach.profile_id && viewer === "member" ? (
+          {coach.profile_id && viewer === "member" ? (
             <>
               <CoachRequestForm coachId={coach.id} coachName={coach.full_name} />
               {coach.booking_url && (
@@ -306,14 +362,14 @@ export default function CoachCard({
                 </p>
               )}
             </>
-          ) : approved && coach.profile_id && viewer === "public" ? (
+          ) : coach.profile_id && viewer === "public" ? (
             <a
               href={`/signin?next=${encodeURIComponent(`/coaches/${coach.id}`)}`}
               className="gold-gradient cta-glow block rounded-full px-6 py-4 text-center text-[15px] font-bold text-on-gold"
             >
               Sign in to book a session
             </a>
-          ) : approved && coach.booking_url ? (
+          ) : coach.booking_url ? (
             <CoachBookLink
               coachId={coach.id}
               coachName={coach.full_name}
@@ -322,40 +378,68 @@ export default function CoachCard({
             >
               Book a session
             </CoachBookLink>
-          ) : status === "unclaimed" && hasPendingClaim ? (
-            <p className="rounded-full border border-border-2 px-6 py-4 text-center text-[15px] font-bold text-secondary">
-              Claim pending review
-            </p>
-          ) : status === "unclaimed" && viewer === "member" ? (
-            // A <form> here would nest inside ProfilePage's own outer <form>
-            // (the autosave form) — browsers don't allow nested forms and
-            // reassociate the submit button with the outer one instead, so
-            // this calls the server action directly from a plain button.
-            <button
-              type="button"
-              onClick={() => void claimCoach(coach.id)}
-              className="block w-full rounded-full border border-border-2 px-6 py-4 text-center text-[15px] font-bold text-cream"
-            >
-              This you? Claim your slot
-            </button>
-          ) : status === "unclaimed" && viewer === "public" ? (
-            <>
-              <a
-                href={`/claim/${coach.id}`}
-                className="gold-gradient cta-glow block rounded-full px-6 py-4 text-center text-[15px] font-bold text-on-gold"
-              >
-                This you? Claim your listing
-              </a>
-              <p className="mt-3 text-center text-[12.5px] leading-[1.5] text-secondary">
-                Create an account and this page becomes yours to edit.{" "}
-                <a href={`/signin?next=${encodeURIComponent(`/coaches/${coach.id}`)}`}>
-                  Already a member?
-                </a>
-              </p>
-            </>
           ) : null}
         </div>
       )}
     </div>
+  );
+}
+
+/** Every "This you?" claim button: solid gold, dark on-gold text. */
+const claimButtonClass =
+  "gold-gradient cta-glow block w-full rounded-full px-6 py-4 text-center text-[15px] font-bold text-on-gold";
+
+/**
+ * "This you?" for unclaimed listings — a pending notice, a member claim
+ * button, or a sign-up link for signed-out visitors. Null for anything else.
+ */
+export function CoachClaimCta({
+  coach,
+  viewer,
+  hasPendingClaim,
+  label,
+}: {
+  coach: NonNullable<ProfileView["coach"]>;
+  viewer: Viewer;
+  hasPendingClaim: boolean;
+  /** Overrides the default per-viewer CTA copy. */
+  label?: string;
+}) {
+  if (coach.status !== "unclaimed" || viewer === "owner") return null;
+  if (hasPendingClaim) {
+    return (
+      <p className="rounded-full border border-border-2 px-6 py-4 text-center text-[15px] font-bold text-secondary">
+        Claim pending review
+      </p>
+    );
+  }
+  if (viewer === "member") {
+    return (
+      // A <form> here would nest inside ProfilePage's own outer <form>
+      // (the autosave form) — browsers don't allow nested forms and
+      // reassociate the submit button with the outer one instead, so
+      // this calls the server action directly from a plain button.
+      <button
+        type="button"
+        onClick={() => void claimCoach(coach.id)}
+        className={claimButtonClass}
+      >
+        {label ?? "This you? Claim your slot"}
+      </button>
+    );
+  }
+  return (
+    <>
+      <a
+        href={`/claim/${coach.id}`}
+        className={claimButtonClass}
+      >
+        {label ?? "This you? Claim your listing"}
+      </a>
+      <p className="mt-3 text-center text-[12.5px] leading-[1.5] text-secondary">
+        Create an account and this page becomes yours to edit.{" "}
+        <a href={`/signin?next=${encodeURIComponent(`/coaches/${coach.id}`)}`}>Already a member?</a>
+      </p>
+    </>
   );
 }

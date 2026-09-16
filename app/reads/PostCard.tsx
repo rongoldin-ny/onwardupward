@@ -8,7 +8,7 @@ export function PostCard({ post }: { post: ReadsPost }) {
       href={post.url}
       target="_blank"
       rel="noreferrer"
-      className="block rounded-[20px] border border-border-1 bg-surface-2 p-5"
+      className="card-hover block rounded-[20px] border border-border-1 bg-surface-2 p-5"
     >
       <p className="text-[15px] leading-[1.4] font-bold text-cream">{post.title}</p>
       <p className="mt-1.5 text-[12px] text-secondary">{byline}</p>

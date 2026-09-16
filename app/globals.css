@@ -163,6 +163,14 @@ body {
   max-width: 0;
   opacity: 0;
 }
+/* Subpages on phones: always the abbreviated mark (see <Logo full>). */
+@media (max-width: 767.98px) {
+  .ou-compact-mobile .ou-rest {
+    max-width: 0;
+    opacity: 0;
+    transition: none;
+  }
+}
 
 /* Desktop: arrow ascends on hover. */
 @media (hover: hover) {
@@ -193,6 +201,20 @@ body {
   ):not(:disabled):not(:disabled *):not(.gold-gradient):not(.text-on-gold):not(.ascent .btn):hover {
     color: var(--gold);
     transition: color 0.15s ease;
+  }
+
+  /* Close / remove "X" buttons (any button whose icon is lucide's X):
+     the icon usually carries its own muted color class, which the rule
+     above can't reach, so recolor the icon directly and give bordered
+     circles a gold ring. No background tint — on borderless X's it would
+     read as a stray square. */
+  button:has(> svg.lucide-x):not(:disabled):hover {
+    color: var(--gold);
+    border-color: var(--gold-active);
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  button:has(> svg.lucide-x):not(:disabled):hover > svg {
+    color: var(--gold);
   }
 
   /* Controls that already carry a solid gold fill (primary CTAs, the
@@ -230,4 +252,25 @@ body {
 .list-row:hover {
   filter: none !important;
   background: rgba(232, 201, 135, 0.06);
+}
+
+/* Clickable cards (dashboard tiles, /reads posts): the same tint as
+   list-row plus a brighter border, so the whole card reads as tappable
+   without recoloring its own text. */
+.card-hover {
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .card-hover:hover {
+    border-color: var(--border-2);
+    background: rgba(232, 201, 135, 0.06);
+  }
+}
+
+/* Horizontal carousels (mobile filter rows): swipeable, no visible bar. */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }

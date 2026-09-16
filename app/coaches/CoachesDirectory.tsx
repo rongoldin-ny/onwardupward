@@ -14,7 +14,8 @@ import {
 } from "@/lib/coach-shared";
 import type { CoachMatch } from "@/lib/coach-match";
 import { Card } from "@/components/ui";
-import { MultiSelect } from "@/components/MultiSelect";
+import { MatchReason } from "@/components/MatchReason";
+import { FilterRow, MultiSelect } from "@/components/MultiSelect";
 
 const FORMATS = ["1:1 coaching", "Groups & cohorts", "Programs & courses"];
 const PRICING = ["Published pricing", "Inquire"];
@@ -36,14 +37,26 @@ function matchesDiscipline(coach: CoachRow, active: string[]): boolean {
 
 export default function CoachesDirectory({
   coaches,
-  matches = {},
+  matches: matchesPromise = null,
   reviewCounts = {},
 }: {
   coaches: CoachRow[];
-  matches?: Record<string, CoachMatch>;
+  /** Streams in from the server; null when the viewer isn't a member who gets matches. */
+  matches?: Promise<Record<string, CoachMatch>> | null;
   reviewCounts?: Record<string, number>;
 }) {
   const router = useRouter();
+  const [matches, setMatches] = useState<Record<string, CoachMatch> | null>(null);
+  useEffect(() => {
+    let live = true;
+    matchesPromise?.then((m) => {
+      if (live) setMatches(m);
+    });
+    return () => {
+      live = false;
+    };
+  }, [matchesPromise]);
+  const matchCount = matches ? Object.keys(matches).length : 0;
   const [q, setQ] = useState("");
   const [levels, setLevels] = useState<string[]>([]);
   const [formats, setFormats] = useState<string[]>([]);
@@ -52,7 +65,7 @@ export default function CoachesDirectory({
 
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
-    return coaches.filter((c) => {
+    const shown = coaches.filter((c) => {
       if (
         needle &&
         ![c.full_name, c.company, c.short_description, c.offering, c.best_for, c.pricing]
@@ -68,7 +81,11 @@ export default function CoachesDirectory({
       if (!matchesDiscipline(c, disciplines)) return false;
       return true;
     });
-  }, [coaches, q, levels, formats, pricing, disciplines]);
+    // Best matches lead, in Claude's ranking; everyone else keeps directory order.
+    if (!matches) return shown;
+    const rank = (c: CoachRow) => matches[c.id]?.rank ?? Infinity;
+    return shown.map((c, i) => ({ c, i })).sort((a, b) => rank(a.c) - rank(b.c) || a.i - b.i).map(({ c }) => c);
+  }, [coaches, q, levels, formats, pricing, disciplines, matches]);
 
   const lastFired = useRef<string>("");
   useEffect(() => {
@@ -84,7 +101,7 @@ export default function CoachesDirectory({
 
   return (
     <div>
-      <div className="relative mt-8">
+      <div className="relative mt-4 md:mt-8">
         <Search
           size={16}
           strokeWidth={1.5}
@@ -98,20 +115,38 @@ export default function CoachesDirectory({
         />
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      <FilterRow className="mt-4">
         <MultiSelect label="Discipline" options={DISCIPLINES} value={disciplines} onChange={setDisciplines} />
         <MultiSelect label="Level" options={TARGET_MENTEE_OPTIONS} value={levels} onChange={setLevels} />
         <MultiSelect label="Format" options={FORMATS} value={formats} onChange={setFormats} />
         <MultiSelect label="Pricing" options={PRICING} value={pricing} onChange={setPricing} />
-      </div>
+      </FilterRow>
 
-      <p className="mt-6 text-[12px] text-secondary">
-        {filtered.length} {filtered.length === 1 ? "coach" : "coaches"}
+      <p className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-secondary">
+        <span>
+          {filtered.length} {filtered.length === 1 ? "coach" : "coaches"}
+        </span>
+        {matchesPromise && !matches && (
+          <span className="flex items-center gap-1.5 text-muted">
+            <Sparkles size={12} strokeWidth={1.5} className="animate-pulse text-gold" />
+            <span className="md:hidden">Finding matches…</span>
+            <span className="hidden md:inline">Finding coaches who fit your profile…</span>
+          </span>
+        )}
+        {matchCount > 0 && (
+          <span className="flex items-center gap-1.5 text-gold">
+            <Sparkles size={12} strokeWidth={1.5} />
+            <span className="md:hidden">
+              {matchCount} {matchCount === 1 ? "match" : "matches"}
+            </span>
+            <span className="hidden md:inline">{matchCount} matched to your profile — shown first</span>
+          </span>
+        )}
       </p>
 
       <div className="mt-3 grid grid-cols-1 gap-4 lg:grid-cols-2">
         {filtered.map((coach) => {
-          const match = matches[coach.id];
+          const match = matches?.[coach.id];
           return (
             <div
               key={coach.id}
@@ -149,7 +184,7 @@ export default function CoachesDirectory({
                       {[coach.company, disciplineLabel(coach.disciplines)].filter(Boolean).join(" · ")}
                     </p>
                     {reviewCounts[coach.id] > 0 && (
-                      <p className="mt-1 flex items-center gap-1 text-[12px] text-muted">
+                      <p className="mt-1 flex items-center gap-1 text-[12px] text-success">
                         <MessageSquare size={11} strokeWidth={1.5} />
                         {reviewCounts[coach.id]} {reviewCounts[coach.id] === 1 ? "review" : "reviews"}
                       </p>
@@ -169,17 +204,7 @@ export default function CoachesDirectory({
                   </p>
                 )}
 
-                {match?.isTopMatch && (
-                  <div className="mt-3.5 rounded-[14px] border border-gold-border bg-surface-1 px-4 py-3">
-                    <span className="eyebrow flex items-center gap-1.5 text-gold">
-                      <Sparkles size={12} strokeWidth={1.5} />
-                      Top match
-                    </span>
-                    {match.reason && (
-                      <p className="mt-1.5 text-[12.5px] leading-[1.5] text-body-2">{match.reason}</p>
-                    )}
-                  </div>
-                )}
+                {match && <MatchReason match={match} className="mt-3.5" />}
               </Card>
             </div>
           );

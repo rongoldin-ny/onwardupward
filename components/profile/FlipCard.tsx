@@ -21,7 +21,7 @@ export default function FlipCard({
       <div
         role="tablist"
         aria-label="Card side"
-        className="flex w-fit gap-1 rounded-full border border-border-1 bg-surface-2 p-1"
+        className="mx-auto flex w-fit gap-1 rounded-full border border-border-1 bg-surface-2 p-1 lg:mx-0"
       >
         {(["player", "coach"] as const).map((s) => (
           <button
@@ -34,7 +34,7 @@ export default function FlipCard({
               side === s ? "gold-gradient text-on-gold" : "text-secondary"
             }`}
           >
-            {s === "player" ? "Player" : "Coach"}
+            {s === "player" ? "Profile" : "Coach"}
           </button>
         ))}
       </div>

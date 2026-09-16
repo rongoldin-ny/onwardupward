@@ -96,7 +96,7 @@ export default function IdentityPanel({ view, ver }: { view: ProfileView; ver: n
               />
               <TextField
                 name="website_url"
-                placeholder="Website or coaching site"
+                placeholder="Website"
                 defaultValue={p.website_url ?? ""}
               />
               <label className="flex h-[58px] w-full cursor-pointer items-center justify-between rounded-full border border-border-1 bg-surface-2 px-6 text-[15px] text-muted">
@@ -126,8 +126,7 @@ export default function IdentityPanel({ view, ver }: { view: ProfileView; ver: n
                   className="mt-0.5 h-5 w-5 shrink-0 accent-[#E8C987]"
                 />
                 <span className="text-[13px] leading-[1.5] text-body-2">
-                  Make my résumé public. Off by default — it&apos;s still used to generate better
-                  AI summaries and matches either way.
+                  Make my resume available to coaches and hiring managers.
                 </span>
               </label>
             </div>

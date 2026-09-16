@@ -22,44 +22,48 @@ export default function GrowthGoalCard({ goal }: { goal: string | null }) {
     if (result.error) setError(result.error);
   }
 
-  return (
-    <Card className="p-6">
+  const intro = (
+    <>
       <Eyebrow>Where you hope to grow</Eyebrow>
       <p className="mt-2 text-[13px] leading-[1.5] text-secondary">
         This will help you match to the right mentors and coaches.
       </p>
+    </>
+  );
 
-      {goal ? (
-        <>
+  // Once set, the whole card links to the profile like the other home cards.
+  if (goal) {
+    return (
+      <Link href="/profile" className="block">
+        <Card className="card-hover p-6">
+          {intro}
           <p className="mt-5 text-[20px] leading-[1.4] font-bold text-cream">{goal}</p>
-          <Link
-            href="/profile"
-            className="mt-4 inline-block text-[12px] font-bold text-secondary"
-          >
-            Edit in profile
-          </Link>
-        </>
-      ) : (
-        <>
-          <textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            rows={3}
-            maxLength={500}
-            placeholder="What do you want to get better at this year?"
-            className="mt-5 w-full rounded-[16px] border border-border-1 bg-surface-1 p-4 text-[15px] leading-[1.5] text-cream placeholder:text-muted focus:border-gold-active focus:outline-none"
-          />
-          <button
-            type="button"
-            onClick={save}
-            disabled={state === "saving" || !text.trim()}
-            className="gold-gradient mt-3 h-[44px] rounded-full px-6 text-[14px] font-bold text-on-gold disabled:opacity-50"
-          >
-            {state === "saving" ? "Saving…" : "Save"}
-          </button>
-          {error && <p className="mt-3 text-[13px] text-gold">{error}</p>}
-        </>
-      )}
+          <span className="mt-4 inline-block text-[13px] font-bold text-gold">Edit in profile</span>
+        </Card>
+      </Link>
+    );
+  }
+
+  return (
+    <Card className="card-hover p-6">
+      {intro}
+      <textarea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        rows={3}
+        maxLength={500}
+        placeholder="What do you want to get better at this year?"
+        className="mt-5 w-full rounded-[16px] border border-border-1 bg-surface-1 p-4 text-[15px] leading-[1.5] text-cream placeholder:text-muted focus:border-gold-active focus:outline-none"
+      />
+      <button
+        type="button"
+        onClick={save}
+        disabled={state === "saving" || !text.trim()}
+        className="gold-gradient mt-3 h-[44px] rounded-full px-6 text-[14px] font-bold text-on-gold disabled:opacity-50"
+      >
+        {state === "saving" ? "Saving…" : "Save"}
+      </button>
+      {error && <p className="mt-3 text-[13px] text-gold">{error}</p>}
     </Card>
   );
 }

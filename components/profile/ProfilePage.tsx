@@ -9,6 +9,8 @@ import { trackElementClick } from "@/app/actions/engage";
 import { saveProfilePage } from "@/app/actions/profile";
 import { fillProfileWithAI, reenrichProfile } from "@/app/actions/settings";
 import { CtaLink, PageFrame } from "@/components/ui";
+import { closeTarget } from "@/lib/route-history";
+import type { CoachMatch } from "@/lib/coach-match";
 import type { CoachReview } from "@/lib/coach-reviews-db";
 import type { Profile } from "@/lib/db";
 import type { ProfileView } from "@/lib/profile-view";
@@ -17,6 +19,10 @@ import { EditContext, type TrackedElement, type Viewer } from "./edit-context";
 import FlipCard, { type CardSide } from "./FlipCard";
 import IdentityPanel from "./IdentityPanel";
 import PlayerCard, { type PlayerCardHandle } from "./PlayerCard";
+
+/** Owner header actions: share a row evenly on mobile, natural width on desktop. */
+const actionClass =
+  "flex h-11 flex-auto items-center justify-center gap-2 rounded-full px-4 text-[14px] font-bold whitespace-nowrap md:flex-none md:px-5";
 
 /**
  * One profile for every user type. The owner edits in place — every field
@@ -37,7 +43,7 @@ export default function ProfilePage({
   viewer: Viewer;
   initialSide: CardSide;
   communitySkills?: string[];
-  topMatch?: { isTopMatch: boolean; reason: string | null } | null;
+  topMatch?: Promise<CoachMatch | null> | null;
   hasPendingClaim?: boolean;
   reviews?: CoachReview[];
   ownReview?: CoachReview | null;
@@ -135,6 +141,12 @@ export default function ProfilePage({
     router.refresh();
   }
 
+  /** Close: save anything pending, then return to the last in-app page (or home). */
+  async function close() {
+    if (editing) await flushSave();
+    router.push(closeTarget(window.location.pathname));
+  }
+
   async function handleSubmitApplication() {
     if (submitting) return;
     setSubmitting(true);
@@ -222,6 +234,9 @@ export default function ProfilePage({
   );
 
   const isOwner = viewer === "owner";
+  // Unclaimed coach listings lead with "This you? Claim your profile" (in
+  // CoachCard), so the generic sign-up buttons step aside.
+  const claimable = v.coach?.status === "unclaimed";
   const hasPlayer = !!v.player;
 
   const card = hasPlayer ? (
@@ -266,12 +281,14 @@ export default function ProfilePage({
             <p className="text-[14px] font-bold text-gold">
               onward/upward — a growth network for product designers and PMs.
             </p>
-            <Link
-              href="/signup"
-              className="gold-gradient cta-glow shrink-0 rounded-full px-5 py-2.5 text-[14px] font-bold text-on-gold"
-            >
-              Sign up to join the network
-            </Link>
+            {!claimable && (
+              <Link
+                href="/signup"
+                className="gold-gradient cta-glow shrink-0 rounded-full px-5 py-2.5 text-[14px] font-bold text-on-gold"
+              >
+                Sign up to join the network
+              </Link>
+            )}
           </div>
         )}
 
@@ -285,60 +302,82 @@ export default function ProfilePage({
           <header className="flex flex-wrap items-center justify-end gap-3">
             {isOwner && (
               <>
-                <span className="mr-auto text-[12px] text-secondary" aria-live="polite">
-                  {saveState === "saving"
-                    ? "Saving…"
-                    : saveState === "saved"
-                      ? "Saved ✓ — autosaves as you type"
-                      : editing
-                        ? "Autosaves as you type"
-                        : ""}
-                </span>
-                {editing && (
+                {/* Mobile: close + save status on one row, actions on their own
+                    row below. The site's hamburger menu is hidden on profile
+                    pages (SiteNavClient), so this X is the way back out. */}
+                <div className="flex w-full items-center gap-3 md:mr-auto md:w-auto">
                   <button
                     type="button"
-                    onClick={handleAiFill}
-                    disabled={aiPending}
-                    className="flex h-11 items-center gap-2 rounded-full border border-gold-border px-5 text-[14px] font-bold text-gold disabled:opacity-60"
+                    aria-label="Close"
+                    onClick={close}
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border-2 md:hidden"
                   >
-                    <Sparkles size={15} strokeWidth={1.75} />
-                    {aiPending ? "Reading your portfolio…" : "Fill with AI"}
+                    <X size={16} strokeWidth={1.5} className="text-secondary" />
                   </button>
-                )}
-                <button
-                  type="button"
-                  onClick={share}
-                  className="flex h-11 items-center gap-2 rounded-full border border-border-2 px-5 text-[14px] font-bold text-cream"
-                >
-                  <Link2 size={15} strokeWidth={1.75} />
-                  Share
-                </button>
-                {editing ? (
+                  <span className="text-[12px] text-secondary" aria-live="polite">
+                    {saveState === "saving"
+                      ? "Saving…"
+                      : saveState === "saved"
+                        ? "Saved ✓ — autosaves as you type"
+                        : editing
+                          ? "Autosaves as you type"
+                          : ""}
+                  </span>
+                </div>
+                <div className="flex w-full gap-2 md:w-auto md:gap-3">
+                  {editing && (
+                    <button
+                      type="button"
+                      onClick={handleAiFill}
+                      disabled={aiPending}
+                      className={`${actionClass} border border-gold-border text-gold disabled:opacity-60`}
+                    >
+                      <Sparkles size={15} strokeWidth={1.75} />
+                      {aiPending ? (
+                        <>
+                          <span className="md:hidden">Reading…</span>
+                          <span className="hidden md:inline">Reading your portfolio…</span>
+                        </>
+                      ) : (
+                        "Fill with AI"
+                      )}
+                    </button>
+                  )}
                   <button
                     type="button"
-                    onClick={finishEditing}
-                    className="gold-gradient cta-glow flex h-11 items-center gap-2 rounded-full px-5 text-[14px] font-bold text-on-gold"
+                    onClick={share}
+                    className={`${actionClass} border border-border-2 text-cream`}
                   >
-                    <Check size={15} strokeWidth={2.25} />
-                    Done editing
+                    <Link2 size={15} strokeWidth={1.75} />
+                    Share
                   </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setEditing(true)}
-                    className="flex h-11 items-center gap-2 rounded-full border border-gold-border px-5 text-[14px] font-bold text-gold"
-                  >
-                    <Pencil size={14} strokeWidth={1.75} />
-                    Edit
-                  </button>
-                )}
+                  {editing ? (
+                    <button
+                      type="button"
+                      onClick={finishEditing}
+                      className={`${actionClass} gold-gradient cta-glow text-on-gold`}
+                    >
+                      <Check size={15} strokeWidth={2.25} />
+                      Done<span className="hidden md:inline"> editing</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setEditing(true)}
+                      className={`${actionClass} border border-gold-border text-gold`}
+                    >
+                      <Pencil size={14} strokeWidth={1.75} />
+                      Edit
+                    </button>
+                  )}
+                </div>
               </>
             )}
             {viewer === "member" && (
               <button
                 type="button"
                 aria-label="Close"
-                onClick={() => router.back()}
+                onClick={close}
                 className="flex h-11 w-11 items-center justify-center rounded-full border border-border-2"
               >
                 <X size={16} strokeWidth={1.5} className="text-secondary" />
@@ -357,15 +396,10 @@ export default function ProfilePage({
 
           <input type="hidden" name="coaching_enabled" value={coachingEnabled ? "1" : ""} />
 
-          {viewer === "public" && (
+          {viewer === "public" && !claimable && (
             <footer className="mt-10">
               <CtaLink href="/signup">Join the network</CtaLink>
             </footer>
-          )}
-          {editing && (
-            <p className="mt-8 text-[12px] text-muted">
-              Changes save automatically as you edit — &ldquo;Done editing&rdquo; just closes the editor.
-            </p>
           )}
         </form>
 
