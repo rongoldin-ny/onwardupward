@@ -75,8 +75,15 @@ function CopyButton({ text }: { text: string }) {
   );
 }
 
-function ResolvedToggle({ id, resolved }: { id: string; resolved: boolean }) {
-  const [value, setValue] = useState(resolved);
+function ResolvedToggle({
+  id,
+  value,
+  onChange,
+}: {
+  id: string;
+  value: boolean;
+  onChange: (resolved: boolean) => void;
+}) {
   const [pending, setPending] = useState(false);
   return (
     <button
@@ -84,11 +91,11 @@ function ResolvedToggle({ id, resolved }: { id: string; resolved: boolean }) {
       disabled={pending}
       onClick={async () => {
         const next = !value;
-        setValue(next);
+        onChange(next);
         setPending(true);
         const result = await setFeedbackResolved(id, next);
         setPending(false);
-        if (result.error) setValue(!next);
+        if (result.error) onChange(!next);
       }}
       className={`eyebrow shrink-0 rounded-full border px-3 py-1.5 disabled:opacity-60 ${
         value ? "border-success/35 text-success" : "border-border-2 text-muted"
@@ -99,21 +106,41 @@ function ResolvedToggle({ id, resolved }: { id: string; resolved: boolean }) {
   );
 }
 
-export default function FeedbackList({ rows }: { rows: FeedbackRow[] }) {
+export default function FeedbackList({ rows: initialRows }: { rows: FeedbackRow[] }) {
+  // Resolved items drop out of the list as soon as they're marked; the CSV
+  // export still includes everything.
+  const [rows, setRows] = useState(initialRows);
+  const [showResolved, setShowResolved] = useState(false);
+  const resolvedCount = rows.filter((r) => r.resolved).length;
+  const visible = showResolved ? rows : rows.filter((r) => !r.resolved);
+  const setResolved = (id: string, resolved: boolean) =>
+    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, resolved } : r)));
+
   return (
     <div>
-      <button
-        type="button"
-        onClick={() => downloadCsv(rows)}
-        disabled={rows.length === 0}
-        className="mt-5 flex items-center gap-2 rounded-full border border-border-2 px-4 py-2 text-[13px] font-bold text-cream disabled:opacity-40"
-      >
-        <Download size={14} strokeWidth={1.5} />
-        Download as CSV
-      </button>
+      <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
+        <button
+          type="button"
+          onClick={() => downloadCsv(rows)}
+          disabled={rows.length === 0}
+          className="flex items-center gap-2 rounded-full border border-border-2 px-4 py-2 text-[13px] font-bold text-cream disabled:opacity-40"
+        >
+          <Download size={14} strokeWidth={1.5} />
+          Download as CSV
+        </button>
+        {resolvedCount > 0 && (
+          <button
+            type="button"
+            onClick={() => setShowResolved(!showResolved)}
+            className="text-[13px] font-bold text-gold"
+          >
+            {showResolved ? "Hide resolved" : `Show resolved (${resolvedCount})`}
+          </button>
+        )}
+      </div>
 
       <div className="mt-4 space-y-3">
-        {rows.map((r) => (
+        {visible.map((r) => (
           <div key={r.id} className="rounded-[20px] border border-border-1 bg-surface-2 p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="flex flex-wrap items-center gap-2">
@@ -126,7 +153,11 @@ export default function FeedbackList({ rows }: { rows: FeedbackRow[] }) {
                 >
                   {r.kind === "bug" ? "Bug" : "Feature idea"}
                 </span>
-                <ResolvedToggle id={r.id} resolved={r.resolved} />
+                <ResolvedToggle
+                  id={r.id}
+                  value={r.resolved}
+                  onChange={(resolved) => setResolved(r.id, resolved)}
+                />
               </div>
               <CopyButton text={r.message} />
             </div>
@@ -139,8 +170,10 @@ export default function FeedbackList({ rows }: { rows: FeedbackRow[] }) {
             </p>
           </div>
         ))}
-        {rows.length === 0 && (
-          <p className="mt-2 text-[14px] text-secondary">No feedback yet.</p>
+        {visible.length === 0 && (
+          <p className="mt-2 text-[14px] text-secondary">
+            {rows.length === 0 ? "No feedback yet." : "All caught up — nothing open."}
+          </p>
         )}
       </div>
     </div>

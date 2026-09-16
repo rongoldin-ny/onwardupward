@@ -147,22 +147,25 @@ export default function PlayerCard({
         <div>
           <Eyebrow className="text-gold">Profile card</Eyebrow>
           {editing ? (
-            <div key={`headline-${ver}`} className="mt-3 flex flex-col gap-3 sm:flex-row">
-              <SelectField
-                name="role_type"
-                placeholder="Type of work"
-                options={ROLE_TYPES}
-                defaultValue={p.role_type ?? ""}
-                className="min-w-0 flex-1"
-              />
-              <SelectField
-                name="career_stage"
-                placeholder="Career stage"
-                options={CAREER_STAGES}
-                defaultValue={p.career_stage ?? ""}
-                className="min-w-0 flex-1"
-              />
-            </div>
+            <>
+              <p className="eyebrow mt-5 text-secondary">Role &amp; Level</p>
+              <div key={`headline-${ver}`} className="mt-3.5 flex flex-col gap-3 sm:flex-row">
+                <SelectField
+                  name="role_type"
+                  placeholder="Type of work"
+                  options={ROLE_TYPES}
+                  defaultValue={p.role_type ?? ""}
+                  className="min-w-0 flex-1"
+                />
+                <SelectField
+                  name="career_stage"
+                  placeholder="Career stage"
+                  options={CAREER_STAGES}
+                  defaultValue={p.career_stage ?? ""}
+                  className="min-w-0 flex-1"
+                />
+              </div>
+            </>
           ) : (
             <h2 className="mt-2 text-[22px] leading-[1.15] font-black tracking-[-0.02em] text-cream">
               {headline || (viewer === "owner" ? "Add your type of work and stage." : view.firstName)}
@@ -178,6 +181,27 @@ export default function PlayerCard({
       )}
 
       <div className="mt-6 space-y-6">
+        {(editing || player.growthGoal) && (
+          <Section title="Where I hope to grow">
+            {editing ? (
+              <>
+                <p className="-mt-1.5 mb-3 text-[12.5px] leading-[1.5] text-secondary">
+                  This will be used to help match you to potential coaches.
+                </p>
+                <TextArea
+                  key={`growth-${ver}`}
+                  name="growth_goal"
+                  rows={3}
+                  placeholder="What would you want a coach's help with?"
+                  defaultValue={p.growth_goal ?? ""}
+                />
+              </>
+            ) : (
+              <p className="text-[15px] leading-[1.5] text-body">{player.growthGoal}</p>
+            )}
+          </Section>
+        )}
+
         {(editing || industries.length > 0 || player.industries.length > 0) && (
           <Section title="Industries">
             {editing ? (
@@ -300,22 +324,6 @@ export default function PlayerCard({
                   <Tag key={c}>{c}</Tag>
                 ))}
               </div>
-            )}
-          </Section>
-        )}
-
-        {(editing || player.growthGoal) && (
-          <Section title="Where I hope to grow">
-            {editing ? (
-              <TextArea
-                key={`growth-${ver}`}
-                name="growth_goal"
-                rows={3}
-                placeholder="What would you want a coach's help with?"
-                defaultValue={p.growth_goal ?? ""}
-              />
-            ) : (
-              <p className="text-[15px] leading-[1.5] text-body">{player.growthGoal}</p>
             )}
           </Section>
         )}

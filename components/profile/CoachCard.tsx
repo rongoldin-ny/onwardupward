@@ -1,13 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { GraduationCap, Sparkles } from "lucide-react";
+import { useEffect, useState } from "react";
+import { GraduationCap } from "lucide-react";
 import { claimCoach } from "@/app/actions/claims";
 import CoachBookLink from "@/components/CoachBookLink";
+import { MatchReason } from "@/components/MatchReason";
 import { DisciplineChips, MenteeChips, SpecialtyChips } from "@/components/CoachFormFields";
 import { TextArea, TextField } from "@/components/fields";
 import { Cta, Eyebrow, Tag } from "@/components/ui";
 import { coachLevels, disciplineLabel, type CoachDiscipline } from "@/lib/coach-shared";
+import type { CoachMatch } from "@/lib/coach-match";
 import type { CoachReview } from "@/lib/coach-reviews-db";
 import type { ProfileView } from "@/lib/profile-view";
 import { labelForRoleType } from "@/lib/taxonomy";
@@ -31,7 +33,8 @@ export default function CoachCard({
   onStartCoaching: () => void;
   onSubmitApplication?: () => void;
   submitting?: boolean;
-  topMatch?: { isTopMatch: boolean; reason: string | null } | null;
+  /** Streams in from the server for members; resolves null when this coach isn't one of their matches. */
+  topMatch?: Promise<CoachMatch | null> | null;
   hasPendingClaim?: boolean;
   reviews?: CoachReview[];
   ownReview?: CoachReview | null;
@@ -41,6 +44,16 @@ export default function CoachCard({
   const [discipline, setDiscipline] = useState<CoachDiscipline | null>(coach?.disciplines ?? null);
   const [mentees, setMentees] = useState<string[]>(coach?.target_mentees ?? []);
   const [specialties, setSpecialties] = useState<string[]>(coach?.specialties ?? []);
+  const [match, setMatch] = useState<CoachMatch | null>(null);
+  useEffect(() => {
+    let live = true;
+    topMatch?.then((m) => {
+      if (live) setMatch(m);
+    });
+    return () => {
+      live = false;
+    };
+  }, [topMatch]);
 
   const shell = "overflow-hidden rounded-[24px] border border-border-1 bg-surface-2 p-6";
 
@@ -276,16 +289,8 @@ export default function CoachCard({
                 Tap Edit to describe your offering and how to book you.
               </p>
             )}
-            {viewer !== "owner" && topMatch?.isTopMatch && (
-              <div className="rounded-[14px] border border-gold-border bg-surface-1 px-4 py-3">
-                <span className="eyebrow flex items-center gap-1.5 text-gold">
-                  <Sparkles size={12} strokeWidth={1.5} />
-                  Top match
-                </span>
-                {topMatch.reason && (
-                  <p className="mt-1.5 text-[13px] leading-[1.5] text-body-2">{topMatch.reason}</p>
-                )}
-              </div>
+            {viewer !== "owner" && match && (
+              <MatchReason match={match} textClassName="text-[13px]" />
             )}
           </>
         )}

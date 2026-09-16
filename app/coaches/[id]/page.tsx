@@ -4,6 +4,7 @@ import { currentUser } from "@/lib/auth";
 import type { CoachRow } from "@/lib/coach-shared";
 import { getCoachReviews, getOwnReview } from "@/lib/coach-reviews-db";
 import { getCoachMatches } from "@/lib/coach-match";
+import { getDirectoryCoaches } from "@/lib/coaches-db";
 import type { Profile } from "@/lib/db";
 import { isPublishable } from "@/lib/profile-required";
 import { coachOnlyProfileView, toProfileView } from "@/lib/profile-view";
@@ -42,8 +43,15 @@ export default async function CoachDetailPage({
   });
 
   const viewer = user ? "member" : "public";
+  // Scored against the whole bench (same cached result as /coaches) so "match"
+  // means the same thing everywhere. Not awaited — it streams into the card.
   const topMatch =
-    user?.role === "candidate" ? ((await getCoachMatches(user, [coach]))[coach.id] ?? null) : null;
+    user?.role === "candidate"
+      ? getDirectoryCoaches()
+          .then((bench) => getCoachMatches(user, bench))
+          .then((matches) => matches[coach.id] ?? null)
+          .catch(() => null)
+      : null;
 
   let hasPendingClaim = false;
   if (user && coach.status === "unclaimed") {

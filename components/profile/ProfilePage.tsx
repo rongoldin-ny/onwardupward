@@ -9,6 +9,7 @@ import { trackElementClick } from "@/app/actions/engage";
 import { saveProfilePage } from "@/app/actions/profile";
 import { fillProfileWithAI, reenrichProfile } from "@/app/actions/settings";
 import { CtaLink, PageFrame } from "@/components/ui";
+import type { CoachMatch } from "@/lib/coach-match";
 import type { CoachReview } from "@/lib/coach-reviews-db";
 import type { Profile } from "@/lib/db";
 import type { ProfileView } from "@/lib/profile-view";
@@ -37,7 +38,7 @@ export default function ProfilePage({
   viewer: Viewer;
   initialSide: CardSide;
   communitySkills?: string[];
-  topMatch?: { isTopMatch: boolean; reason: string | null } | null;
+  topMatch?: Promise<CoachMatch | null> | null;
   hasPendingClaim?: boolean;
   reviews?: CoachReview[];
   ownReview?: CoachReview | null;

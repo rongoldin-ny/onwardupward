@@ -1,14 +1,14 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { ArrowRight } from "lucide-react";
 import { requireCandidate } from "@/lib/auth";
-import { getCoachByProfileId, getDirectoryCoaches, type CoachRow } from "@/lib/coaches-db";
+import { getCoachByProfileId } from "@/lib/coaches-db";
 import { getMentorshipPosts } from "@/lib/mentorship-posts";
 import { missingRequired, profileCompletionPct } from "@/lib/stats";
 import { greeting } from "@/lib/greeting";
 import { Card, CtaLink, Eyebrow, Logo, PageFrame } from "@/components/ui";
 import GrowthGoalCard from "./GrowthGoalCard";
-
-const RECOMMENDED_COACH_SLUGS = ["andy-polaine", "mia-blume", "judd-garratt"];
+import RecommendedCoaches, { RecommendedCoachesSkeleton } from "./RecommendedCoaches";
 
 export default async function Dashboard() {
   const user = await requireCandidate();
@@ -19,10 +19,6 @@ export default async function Dashboard() {
   const firstName = (user.name ?? "there").split(" ")[0];
   const completionPct = profileCompletionPct(user);
   const missing = missingRequired(user);
-  const directory = await getDirectoryCoaches();
-  const coaches = RECOMMENDED_COACH_SLUGS.map((s) => directory.find((c) => c.slug === s))
-    .filter(Boolean)
-    .slice(0, 3) as CoachRow[];
 
   return (
     <PageFrame size="wide">
@@ -131,39 +127,11 @@ export default async function Dashboard() {
             <Eyebrow>Recommended coaches</Eyebrow>
           </span>
           <div className="mt-4 space-y-3 lg:mt-0">
-            {coaches.map((coach) => (
-              <Link
-                key={coach.id}
-                href={`/coaches/${coach.id}`}
-                className="card-hover block rounded-[20px] border border-border-1 bg-surface-2 p-4"
-              >
-                <div className="flex items-center gap-3.5">
-                  {coach.photo_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={coach.photo_url}
-                      alt={coach.full_name}
-                      className="h-[48px] w-[48px] shrink-0 rounded-full object-cover"
-                    />
-                  ) : (
-                    <span className="flex h-[48px] w-[48px] shrink-0 items-center justify-center rounded-full border border-border-2 bg-surface-1 text-[15px] font-black text-secondary">
-                      {coach.full_name
-                        .split(" ")
-                        .map((w) => w[0])
-                        .slice(0, 2)
-                        .join("")}
-                    </span>
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-[15px] font-bold text-cream">{coach.full_name}</p>
-                    <p className="mt-0.5 truncate text-[12px] text-secondary">{coach.company}</p>
-                  </div>
-                </div>
-                <p className="mt-3 line-clamp-2 text-[12px] leading-[1.5] text-secondary">
-                  {coach.best_for}
-                </p>
-              </Link>
-            ))}
+            {/* Matching reads the member's whole profile with Claude; the rest of
+                the dashboard renders immediately and this streams in. */}
+            <Suspense fallback={<RecommendedCoachesSkeleton />}>
+              <RecommendedCoaches user={user} />
+            </Suspense>
             <Link href="/coaches" className="block pt-1 text-center text-[13px] font-bold text-gold">
               Browse all coaches →
             </Link>
