@@ -51,7 +51,7 @@ export default function PrivacyPage() {
       <LegalSection id="who-we-are" title="Who we are">
         <p>
           onward/upward (&ldquo;onward/upward,&rdquo; &ldquo;we,&rdquo; &ldquo;us&rdquo;) is a growth
-          network for people in tech, operated by Formative Labs dba Ron Goldin.
+          network for people in tech, operated by Ron Goldin dba Formative Labs.
           This policy explains what we collect when you use onwardupward.io, how we use it, and the
           choices you have. It applies to members, coaches, hiring managers and visitors.
         </p>
@@ -296,7 +296,7 @@ export default function PrivacyPage() {
 
       <LegalSection id="contact" title="Contact us">
         <p>
-          Formative Labs dba Ron Goldin
+          Ron Goldin dba Formative Labs
           <br />
           Brooklyn, New York
           <br />
