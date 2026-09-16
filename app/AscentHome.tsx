@@ -97,7 +97,8 @@ export default function AscentHome() {
           <div className="hero-row">
             <a className="btn btn-lg" href="#join">Sign up</a>
             <span className="hero-sub">
-              Get started exploring coaches, advertising your coaching, or both.
+              Get started exploring potential mentors, advertising your coaching
+              practice, or both.
             </span>
           </div>
           <div className="scroll-cue">SCROLL TO LEVEL UP ↓</div>
