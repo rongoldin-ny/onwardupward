@@ -26,8 +26,9 @@ export default async function CoachingAnalyticsPage() {
     <SettingsShell
       title="Coaching analytics."
       subtitle="How members are finding and booking you."
+      size="wide"
     >
-      <CoachAnalyticsTiles analytics={analytics} />
+      <CoachAnalyticsTiles analytics={analytics} bookingUrl={listing.booking_url} />
       <Eyebrow className="mt-9">Who&apos;s looked at you</Eyebrow>
       <CoachViewers viewers={viewers} matches={matches} />
     </SettingsShell>
