@@ -15,7 +15,7 @@ import {
 import type { CoachMatch } from "@/lib/coach-match";
 import { Card } from "@/components/ui";
 import { MatchReason } from "@/components/MatchReason";
-import { MultiSelect } from "@/components/MultiSelect";
+import { FilterRow, MultiSelect } from "@/components/MultiSelect";
 
 const FORMATS = ["1:1 coaching", "Groups & cohorts", "Programs & courses"];
 const PRICING = ["Published pricing", "Inquire"];
@@ -101,7 +101,7 @@ export default function CoachesDirectory({
 
   return (
     <div>
-      <div className="relative mt-8">
+      <div className="relative mt-4 md:mt-8">
         <Search
           size={16}
           strokeWidth={1.5}
@@ -115,12 +115,12 @@ export default function CoachesDirectory({
         />
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      <FilterRow className="mt-4">
         <MultiSelect label="Discipline" options={DISCIPLINES} value={disciplines} onChange={setDisciplines} />
         <MultiSelect label="Level" options={TARGET_MENTEE_OPTIONS} value={levels} onChange={setLevels} />
         <MultiSelect label="Format" options={FORMATS} value={formats} onChange={setFormats} />
         <MultiSelect label="Pricing" options={PRICING} value={pricing} onChange={setPricing} />
-      </div>
+      </FilterRow>
 
       <p className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-secondary">
         <span>
@@ -129,13 +129,17 @@ export default function CoachesDirectory({
         {matchesPromise && !matches && (
           <span className="flex items-center gap-1.5 text-muted">
             <Sparkles size={12} strokeWidth={1.5} className="animate-pulse text-gold" />
-            Finding coaches who fit your profile…
+            <span className="md:hidden">Finding matches…</span>
+            <span className="hidden md:inline">Finding coaches who fit your profile…</span>
           </span>
         )}
         {matchCount > 0 && (
           <span className="flex items-center gap-1.5 text-gold">
             <Sparkles size={12} strokeWidth={1.5} />
-            {matchCount} matched to your profile — shown first
+            <span className="md:hidden">
+              {matchCount} {matchCount === 1 ? "match" : "matches"}
+            </span>
+            <span className="hidden md:inline">{matchCount} matched to your profile — shown first</span>
           </span>
         )}
       </p>

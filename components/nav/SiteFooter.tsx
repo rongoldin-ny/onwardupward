@@ -1,17 +1,36 @@
+"use client";
+
 import { HelpCircle } from "lucide-react";
+import { usePathname } from "next/navigation";
 import FeedbackWidget from "@/components/feedback/FeedbackWidget";
 
+/** Auth screens keep the phone viewport clear so the sign-in/sign-up switch never gets crowded. */
+const NO_COPYRIGHT_ON_MOBILE = ["/signin", "/signup"];
+
 /**
- * Persistent site-wide footer, mounted once in the root layout. Pinned to
- * opposite corners rather than sitting in the flow: PageFrame's card is
- * min-h-dvh, so an in-flow footer fell below the fold on every phone-sized
- * screen. Each wrapper ignores pointer events so it can never swallow a
- * click meant for the page — only the links/buttons inside opt back in.
+ * Persistent site-wide footer, mounted once in the root layout.
+ *
+ * Desktop: pinned to opposite corners rather than sitting in the flow —
+ * PageFrame's card hugs its content, so corners are always free.
+ *
+ * Mobile: nothing may sit on top of page content. The copyright drops into
+ * the flow at the very bottom of the page, and Feedback/Help shrink to
+ * icon-only circles (hidden entirely on the signed-out home, which has its
+ * own CTA-led footer). Each fixed wrapper ignores pointer events so it can
+ * never swallow a click meant for the page — only the buttons opt back in.
  */
 export default function SiteFooter() {
+  const pathname = usePathname();
+  const isHome = pathname === "/";
+  const hideCopyrightOnMobile = NO_COPYRIGHT_ON_MOBILE.includes(pathname);
+
   return (
     <>
-      <div className="pointer-events-none fixed bottom-4 left-5 z-30 text-[10px] font-bold tracking-[0.14em] text-muted uppercase md:bottom-5 md:left-7">
+      <div
+        className={`px-5 pt-6 pb-8 text-[10px] font-bold tracking-[0.14em] text-muted uppercase md:pointer-events-none md:fixed md:bottom-5 md:left-7 md:z-30 md:p-0 ${
+          hideCopyrightOnMobile ? "hidden md:block" : ""
+        }`}
+      >
         <a
           href="https://formativelabs.co/"
           target="_blank"
@@ -21,14 +40,20 @@ export default function SiteFooter() {
           © 2026 Formative Labs
         </a>
       </div>
-      <footer className="pointer-events-none fixed right-5 bottom-4 z-30 flex items-center gap-2 text-[10px] font-bold tracking-[0.14em] text-muted uppercase md:right-7 md:bottom-5">
+      <footer
+        className={`pointer-events-none fixed right-5 bottom-4 z-30 items-center gap-2 text-[10px] font-bold tracking-[0.14em] text-muted uppercase md:right-7 md:bottom-5 ${
+          isHome ? "hidden md:flex" : "flex"
+        }`}
+      >
         <FeedbackWidget />
         <a
           href="mailto:hello@onwardupward.io"
-          className="pointer-events-auto flex h-8 items-center gap-1.5 rounded-full border border-gold-border bg-surface-2 px-3 text-gold shadow-[0_4px_16px_rgba(0,0,0,0.35)]"
+          aria-label="Help"
+          className="pointer-events-auto flex h-9 w-9 items-center justify-center gap-1.5 rounded-full border border-gold-border bg-surface-2 text-gold shadow-[0_4px_16px_rgba(0,0,0,0.35)] md:h-8 md:w-auto md:px-3"
         >
-          <HelpCircle size={12} strokeWidth={2} />
-          Help
+          <HelpCircle size={15} strokeWidth={2} className="md:hidden" />
+          <HelpCircle size={12} strokeWidth={2} className="hidden md:block" />
+          <span className="hidden md:inline">Help</span>
         </a>
       </footer>
     </>

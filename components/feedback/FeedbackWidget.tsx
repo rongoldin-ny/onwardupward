@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageSquare, X } from "lucide-react";
+import { Bug, MessageSquare, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
@@ -16,7 +16,8 @@ const KINDS = [
 const noopSubscribe = () => () => {};
 
 /**
- * Floating "Feedback" pill that lives in the site footer. The dialog and toast
+ * Floating "Feedback" button that lives in the site footer — an icon-only
+ * bug on mobile, a labeled pill on desktop. The dialog and toast
  * are portaled to <body> so they escape the footer's pointer-events-none,
  * uppercase, letter-spaced styling.
  */
@@ -69,10 +70,13 @@ export default function FeedbackWidget() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="pointer-events-auto flex h-8 items-center gap-1.5 rounded-full border border-gold-border bg-surface-2 px-3 text-gold shadow-[0_4px_16px_rgba(0,0,0,0.35)]"
+        aria-label="Feedback"
+        className="pointer-events-auto flex h-9 w-9 items-center justify-center gap-1.5 rounded-full border border-gold-border bg-surface-2 text-gold shadow-[0_4px_16px_rgba(0,0,0,0.35)] md:h-8 md:w-auto md:px-3"
       >
-        <MessageSquare size={12} strokeWidth={2} />
-        Feedback
+        {/* Mobile: icon-only bug button. Desktop: labeled pill. */}
+        <Bug size={15} strokeWidth={2} className="md:hidden" />
+        <MessageSquare size={12} strokeWidth={2} className="hidden md:block" />
+        <span className="hidden md:inline">Feedback</span>
       </button>
 
       {mounted &&

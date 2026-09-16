@@ -163,6 +163,14 @@ body {
   max-width: 0;
   opacity: 0;
 }
+/* Subpages on phones: always the abbreviated mark (see <Logo full>). */
+@media (max-width: 767.98px) {
+  .ou-compact-mobile .ou-rest {
+    max-width: 0;
+    opacity: 0;
+    transition: none;
+  }
+}
 
 /* Desktop: arrow ascends on hover. */
 @media (hover: hover) {
@@ -242,5 +250,13 @@ body {
   .card-hover:hover {
     border-color: var(--border-2);
     background: rgba(232, 201, 135, 0.06);
+  }
+}
+
+/* Horizontal carousels (mobile filter rows): swipeable, no visible bar. */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
   }
 }
