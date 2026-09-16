@@ -6,7 +6,7 @@ import { getCoachByProfileId } from "@/lib/coaches-db";
 import { getMentorshipPosts } from "@/lib/mentorship-posts";
 import { missingRequired, profileCompletionPct } from "@/lib/stats";
 import { greeting } from "@/lib/greeting";
-import { Card, CtaLink, Eyebrow, Logo, PageFrame } from "@/components/ui";
+import { Card, Eyebrow, Logo, PageFrame } from "@/components/ui";
 import GrowthGoalCard from "./GrowthGoalCard";
 import RecommendedCoaches, { RecommendedCoachesSkeleton } from "./RecommendedCoaches";
 
@@ -34,38 +34,42 @@ export default async function Dashboard() {
 
       <main className="mt-9 lg:grid lg:grid-cols-[1fr_320px] lg:items-start lg:gap-10">
         <div>
+          <GrowthGoalCard goal={user.growth_goal} />
+
           {completionPct < 100 && (
-            <Link href="/profile" className="mb-4 block">
-              <Card highlighted className="card-hover">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-[18px] font-bold tracking-[-0.02em] text-cream">
-                    {completionPct}% complete — finish your profile
-                  </h2>
-                  <ArrowRight size={18} strokeWidth={1.5} className="text-gold" />
-                </div>
-                <p className="mt-1.5 text-[13px] text-secondary">
-                  {missing.length > 0
-                    ? `Add ${missing.join(", ")} to make your profile visible.`
-                    : "Review and add detail to get discovered."}
-                </p>
-                <div className="mt-3 h-[4px] w-full overflow-hidden rounded-full bg-border-1">
-                  <div
-                    className="h-full gold-gradient rounded-full"
-                    style={{ width: `${completionPct}%` }}
-                  />
-                </div>
-              </Card>
+            // Solid gold: the one card on home that asks for action. Styled on
+            // the link itself (not <Card> + card-hover) — card-hover's tinted
+            // hover background would replace the gold fill.
+            <Link
+              href="/profile"
+              className="gold-gradient cta-glow mt-4 block rounded-[20px] p-5 text-on-gold"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-[18px] font-black tracking-[-0.02em]">
+                  {completionPct}% complete — finish your profile
+                </h2>
+                <ArrowRight size={18} strokeWidth={2} className="shrink-0" />
+              </div>
+              <p className="mt-1.5 text-[13px] font-medium text-on-gold/75">
+                {missing.length > 0
+                  ? `Add ${missing.join(", ")} to make your profile visible.`
+                  : "Review and add detail to get discovered."}
+              </p>
+              <div className="mt-3 h-[4px] w-full overflow-hidden rounded-full bg-on-gold/15">
+                <div
+                  className="h-full rounded-full bg-on-gold"
+                  style={{ width: `${completionPct}%` }}
+                />
+              </div>
             </Link>
           )}
-
-          <GrowthGoalCard goal={user.growth_goal} />
 
           {!mentorListing ? (
             <Link href="/profile?side=coach" className="mt-4 block">
               <Card className="card-hover">
                 <div className="flex items-center justify-between">
                   <h2 className="text-[18px] font-bold tracking-[-0.02em] text-cream">
-                    Open to mentoring other designers and PMs?
+                    Open to coaching?
                   </h2>
                   <ArrowRight size={18} strokeWidth={1.5} className="text-gold" />
                 </div>
@@ -90,10 +94,6 @@ export default async function Dashboard() {
             </Link>
           )}
 
-          <CtaLink href="/profile" variant="secondary" className="mt-4">
-            My profile
-          </CtaLink>
-
           {posts.length > 0 && (
             <section className="mt-9">
               <Eyebrow>Today&apos;s mentorship reads</Eyebrow>
@@ -114,6 +114,10 @@ export default async function Dashboard() {
                     </p>
                   </a>
                 ))}
+                {/* Matches "Browse all coaches →" in the other column. */}
+                <Link href="/reads" className="block pt-1 text-center text-[13px] font-bold text-gold">
+                  View more →
+                </Link>
               </div>
             </section>
           )}
