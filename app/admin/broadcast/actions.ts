@@ -1,16 +1,16 @@
 "use server";
 
-import { requireAdmin } from "@/lib/auth";
+import { requireVetter } from "@/lib/vetting";
 import { sendProductUpdate } from "@/lib/notifications";
 
 export type BroadcastResult = { error?: string; sent?: number; recipients?: number };
 
 /**
  * Send a product update to every member who hasn't muted them. Guarded by an
- * explicit confirmation as well as the admin check — this one is not undoable.
+ * explicit confirmation as well as the vetter check — this one is not undoable.
  */
 export async function broadcastProductUpdate(formData: FormData): Promise<BroadcastResult> {
-  await requireAdmin();
+  await requireVetter();
 
   const subject = String(formData.get("subject") ?? "").trim();
   const body = String(formData.get("body") ?? "").trim();

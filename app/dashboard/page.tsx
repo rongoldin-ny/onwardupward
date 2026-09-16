@@ -100,34 +100,6 @@ export default async function Dashboard() {
             )}
           </Card>
 
-          <CtaLink href="/profile" variant="secondary" className="mt-4">
-            My profile
-          </CtaLink>
-
-          {posts.length > 0 && (
-            <section className="mt-9">
-              <Eyebrow>Today&apos;s mentorship reads</Eyebrow>
-              <div className="mt-4 space-y-3">
-                {posts.map((post) => (
-                  <a
-                    key={post.url}
-                    href={post.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="block rounded-[20px] border border-border-1 bg-surface-2 p-5"
-                  >
-                    <p className="text-[15px] leading-[1.4] font-bold text-cream">
-                      {post.title}
-                    </p>
-                    <p className="mt-1.5 text-[12px] text-secondary">
-                      {post.publication} · Substack
-                    </p>
-                  </a>
-                ))}
-              </div>
-            </section>
-          )}
-
           {!mentorListing ? (
             <Link href="/profile?side=coach" className="mt-4 block">
               <Card>
@@ -156,6 +128,34 @@ export default async function Dashboard() {
                 </p>
               </Card>
             </Link>
+          )}
+
+          <CtaLink href="/profile" variant="secondary" className="mt-4">
+            My profile
+          </CtaLink>
+
+          {posts.length > 0 && (
+            <section className="mt-9">
+              <Eyebrow>Today&apos;s mentorship reads</Eyebrow>
+              <div className="mt-4 space-y-3">
+                {posts.map((post) => (
+                  <a
+                    key={post.url}
+                    href={post.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block rounded-[20px] border border-border-1 bg-surface-2 p-5"
+                  >
+                    <p className="text-[15px] leading-[1.4] font-bold text-cream">
+                      {post.title}
+                    </p>
+                    <p className="mt-1.5 text-[12px] text-secondary">
+                      {post.publication} · Substack
+                    </p>
+                  </a>
+                ))}
+              </div>
+            </section>
           )}
 
         </div>
