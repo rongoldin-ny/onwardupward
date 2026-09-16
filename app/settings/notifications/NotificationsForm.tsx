@@ -8,7 +8,7 @@ const OPTIONS: { key: keyof NotificationPrefs; label: string; note: string }[] =
   {
     key: "messages",
     label: "New message alerts",
-    note: "An email the moment a company writes to you.",
+    note: "A notification the moment someone tries to connect.",
   },
   {
     key: "weekly_digest",

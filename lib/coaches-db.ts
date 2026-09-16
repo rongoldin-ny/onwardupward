@@ -1,8 +1,8 @@
 import { supabaseAdmin } from "./supabase/server";
-import type { CoachRow } from "./coach-shared";
+import type { CoachFeed, CoachRow } from "./coach-shared";
 import { isPublishable, type RequiredFields } from "./profile-required";
 
-export type { CoachRow } from "./coach-shared";
+export type { CoachFeed, CoachRow } from "./coach-shared";
 export { TARGET_MENTEE_OPTIONS, coachLevels, coachFormats, coachPricing } from "./coach-shared";
 
 /**
@@ -35,16 +35,19 @@ export async function getDirectoryCoaches(): Promise<CoachRow[]> {
   return coaches.filter((c) => !c.profile_id || publishable.has(c.profile_id));
 }
 
-/** Newsletter URLs for every coach who's added one, for the home reading feed. */
-export async function getCoachSubstackUrls(): Promise<string[]> {
+/**
+ * Newsletters for every coach who's added one, for the reading feeds. Carries
+ * the coach's name and facets so /reads can attribute and filter each post.
+ */
+export async function getCoachFeeds(): Promise<CoachFeed[]> {
   const { data } = await supabaseAdmin()
     .from("coaches")
-    .select("substack_url")
+    .select("substack_url, full_name, disciplines, specialties")
     .not("substack_url", "is", null)
     .in("status", ["approved", "unclaimed"]);
-  return ((data ?? []) as { substack_url: string | null }[])
-    .map((c) => c.substack_url)
-    .filter((url): url is string => !!url);
+  return ((data ?? []) as (Omit<CoachFeed, "substack_url"> & { substack_url: string | null })[])
+    .filter((c): c is CoachFeed => !!c.substack_url)
+    .map((c) => ({ ...c, specialties: c.specialties ?? [] }));
 }
 
 export async function getPendingCoaches(): Promise<CoachRow[]> {

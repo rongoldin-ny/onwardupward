@@ -7,7 +7,8 @@
  * hour via Next's fetch revalidation.
  */
 
-import { getCoachSubstackUrls } from "./coaches-db";
+import { getCoachFeeds } from "./coaches-db";
+import { coachDisciplineLabels } from "./coach-shared";
 
 export type MentorshipPost = {
   title: string;
@@ -16,7 +17,40 @@ export type MentorshipPost = {
   publishedAt: Date;
   house?: boolean;
   isCoach?: boolean;
+  /** The coach who writes this feed, when the post came from one. */
+  author?: string;
+  /** Discipline facets inherited from that coach, for the /reads filters. */
+  disciplines?: string[];
 };
+
+/** Serializable shape handed to the client: Dates become a prerendered label. */
+export type ReadsPost = {
+  title: string;
+  url: string;
+  publication: string;
+  publishedLabel: string;
+  author?: string;
+  disciplines: string[];
+};
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/** Fixed UTC formatting — toLocaleDateString would drift between server and browser. */
+function publishedLabel(d: Date): string {
+  if (Number.isNaN(d.getTime()) || d.getTime() === 0) return "";
+  return `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
+}
+
+function toReadsPost(p: MentorshipPost): ReadsPost {
+  return {
+    title: p.title,
+    url: p.url,
+    publication: p.publication,
+    publishedLabel: publishedLabel(p.publishedAt),
+    author: p.author,
+    disciplines: p.disciplines ?? [],
+  };
+}
 
 /** The house newsletter — its freshest post gets a pinned slot. */
 const HOUSE_FEED = "https://rongoldin.substack.com/feed";
@@ -60,9 +94,11 @@ function parseFeed(xml: string): Omit<MentorshipPost, "house" | "isCoach">[] {
 
 /** Fetches every feed, tags each post by source, and returns the fresh ones (newest first). */
 async function fetchFreshPosts(): Promise<MentorshipPost[]> {
-  const coachUrls = await getCoachSubstackUrls().catch(() => []);
-  const coachFeedUrls = new Set(coachUrls.map(toFeedUrl));
-  const feeds = Array.from(new Set([...CURATED_FEEDS, ...coachFeedUrls]));
+  const coaches = await getCoachFeeds().catch(() => []);
+  // Feed URL → coach, so each post can carry its author and facets. Two coaches
+  // sharing a newsletter would collide; last one wins, which is fine.
+  const byFeedUrl = new Map(coaches.map((c) => [toFeedUrl(c.substack_url), c]));
+  const feeds = Array.from(new Set([...CURATED_FEEDS, ...byFeedUrl.keys()]));
 
   const settled = await Promise.allSettled(
     feeds.map(async (url) => {
@@ -73,10 +109,13 @@ async function fetchFreshPosts(): Promise<MentorshipPost[]> {
         next: { revalidate: 3600 },
       });
       if (!res.ok) return [] as MentorshipPost[];
+      const coach = byFeedUrl.get(url);
       return parseFeed(await res.text()).map((p) => ({
         ...p,
         house: url === HOUSE_FEED,
-        isCoach: coachFeedUrls.has(url),
+        isCoach: !!coach,
+        author: coach?.full_name,
+        disciplines: coach ? coachDisciplineLabels(coach) : undefined,
       }));
     }),
   );
@@ -120,19 +159,26 @@ export async function getMentorshipPosts(limit = 3): Promise<MentorshipPost[]> {
   return picks.slice(0, limit);
 }
 
-/** The /reads page: coach writing gets its own section instead of being crowded out by the bigger curated newsletters. */
+/**
+ * The /reads page: coach writing gets its own section instead of being crowded
+ * out by the bigger curated newsletters. Coach posts are uncapped — the page
+ * paginates them — and ordered by relevance, so the most mentorship-shaped
+ * writing surfaces first while everything fresh stays reachable.
+ */
 export async function getReadsPageData(
-  coachLimit = 8,
   otherLimit = 8,
-): Promise<{ coachPosts: MentorshipPost[]; otherPosts: MentorshipPost[] }> {
+): Promise<{ coachPosts: ReadsPost[]; otherPosts: ReadsPost[] }> {
   const fresh = await fetchFreshPosts();
   const coachPosts = pickPosts(
     fresh.filter((p) => p.isCoach),
-    coachLimit,
+    Infinity,
   );
   const otherFresh = fresh.filter((p) => !p.isCoach);
   const otherPosts = pickPosts(otherFresh, otherLimit);
   const house = otherFresh.find((p) => p.house);
   if (house && !otherPosts.some((p) => p.url === house.url)) otherPosts.unshift(house);
-  return { coachPosts, otherPosts: otherPosts.slice(0, otherLimit) };
+  return {
+    coachPosts: coachPosts.map(toReadsPost),
+    otherPosts: otherPosts.slice(0, otherLimit).map(toReadsPost),
+  };
 }

@@ -1,24 +1,12 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { requireUser } from "@/lib/auth";
-import { getReadsPageData, type MentorshipPost } from "@/lib/mentorship-posts";
+import { getReadsPageData } from "@/lib/mentorship-posts";
 import { Eyebrow, Logo, PageFrame } from "@/components/ui";
+import CoachReads from "./CoachReads";
+import { PostCard } from "./PostCard";
 
 export const metadata = { title: "Reads — onward/upward" };
-
-function PostCard({ post }: { post: MentorshipPost }) {
-  return (
-    <a
-      href={post.url}
-      target="_blank"
-      rel="noreferrer"
-      className="block rounded-[20px] border border-border-1 bg-surface-2 p-5"
-    >
-      <p className="text-[15px] leading-[1.4] font-bold text-cream">{post.title}</p>
-      <p className="mt-1.5 text-[12px] text-secondary">{post.publication} · Substack</p>
-    </a>
-  );
-}
 
 /** Mentorship reading pulled from the house newsletter, curated feeds, and every coach's own Substack. */
 export default async function ReadsPage() {
@@ -50,11 +38,7 @@ export default async function ReadsPage() {
           {coachPosts.length > 0 && (
             <section className="mt-9">
               <Eyebrow>From our coaches</Eyebrow>
-              <div className="mt-4 grid gap-4 lg:grid-cols-2">
-                {coachPosts.map((post) => (
-                  <PostCard key={post.url} post={post} />
-                ))}
-              </div>
+              <CoachReads posts={coachPosts} />
             </section>
           )}
 

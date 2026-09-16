@@ -52,6 +52,35 @@ export function disciplineLabel(d: CoachDiscipline | null): string {
   return "";
 }
 
+/** A coach's newsletter plus the facets /reads attributes and filters posts by. */
+export type CoachFeed = {
+  substack_url: string;
+  full_name: string;
+  disciplines: CoachDiscipline | null;
+  specialties: string[];
+};
+
+/** The discipline facets a reader can filter by, matching the coaches directory. */
+export const DISCIPLINE_FILTERS = ["Design", "Product", "Content Design", "Research"] as const;
+
+/**
+ * Which discipline filters a coach answers to. "both" (and no answer yet, for
+ * curated seeds) covers Design and Product; the finer-grained specialty tags
+ * add themselves on top.
+ */
+export function coachDisciplineLabels(c: {
+  disciplines: CoachDiscipline | null;
+  specialties: string[];
+}): string[] {
+  const out: string[] = [];
+  if (c.disciplines === "design") out.push("Design");
+  else if (c.disciplines === "product") out.push("Product");
+  else out.push("Design", "Product");
+  if (c.specialties.includes("content_design")) out.push("Content Design");
+  if (c.specialties.includes("user_research")) out.push("Research");
+  return out;
+}
+
 // ---------------------------------------------------------------- facets
 
 /** Explicit target mentees when set; derived from copy for curated seeds. */
