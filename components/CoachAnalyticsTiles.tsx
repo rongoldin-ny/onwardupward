@@ -60,7 +60,7 @@ export default function CoachAnalyticsTiles({
       />
       <Row
         label="Requests"
-        note="Currently counted when a user clicks on your Book button."
+        note="Counted when a member sends you a request through the platform, or clicks through to your own booking link."
         value30d={analytics.requests30d}
         valueAllTime={analytics.requestsAllTime}
       />
@@ -75,8 +75,8 @@ export default function CoachAnalyticsTiles({
                   You don&apos;t have a booking link set up.
                 </p>
                 <p className="mt-1 text-[13px] leading-[1.5] text-secondary">
-                  Without one there&apos;s no Book button on your page, so requests will
-                  always read zero. Add a link to start counting them.
+                  Members can still message you through the platform. Adding a link lets
+                  them book time with you directly instead.
                 </p>
               </div>
             </div>

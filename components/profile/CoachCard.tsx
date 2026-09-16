@@ -4,6 +4,7 @@ import { useState } from "react";
 import { GraduationCap, Sparkles } from "lucide-react";
 import { claimCoach } from "@/app/actions/claims";
 import CoachBookLink from "@/components/CoachBookLink";
+import CoachRequestForm from "@/components/CoachRequestForm";
 import { DisciplineChips, MenteeChips, SpecialtyChips } from "@/components/CoachFormFields";
 import { TextArea, TextField } from "@/components/fields";
 import { Cta, Eyebrow, Tag } from "@/components/ui";
@@ -290,7 +291,29 @@ export default function CoachCard({
 
       {!editing && viewer !== "owner" && coach && (
         <div className="mt-8">
-          {approved && coach.booking_url ? (
+          {approved && coach.profile_id && viewer === "member" ? (
+            <>
+              <CoachRequestForm coachId={coach.id} coachName={coach.full_name} />
+              {coach.booking_url && (
+                <p className="mt-3 text-center text-[12.5px] text-secondary">
+                  <CoachBookLink
+                    coachId={coach.id}
+                    coachName={coach.full_name}
+                    href={coach.booking_url}
+                  >
+                    Or book directly →
+                  </CoachBookLink>
+                </p>
+              )}
+            </>
+          ) : approved && coach.profile_id && viewer === "public" ? (
+            <a
+              href={`/signin?next=${encodeURIComponent(`/coaches/${coach.id}`)}`}
+              className="gold-gradient cta-glow block rounded-full px-6 py-4 text-center text-[15px] font-bold text-on-gold"
+            >
+              Sign in to book a session
+            </a>
+          ) : approved && coach.booking_url ? (
             <CoachBookLink
               coachId={coach.id}
               coachName={coach.full_name}

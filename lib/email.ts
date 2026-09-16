@@ -10,6 +10,8 @@ export async function sendEmail(opts: {
   to: string;
   subject: string;
   html: string;
+  /** So a member's request can be answered by just hitting reply. */
+  replyTo?: string;
 }): Promise<boolean> {
   const key = process.env.RESEND_API_KEY;
   if (!key) {
@@ -20,7 +22,13 @@ export async function sendEmail(opts: {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: FROM, to: [opts.to], subject: opts.subject, html: opts.html }),
+      body: JSON.stringify({
+        from: FROM,
+        to: [opts.to],
+        subject: opts.subject,
+        html: opts.html,
+        ...(opts.replyTo ? { reply_to: [opts.replyTo] } : {}),
+      }),
       signal: AbortSignal.timeout(10_000),
     });
     if (!res.ok) console.error("sendEmail failed:", res.status, await res.text());
