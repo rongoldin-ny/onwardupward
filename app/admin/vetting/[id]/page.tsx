@@ -31,27 +31,33 @@ export default async function VettingReviewPage({
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-1 bg-surface-1 px-6 py-4">
-        <div>
-          <p className="text-[15px] font-bold text-cream">
-            {profile.name ?? profile.email ?? "Unnamed"}{" "}
-            <span className={`eyebrow ml-2 ${approved ? "text-success" : "text-gold"}`}>
-              {approved ? "Approved" : "Pending review"}
-            </span>
-          </p>
-          <p className="mt-0.5 text-[12px] text-secondary">{profile.email}</p>
-        </div>
-        <div className="flex items-center gap-5">
-          <Link href="/admin/vetting" className="text-[13px] font-bold text-gold">
-            Back to queue
-          </Link>
-          {!approved && (
-            <form action={approve}>
-              <Cta type="submit" className="!h-[44px] px-7 text-[14px]">
-                Accept into the network
-              </Cta>
-            </form>
-          )}
+      {/* Its own row below the site header — the fixed logo (top-left) and nav /
+          mobile menu (top-right) sit over the page's first ~70px, which is
+          where this bar used to be. Width matches the profile card below;
+          the negative bottom margin trims PageFrame's top gap on desktop. */}
+      <div className="mx-auto w-full max-w-[430px] pt-[76px] md:-mb-12 md:max-w-[1008px] md:px-6 md:pt-20">
+        <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-3 border-y border-border-1 bg-surface-1 px-6 py-4 sm:rounded-[20px] sm:border md:rounded-[24px]">
+          <div className="min-w-0">
+            <p className="text-[15px] font-bold text-cream">
+              {profile.name ?? profile.email ?? "Unnamed"}{" "}
+              <span className={`eyebrow ml-2 ${approved ? "text-success" : "text-gold"}`}>
+                {approved ? "Approved" : "Pending review"}
+              </span>
+            </p>
+            <p className="mt-0.5 truncate text-[12px] text-secondary">{profile.email}</p>
+          </div>
+          <div className="flex items-center gap-5">
+            <Link href="/admin/vetting" className="text-[13px] font-bold whitespace-nowrap text-gold">
+              Back to queue
+            </Link>
+            {!approved && (
+              <form action={approve}>
+                <Cta type="submit" className="!h-[44px] px-7 text-[14px] whitespace-nowrap">
+                  Accept into the network
+                </Cta>
+              </form>
+            )}
+          </div>
         </div>
       </div>
       <ProfilePage
