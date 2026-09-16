@@ -20,17 +20,22 @@ const frameWidth: Record<FrameSize, string> = {
 export function PageFrame({
   size = "narrow",
   chromeLogo = true,
+  centered = false,
   className = "",
   children,
 }: {
   size?: FrameSize;
   chromeLogo?: boolean;
+  /** Desktop: center the card vertically in the viewport (short, single-task screens like sign-up). */
+  centered?: boolean;
   className?: string;
   children: ReactNode;
 }) {
-  return (
+  const frame = (
     <div
-      className={`mx-auto flex min-h-dvh w-full max-w-[430px] flex-col sm:my-6 sm:min-h-[calc(100dvh-3rem)] md:mt-24 md:mb-8 md:min-h-0 md:px-6 lg:mt-24 lg:mb-10 ${frameWidth[size]}`}
+      className={`mx-auto flex min-h-dvh w-full max-w-[430px] flex-col sm:my-6 sm:min-h-[calc(100dvh-3rem)] md:min-h-0 md:px-6 ${
+        centered ? "md:my-0" : "md:mt-24 md:mb-8 lg:mt-24 lg:mb-10"
+      } ${frameWidth[size]}`}
     >
       {/* Desktop chrome: logo at the top-left of the browser, outside the card.
           In-card logos carry md:hidden so mobile keeps its inline logo. Pages
@@ -46,6 +51,12 @@ export function PageFrame({
         {children}
       </div>
     </div>
+  );
+  // The wrapper's vertical padding keeps the card clear of the fixed logo and nav.
+  return centered ? (
+    <div className="md:flex md:min-h-dvh md:flex-col md:justify-center md:py-24">{frame}</div>
+  ) : (
+    frame
   );
 }
 
@@ -83,7 +94,7 @@ export function Cta({
 }: { variant?: CtaVariant } & ComponentProps<"button">) {
   return (
     <button
-      className={`block h-[52px] w-full rounded-full text-[15px] font-bold ${ctaStyles[variant]} ${className}`}
+      className={`block h-[52px] w-full rounded-full text-[15px] font-bold transition-[filter,transform] active:scale-[0.98] disabled:active:scale-100 ${ctaStyles[variant]} ${className}`}
       {...props}
     />
   );
@@ -96,7 +107,7 @@ export function CtaLink({
 }: { variant?: CtaVariant } & ComponentProps<typeof Link>) {
   return (
     <Link
-      className={`flex h-[52px] w-full items-center justify-center rounded-full text-[15px] font-bold ${ctaStyles[variant]} ${className}`}
+      className={`flex h-[52px] w-full items-center justify-center rounded-full text-[15px] font-bold transition-[filter,transform] active:scale-[0.98] ${ctaStyles[variant]} ${className}`}
       {...props}
     />
   );

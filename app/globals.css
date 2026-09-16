@@ -53,6 +53,21 @@ body {
   a {
     color: var(--gold);
   }
+
+  /* Tailwind v4's preflight gives buttons the default arrow cursor; everything
+     clickable should show the pointer. In the base layer so a cursor-* utility
+     still wins. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  select:not(:disabled),
+  label:has(> input[type="file"]),
+  label:has(> input[type="checkbox"]),
+  label:has(> input[type="radio"]) {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
 }
 
 @utility gold-gradient {
