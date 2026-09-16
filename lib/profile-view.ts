@@ -96,7 +96,7 @@ export type ViewerAccess = {
   isOwner?: boolean;
   /** Admin/vetter review: email and private résumé too. */
   isAdmin?: boolean;
-  /** Has an approved coach listing — the only viewer who gets a Contact button. */
+  /** Has an approved coach listing (or coaches by role) — gets the Contact button. */
   isCoach?: boolean;
   /** Owner-approved résumé sharing, for coaches and hiring managers. */
   canSeePublicResume?: boolean;
@@ -202,8 +202,10 @@ export function buildProfileView(
     urls,
     portfolioPassword: visible.portfolio_password,
     // Coaches reaching members is the one direction of outreach the platform
-    // opens, and only to people who left it open.
-    canContact: !access.isOwner && !!access.isCoach && profile.allow_coach_contact,
+    // opens, and only to people who left it open. Admins too, matching both the
+    // `admin || isCoach` grants above and what contactMember actually accepts.
+    canContact:
+      !access.isOwner && !!(access.isCoach || access.isAdmin) && profile.allow_coach_contact,
     player: {
       roleLabel: profile.role_type ? labelForRoleType(profile.role_type) : null,
       careerStageLabel: profile.career_stage ? labelForCareerStage(profile.career_stage) : null,

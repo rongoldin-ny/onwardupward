@@ -213,9 +213,9 @@ export default function IdentityPanel({ view, ver }: { view: ProfileView; ver: n
               <CoachConnect coach={view.coach} viewer={viewer} />
             </div>
           )}
-          {/* A listing of their own already carries a "Connect with" CTA, so the
-              coach-to-member route only appears where there isn't one. */}
-          {view.canContact && !view.coach && (
+          {/* An approved listing already carries a "Connect with" CTA. A draft or
+              pending one carries nothing, so the member route still applies. */}
+          {view.canContact && view.coach?.status !== "approved" && (
             <div className="mt-6 w-full">
               <MemberContactForm profileId={view.id} name={view.name} />
             </div>
