@@ -104,10 +104,30 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   if (!/^[0-9a-f-]{36}$/i.test(id)) return { title: "onward/upward" };
   const { data } = await supabaseAdmin()
     .from("coaches")
-    .select("full_name")
+    .select("full_name, short_description, best_for, company, photo_url")
     .eq("id", id)
     .maybeSingle();
+  if (!data?.full_name) return { title: "onward/upward" };
+
+  // These links get pasted into email and Slack, so give the unfurl something
+  // to show rather than a bare URL.
+  const title = `${data.full_name} — coach on onward/upward`;
+  const description =
+    data.short_description || data.best_for || data.company || "A coach on onward/upward.";
   return {
-    title: data?.full_name ? `${data.full_name} — coach on onward/upward` : "onward/upward",
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "profile",
+      images: data.photo_url ? [{ url: data.photo_url }] : undefined,
+    },
+    twitter: {
+      card: data.photo_url ? "summary_large_image" : "summary",
+      title,
+      description,
+      images: data.photo_url ? [data.photo_url] : undefined,
+    },
   };
 }

@@ -2,44 +2,23 @@
 
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
+import { claimListing } from "@/lib/claims";
 import { syncCoachIdentity } from "@/lib/coaches-db";
 import { emailShell, sendEmail } from "@/lib/email";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { requireVetter } from "@/lib/vetting";
 
-/** Signed-in member taps "This you? Claim your slot" — records the request and emails Ron to review. */
+/**
+ * Signed-in member taps "This you? Claim your slot". Same rules as the signup
+ * route: an email matching the listing hands it over now, anything else goes
+ * to review.
+ */
 export async function claimCoach(coachId: string): Promise<void> {
   const user = await requireUser();
   if (user.role !== "candidate" && user.role !== "coach") redirect(`/coaches/${coachId}`);
 
-  const admin = supabaseAdmin();
-  const { data: coach } = await admin.from("coaches").select("*").eq("id", coachId).maybeSingle();
-  if (!coach || coach.status !== "unclaimed") redirect(`/coaches/${coachId}`);
-
-  const { data: existing } = await admin
-    .from("coach_claims")
-    .select("id")
-    .eq("coach_id", coachId)
-    .eq("profile_id", user.id)
-    .eq("status", "pending")
-    .maybeSingle();
-
-  if (!existing) {
-    await admin.from("coach_claims").insert({ coach_id: coachId, profile_id: user.id });
-    await sendEmail({
-      to: "r@rongoldin.com",
-      subject: `Claim request: ${coach.full_name}`,
-      html: emailShell(
-        "Someone wants to claim a coach slot.",
-        `<p><strong style="color:#efe9dd">${user.name ?? "A member"}</strong> (${user.email ?? "no email"})
-         says they're <strong style="color:#efe9dd">${coach.full_name}</strong> (listing email on file:
-         ${coach.email ?? "none"}).</p>
-         <p style="margin-top:12px">Compare their profile and email against the coach card before approving.</p>`,
-        { label: "Review the claim", url: "https://onwardupward.io/admin/waitlist" },
-      ),
-    });
-  }
-  redirect(`/coaches/${coachId}`);
+  const outcome = await claimListing(coachId, user);
+  redirect(outcome === "claimed" ? "/profile?side=coach" : `/coaches/${coachId}`);
 }
 
 /** Hand the listing over to the claimant: link the profile, sync their identity in, and notify them. */
