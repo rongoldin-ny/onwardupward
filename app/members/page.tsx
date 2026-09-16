@@ -22,6 +22,7 @@ export default async function MembersPage() {
         "id, name, email, photo_url, role_type, career_stage, location_city, location_state, location_country, growth_goal, bio, vetting_status, onboarding_complete, created_at",
       )
       .eq("role", "candidate")
+      .is("archived_at", null)
       .order("created_at", { ascending: false }),
     admin.from("coaches").select("profile_id, status").not("profile_id", "is", null),
   ]);

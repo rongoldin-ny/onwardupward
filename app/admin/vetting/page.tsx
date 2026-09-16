@@ -18,6 +18,7 @@ export default async function VettingQueuePage() {
     .eq("role", "candidate")
     .eq("onboarding_complete", true)
     .eq("vetting_status", "pending")
+    .is("archived_at", null)
     .order("updated_at", { ascending: false });
   const pending = (data ?? []) as Profile[];
 

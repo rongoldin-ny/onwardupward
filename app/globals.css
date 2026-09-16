@@ -208,12 +208,12 @@ body {
      above can't reach, so recolor the icon directly and give bordered
      circles a gold ring. No background tint — on borderless X's it would
      read as a stray square. */
-  button:has(> svg.lucide-x):not(:disabled):hover {
+  button:has(> svg.lucide-x):not(:disabled):not(.x-danger):hover {
     color: var(--gold);
     border-color: var(--gold-active);
     transition: color 0.15s ease, border-color 0.15s ease;
   }
-  button:has(> svg.lucide-x):not(:disabled):hover > svg {
+  button:has(> svg.lucide-x):not(:disabled):not(.x-danger):hover > svg {
     color: var(--gold);
   }
 

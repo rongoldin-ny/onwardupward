@@ -33,6 +33,7 @@ export async function searchCandidates(filters: SearchFilters): Promise<ResultCa
     .eq("role", "candidate")
     .eq("onboarding_complete", true)
     .eq("vetting_status", "approved")
+    .is("archived_at", null)
     .order("created_at", { ascending: false })
     .limit(200);
 

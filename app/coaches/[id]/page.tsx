@@ -78,7 +78,7 @@ export default async function CoachDetailPage({
       .maybeSingle();
     if (p) {
       const profile = p as Profile;
-      if (!isPublishable(profile, { isCoach: true })) notFound();
+      if (profile.archived_at || !isPublishable(profile, { isCoach: true })) notFound();
       const view = await toProfileView(profile, {
         admin: true,
         canSeePublicResume: user?.role === "coach" || user?.role === "recruiter",
