@@ -40,7 +40,7 @@ export default async function Dashboard() {
         <div>
           {completionPct < 100 && (
             <Link href="/profile" className="mb-4 block">
-              <Card highlighted>
+              <Card highlighted className="card-hover">
                 <div className="flex items-center justify-between">
                   <h2 className="text-[18px] font-bold tracking-[-0.02em] text-cream">
                     {completionPct}% complete — finish your profile
@@ -66,7 +66,7 @@ export default async function Dashboard() {
 
           {!mentorListing ? (
             <Link href="/profile?side=coach" className="mt-4 block">
-              <Card>
+              <Card className="card-hover">
                 <div className="flex items-center justify-between">
                   <h2 className="text-[18px] font-bold tracking-[-0.02em] text-cream">
                     Open to mentoring other designers and PMs?
@@ -80,7 +80,7 @@ export default async function Dashboard() {
             </Link>
           ) : (
             <Link href="/settings/coaching-analytics" className="mt-4 block">
-              <Card>
+              <Card className="card-hover">
                 <div className="flex items-center justify-between">
                   <h2 className="text-[18px] font-bold tracking-[-0.02em] text-cream">
                     Your coaching stats
@@ -108,7 +108,7 @@ export default async function Dashboard() {
                     href={post.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="block rounded-[20px] border border-border-1 bg-surface-2 p-5"
+                    className="card-hover block rounded-[20px] border border-border-1 bg-surface-2 p-5"
                   >
                     <p className="text-[15px] leading-[1.4] font-bold text-cream">
                       {post.title}
@@ -135,7 +135,7 @@ export default async function Dashboard() {
               <Link
                 key={coach.id}
                 href={`/coaches/${coach.id}`}
-                className="block rounded-[20px] border border-border-1 bg-surface-2 p-4"
+                className="card-hover block rounded-[20px] border border-border-1 bg-surface-2 p-4"
               >
                 <div className="flex items-center gap-3.5">
                   {coach.photo_url ? (

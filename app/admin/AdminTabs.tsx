@@ -7,6 +7,7 @@ const TABS = [
   { href: "/admin/waitlist", label: "Waitlist" },
   { href: "/admin/analytics", label: "Analytics" },
   { href: "/admin/broadcast", label: "Broadcast" },
+  { href: "/admin/feedback", label: "Feedback" },
 ];
 
 export default function AdminTabs() {

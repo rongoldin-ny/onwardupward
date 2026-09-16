@@ -231,3 +231,16 @@ body {
   filter: none !important;
   background: rgba(232, 201, 135, 0.06);
 }
+
+/* Clickable cards (dashboard tiles, /reads posts): the same tint as
+   list-row plus a brighter border, so the whole card reads as tappable
+   without recoloring its own text. */
+.card-hover {
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .card-hover:hover {
+    border-color: var(--border-2);
+    background: rgba(232, 201, 135, 0.06);
+  }
+}
