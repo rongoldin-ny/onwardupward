@@ -279,16 +279,26 @@ export default function ProfilePage({
         {viewer === "public" && (
           <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-b border-gold-border bg-gold-tint px-6 py-4">
             <p className="text-[14px] font-bold text-gold">
-              onward/upward — a growth network for product designers and PMs.
+              onward/upward — a growth network for people in tech.
             </p>
-            {!claimable && (
-              <Link
-                href="/signup"
-                className="gold-gradient cta-glow shrink-0 rounded-full px-5 py-2.5 text-[14px] font-bold text-on-gold"
+            <div className="flex shrink-0 items-center gap-5">
+              <a
+                href="https://onwardupward.io"
+                target="_blank"
+                rel="noreferrer"
+                className="text-[14px] font-bold whitespace-nowrap text-gold"
               >
-                Sign up to join the network
-              </Link>
-            )}
+                Learn more →
+              </a>
+              {!claimable && (
+                <Link
+                  href="/signup"
+                  className="gold-gradient cta-glow shrink-0 rounded-full px-5 py-2.5 text-[14px] font-bold text-on-gold"
+                >
+                  Sign up to join the network
+                </Link>
+              )}
+            </div>
           </div>
         )}
 
