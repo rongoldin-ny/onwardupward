@@ -200,6 +200,11 @@ export default function PrivacyPage() {
             and goals).
           </li>
           <li>
+            <strong>Coaches can write to you</strong> while &ldquo;Allow coaches to contact me&rdquo; is
+            on — it&apos;s on by default. Their note reaches you by email from us, so your email address
+            stays private unless you reply. Turn it off any time in Settings &rarr; Notifications.
+          </li>
+          <li>
             <strong>Our team</strong> can see accounts to review applications, provide support and keep
             the service safe.
           </li>
@@ -247,6 +252,9 @@ export default function PrivacyPage() {
         <LegalList>
           <li>Edit your profile any time, and choose whether coaches and hiring managers can see your résumé.</li>
           <li>Turn email notifications on or off in Settings → Notifications.</li>
+          <li>
+            Turn &ldquo;Allow coaches to contact me&rdquo; on or off in Settings → Notifications.
+          </li>
           <li>Use Do Not Track or Global Privacy Control to stop analytics about your visits.</li>
           <li>
             Email <a href="mailto:hello@onwardupward.io">hello@onwardupward.io</a> to see, download,
