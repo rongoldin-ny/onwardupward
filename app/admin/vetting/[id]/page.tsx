@@ -61,7 +61,7 @@ export default async function VettingReviewPage({
         </div>
       </div>
       <ProfilePage
-        view={await toProfileView(profile, { admin: true, canSeePrivateResume: true })}
+        view={await toProfileView(profile, { admin: true, isAdmin: true })}
         viewer="member"
         initialSide="player"
       />

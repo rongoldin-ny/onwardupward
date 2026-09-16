@@ -1,4 +1,4 @@
-import type { CoachRow } from "./coach-shared";
+import { publicCoach, type CoachRow } from "./coach-shared";
 import { getCoachByProfileId } from "./coaches-db";
 import {
   getReferences,
@@ -88,26 +88,115 @@ export function locationLabel(p: {
   return [p.location_city, p.location_state, p.location_country].filter(Boolean).join(", ");
 }
 
+/** Who's looking, and what that lets them see. Anything not granted is stripped server-side. */
+export type ViewerAccess = {
+  /** The profile's own member: full record, editable. */
+  isOwner?: boolean;
+  /** Admin/vetter review: email and private résumé too. */
+  isAdmin?: boolean;
+  /** Owner-approved résumé sharing, for coaches and hiring managers. */
+  canSeePublicResume?: boolean;
+  /** Coaches (and admins) get portfolio passwords so they can open the work. */
+  canSeePortfolioPassword?: boolean;
+};
+
+/**
+ * Every profile column, classified. `shared` fields render on the profile for
+ * any viewer; `private` fields are nulled before the view reaches the browser
+ * unless ViewerAccess grants them. Keyed by `keyof Profile`, so adding a
+ * column without classifying it is a type error rather than a silent leak.
+ */
+const PROFILE_FIELD_ACCESS: Record<keyof Profile, "shared" | "private"> = {
+  id: "shared",
+  role: "shared",
+  name: "shared",
+  email: "private",
+  photo_url: "shared",
+  linkedin_url: "shared",
+  location_country: "shared",
+  location_state: "shared",
+  location_city: "shared",
+  role_type: "shared",
+  career_stage: "shared",
+  bio: "shared",
+  ai_bio: "private",
+  dream_job: "shared",
+  growth_goal: "shared",
+  last_role_text: "shared",
+  brags: "shared",
+  portfolio_url: "shared",
+  portfolio_password: "private",
+  website_url: "shared",
+  resume_url: "private",
+  resume_public: "shared",
+  ai_superpowers: "shared",
+  portfolio_images: "shared",
+  years_experience: "shared",
+  industries: "shared",
+  contact_preference: "private",
+  open_to_coaching_outreach: "shared",
+  is_paid: "private",
+  is_supporter: "private",
+  notification_prefs: "private",
+  role_chosen: "shared",
+  onboarding_complete: "shared",
+  vetting_status: "shared",
+  archived_at: "private",
+  last_digest_sent_at: "private",
+  last_sign_in_at: "private",
+  created_at: "shared",
+  updated_at: "shared",
+};
+
+/** Placeholder values for private fields that can't be null. */
+const REDACTED: Partial<Profile> = {
+  is_paid: false,
+  is_supporter: false,
+  contact_preference: "email",
+  notification_prefs: { messages: false, weekly_digest: false, product_updates: false },
+};
+
+function redactProfile(profile: Profile, grants: Partial<Record<keyof Profile, boolean>>): Profile {
+  const out = { ...profile } as Record<string, unknown>;
+  for (const [key, access] of Object.entries(PROFILE_FIELD_ACCESS) as [keyof Profile, string][]) {
+    if (access === "private" && !grants[key]) out[key] = key in REDACTED ? REDACTED[key] : null;
+  }
+  return out as Profile;
+}
+
 /** Pure assembly — usable from server pages and from the test lab. */
 export function buildProfileView(
   profile: Profile,
   work: WorkHistoryRow[],
   references: ReferenceRow[],
   coach: CoachRow | null,
-  opts: { canSeePrivateResume?: boolean; canSeePublicResume?: boolean } = {},
+  access: ViewerAccess = {},
 ): ProfileView {
   const name = profile.name ?? "Unnamed";
+  const urls = profileUrls(profile, {
+    canSeePrivateResume: access.isOwner || access.isAdmin,
+    canSeePublicResume: access.canSeePublicResume,
+  });
+  const canSeePassword = !!(access.isOwner || access.isAdmin || access.canSeePortfolioPassword);
+  // Owners get their full record (they edit it); everyone else gets only what they may see.
+  const visible = access.isOwner
+    ? profile
+    : redactProfile(profile, {
+        email: access.isAdmin,
+        portfolio_password: canSeePassword,
+        resume_url: urls.some((u) => u.label === "Résumé"),
+      });
   return {
     id: profile.id,
     name,
     firstName: name.split(" ")[0],
-    email: profile.email,
+    email: visible.email,
     photoUrl: profile.photo_url,
     location: locationLabel(profile),
     yearsExperience: profile.years_experience,
     background: profile.bio,
-    urls: profileUrls(profile, opts),
-    portfolioPassword: profile.portfolio_password,
+    urls,
+    portfolioPassword: visible.portfolio_password,
     player: {
       roleLabel: profile.role_type ? labelForRoleType(profile.role_type) : null,
       careerStageLabel: profile.career_stage ? labelForCareerStage(profile.career_stage) : null,
@@ -125,15 +214,15 @@ export function buildProfileView(
         linkedin: r.linkedin_url,
       })),
     },
-    coach,
+    coach: coach && !access.isOwner && !access.isAdmin ? publicCoach(coach) : coach,
     missingRequired: missingRequired(profile, { isCoach: !!coach }),
-    raw: { profile, work, references },
+    raw: { profile: visible, work, references },
   };
 }
 
 export async function toProfileView(
   profile: Profile,
-  opts: { admin?: boolean; canSeePrivateResume?: boolean; canSeePublicResume?: boolean } = {},
+  opts: { admin?: boolean } & ViewerAccess = {},
 ): Promise<ProfileView> {
   // Public pages have no signed-in viewer, so RLS-scoped reads come back
   // empty — those callers fetch with the admin client instead.
@@ -156,10 +245,7 @@ export async function toProfileView(
       : getReferences(profile.id),
     getCoachByProfileId(profile.id),
   ]);
-  return buildProfileView(profile, work, references, coach, {
-    canSeePrivateResume: opts.canSeePrivateResume,
-    canSeePublicResume: opts.canSeePublicResume,
-  });
+  return buildProfileView(profile, work, references, coach, opts);
 }
 
 /** Curated, unclaimed coach seeds have no profile row — only a Coach face. */
@@ -176,7 +262,7 @@ export function coachOnlyProfileView(coach: CoachRow): ProfileView {
     urls: coach.website ? [{ label: "Website", href: coach.website }] : [],
     portfolioPassword: null,
     player: null,
-    coach,
+    coach: publicCoach(coach),
     missingRequired: [],
     raw: { profile: null, work: [], references: [] },
   };

@@ -95,11 +95,16 @@ export default function IdentityPanel({ view, ver }: { view: ProfileView; ver: n
                 placeholder="Portfolio URL"
                 defaultValue={p.portfolio_url ?? ""}
               />
-              <TextField
-                name="portfolio_password"
-                placeholder="Portfolio password (optional)"
-                defaultValue={p.portfolio_password ?? ""}
-              />
+              <div>
+                <TextField
+                  name="portfolio_password"
+                  placeholder="Portfolio password (optional)"
+                  defaultValue={p.portfolio_password ?? ""}
+                />
+                <p className="mt-2 px-1 text-[12px] leading-[1.5] text-muted">
+                  Only coaches on onward/upward can see your portfolio password, so they can open your work.
+                </p>
+              </div>
               <TextField
                 name="website_url"
                 placeholder="Website"
@@ -196,9 +201,11 @@ export default function IdentityPanel({ view, ver }: { view: ProfileView; ver: n
               ))}
             </div>
           )}
-          {view.portfolioPassword && viewer !== "public" && (
+          {/* Only sent to the owner, coaches and admins (lib/profile-view.ts). */}
+          {view.portfolioPassword && (
             <p className="mt-2 text-[12.5px] text-secondary">
-              portfolio password: {view.portfolioPassword}
+              Portfolio password: <span className="font-bold text-body-2">{view.portfolioPassword}</span>
+              {viewer === "owner" && <span className="block text-muted">Only coaches can see this.</span>}
             </p>
           )}
           {view.coach && viewer !== "owner" && (

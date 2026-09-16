@@ -5,6 +5,7 @@ import { getCoachReviews, getOwnReview } from "@/lib/coach-reviews-db";
 import type { Profile } from "@/lib/db";
 import { hasPublicProfile } from "@/lib/profile-required";
 import { toProfileView } from "@/lib/profile-view";
+import { accessFor } from "@/lib/viewer-access";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
 /**
@@ -29,10 +30,7 @@ export default async function PublicProfilePage({
   const profile = data as Profile;
   if (user?.id === profile.id) redirect("/profile");
 
-  const view = await toProfileView(profile, {
-    admin: true,
-    canSeePublicResume: user?.role === "coach" || user?.role === "recruiter",
-  });
+  const view = await toProfileView(profile, { admin: true, ...(await accessFor(user)) });
   // Drafts and pending listings are only visible to their owner.
   if (view.coach && view.coach.status !== "approved") view.coach = null;
   if (!hasPublicProfile(profile, { approvedCoach: !!view.coach })) notFound();
@@ -55,13 +53,16 @@ export default async function PublicProfilePage({
   );
 }
 
+/** Share links are for people you send them to — keep them out of search engines. */
+const NO_INDEX = { index: false, follow: false };
+
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  if (!/^[0-9a-f-]{36}$/i.test(id)) return { title: "onward/upward" };
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return { title: "onward/upward", robots: NO_INDEX };
   const { data } = await supabaseAdmin()
     .from("profiles")
     .select("name")
     .eq("id", id)
     .maybeSingle();
-  return { title: data?.name ? `${data.name} — onward/upward` : "onward/upward" };
+  return { title: data?.name ? `${data.name} — onward/upward` : "onward/upward", robots: NO_INDEX };
 }

@@ -211,7 +211,8 @@ export default function OnboardingWizard({ profile, exitHref = "/role" }: Props)
                 Add at least one of LinkedIn, your résumé, or your portfolio and
                 we&apos;ll pull in your name, bio, roles, experience, and location —
                 you review everything before it goes live. If your portfolio is
-                password-protected, the password lets us read it too.
+                password-protected, the password lets us read it too; on your profile,
+                only coaches can see it.
               </p>
             </fieldset>
             {pending && step === 0 && (
