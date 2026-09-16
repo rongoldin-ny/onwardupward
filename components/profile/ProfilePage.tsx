@@ -27,14 +27,17 @@ import PlayerCard, { type PlayerCardHandle } from "./PlayerCard";
  */
 function ProfileChecklist({
   profile,
+  isCoach,
   missingRequired,
   onEdit,
 }: {
   profile: Profile;
+  /** Coaches are held to a looser required set — see lib/profile-required.ts. */
+  isCoach: boolean;
   missingRequired: string[];
   onEdit: () => void;
 }) {
-  const items = profileChecklist(profile);
+  const items = profileChecklist(profile, { isCoach });
   const optional = items.filter((i) => !i.required && !i.done).map((i) => i.label);
   if (missingRequired.length === 0 && optional.length === 0) return null;
   const pct = Math.round((items.filter((i) => i.done).length / items.length) * 100);
@@ -317,6 +320,7 @@ export default function ProfilePage({
             setCoachingEnabled(true);
             setEditing(true);
           }}
+          onEdit={() => setEditing(true)}
           onSubmitApplication={handleSubmitApplication}
           submitting={submitting}
           topMatch={topMatch}
@@ -465,6 +469,7 @@ export default function ProfilePage({
           {isOwner && !editing && v.raw.profile && (
             <ProfileChecklist
               profile={v.raw.profile}
+              isCoach={!!v.coach}
               missingRequired={v.missingRequired}
               onEdit={() => setEditing(true)}
             />

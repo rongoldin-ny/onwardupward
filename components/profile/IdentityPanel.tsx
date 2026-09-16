@@ -65,7 +65,7 @@ export default function IdentityPanel({ view, ver }: { view: ProfileView; ver: n
               />
             </div>
           </Labeled>
-          <Labeled label="Years of experience" pill={pill("years of experience")}>
+          <Labeled label="Years of experience">
             <TextField
               name="years_experience"
               type="number"

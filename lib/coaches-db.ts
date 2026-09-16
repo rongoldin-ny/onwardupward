@@ -1,13 +1,14 @@
 import { supabaseAdmin } from "./supabase/server";
-import type { CoachFeed, CoachRow } from "./coach-shared";
-import { isPublishable, type RequiredFields } from "./profile-required";
+import { coachListingVisible, type CoachFeed, type CoachRow, type ListingOwner } from "./coach-shared";
 
 export type { CoachFeed, CoachRow } from "./coach-shared";
 export { TARGET_MENTEE_OPTIONS, coachLevels, coachFormats, coachPricing } from "./coach-shared";
 
 /**
- * Directory listings: approved first, then curated unclaimed. Claimed
- * listings only appear once their owner's profile has the required fields.
+ * Directory listings: approved first, then curated unclaimed. A claimed
+ * listing stays up on the strength of its own fields (see coachListingVisible)
+ * — accepting a claim used to hide the card behind the claimant's member
+ * profile, which took working listings down the moment they were handed over.
  */
 export async function getDirectoryCoaches(): Promise<CoachRow[]> {
   const admin = supabaseAdmin();
@@ -23,17 +24,12 @@ export async function getDirectoryCoaches(): Promise<CoachRow[]> {
   if (claimedIds.length === 0) return coaches;
   const { data: profiles } = await admin
     .from("profiles")
-    .select(
-      "id, name, photo_url, email, location_country, linkedin_url, portfolio_url, website_url, resume_url, bio, years_experience, archived_at",
-    )
+    .select("id, name, email, linkedin_url, portfolio_url, website_url, resume_url, archived_at")
     .in("id", claimedIds);
-  // An archived owner takes their claimed listing down with them.
-  const publishable = new Set(
-    ((profiles ?? []) as (RequiredFields & { id: string; archived_at: string | null })[])
-      .filter((p) => !p.archived_at && isPublishable(p, { isCoach: true }))
-      .map((p) => p.id),
+  const owners = new Map(
+    ((profiles ?? []) as (ListingOwner & { id: string })[]).map((p) => [p.id, p]),
   );
-  return coaches.filter((c) => !c.profile_id || publishable.has(c.profile_id));
+  return coaches.filter((c) => coachListingVisible(c, owners.get(c.profile_id ?? "")));
 }
 
 /**
@@ -103,14 +99,17 @@ export async function syncCoachIdentity(profileId: string): Promise<void> {
     .eq("id", profileId)
     .maybeSingle();
   if (!p) return;
+  // Fill blanks only. A curated listing is researched by hand, and the
+  // claimant's profile is often emptier than it — writing nulls straight over
+  // the photo, description and website destroyed that work on every claim.
   await admin
     .from("coaches")
     .update({
       ...(p.name ? { full_name: p.name } : {}),
-      email: p.email,
-      photo_url: p.photo_url,
-      short_description: p.bio,
-      website: p.website_url,
+      ...(p.email ? { email: p.email } : {}),
+      ...(p.photo_url ? { photo_url: p.photo_url } : {}),
+      ...(p.bio ? { short_description: p.bio } : {}),
+      ...(p.website_url ? { website: p.website_url } : {}),
     })
     .eq("profile_id", profileId);
 }

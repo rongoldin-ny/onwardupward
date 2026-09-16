@@ -1,12 +1,11 @@
 import { notFound, redirect } from "next/navigation";
 import ProfilePage from "@/components/profile/ProfilePage";
 import { currentUser } from "@/lib/auth";
-import type { CoachRow } from "@/lib/coach-shared";
+import { coachListingVisible, type CoachRow } from "@/lib/coach-shared";
 import { getCoachReviews, getOwnReview } from "@/lib/coach-reviews-db";
 import { getCoachMatches } from "@/lib/coach-match";
 import { getDirectoryCoaches } from "@/lib/coaches-db";
 import type { Profile } from "@/lib/db";
-import { isPublishable } from "@/lib/profile-required";
 import { coachOnlyProfileView, toProfileView } from "@/lib/profile-view";
 import { accessFor } from "@/lib/viewer-access";
 import { supabaseAdmin } from "@/lib/supabase/server";
@@ -80,7 +79,7 @@ export default async function CoachDetailPage({
       .maybeSingle();
     if (p) {
       const profile = p as Profile;
-      if (profile.archived_at || !isPublishable(profile, { isCoach: true })) notFound();
+      if (!coachListingVisible(coach, profile)) notFound();
       const view = await toProfileView(profile, { admin: true, ...(await accessFor(user)) });
       return (
         <ProfilePage
