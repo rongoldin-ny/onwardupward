@@ -341,48 +341,47 @@ export default function CoachCard({
         </div>
       )}
 
-      {/* Booking for live listings. Claimed coaches can always be reached
-          through the platform (with their own booking link, if any, as a
-          secondary route); curated seeds only have the external link.
-          Unclaimed listings' claim CTA sits under the card title instead. */}
-      {!editing && viewer !== "owner" && approved && coach && (coach.profile_id || coach.booking_url) && (
-        <div className="mt-8">
-          {coach.profile_id && viewer === "member" ? (
-            <>
-              <CoachRequestForm coachId={coach.id} coachName={coach.full_name} />
-              {coach.booking_url && (
-                <p className="mt-3 text-center text-[12.5px] text-secondary">
-                  <CoachBookLink
-                    coachId={coach.id}
-                    coachName={coach.full_name}
-                    href={coach.booking_url}
-                  >
-                    Or book directly →
-                  </CoachBookLink>
-                </p>
-              )}
-            </>
-          ) : coach.profile_id && viewer === "public" ? (
-            <a
-              href={`/signin?next=${encodeURIComponent(`/coaches/${coach.id}`)}`}
-              className="gold-gradient cta-glow block rounded-full px-6 py-4 text-center text-[15px] font-bold text-on-gold"
-            >
-              Sign in to book a session
-            </a>
-          ) : coach.booking_url ? (
-            <CoachBookLink
-              coachId={coach.id}
-              coachName={coach.full_name}
-              href={coach.booking_url}
-              className="gold-gradient cta-glow block rounded-full px-6 py-4 text-center text-[15px] font-bold text-on-gold"
-            >
-              Book a session
-            </CoachBookLink>
-          ) : null}
-        </div>
-      )}
     </div>
   );
+}
+
+/**
+ * "Connect with <first name>" for live listings, shown under the profile
+ * links. Claimed coaches are reached through the platform (signed-out
+ * visitors sign in first); curated seeds only have their own booking link.
+ */
+export function CoachConnect({
+  coach,
+  viewer,
+}: {
+  coach: NonNullable<ProfileView["coach"]>;
+  viewer: Viewer;
+}) {
+  if (viewer === "owner" || coach.status !== "approved") return null;
+  const label = `Connect with ${(coach.full_name || "this coach").split(" ")[0]}`;
+  if (coach.profile_id && viewer === "member") {
+    return <CoachRequestForm coachId={coach.id} coachName={coach.full_name} label={label} />;
+  }
+  if (coach.profile_id && viewer === "public") {
+    return (
+      <a href={`/signin?next=${encodeURIComponent(`/coaches/${coach.id}`)}`} className={claimButtonClass}>
+        {label}
+      </a>
+    );
+  }
+  if (coach.booking_url) {
+    return (
+      <CoachBookLink
+        coachId={coach.id}
+        coachName={coach.full_name}
+        href={coach.booking_url}
+        className={claimButtonClass}
+      >
+        {label}
+      </CoachBookLink>
+    );
+  }
+  return null;
 }
 
 /** Every "This you?" claim button: solid gold, dark on-gold text. */

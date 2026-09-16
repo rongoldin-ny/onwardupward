@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ArrowUpRight } from "lucide-react";
 import { COUNTRIES, SelectField, TextArea, TextField } from "@/components/fields";
 import type { ProfileView } from "@/lib/profile-view";
+import { CoachConnect } from "./CoachCard";
 import { Labeled, RequiredPill, useEdit } from "./edit-context";
 import PhotoField from "./PhotoField";
 
@@ -24,7 +25,12 @@ export default function IdentityPanel({ view, ver }: { view: ProfileView; ver: n
 
   return (
     <div className="flex flex-col items-center text-center lg:sticky lg:top-2 lg:items-start lg:text-left">
-      <PhotoField id={view.id} current={view.photoUrl} required={missing.has("photo")} />
+      <PhotoField
+        id={view.id}
+        current={view.photoUrl}
+        required={missing.has("photo")}
+        isCoach={view.coach?.status === "approved" || view.coach?.status === "unclaimed"}
+      />
 
       {editing && p ? (
         <div key={`identity-${ver}`} className="mt-7 w-full space-y-5 text-left">
@@ -199,6 +205,11 @@ export default function IdentityPanel({ view, ver }: { view: ProfileView; ver: n
             <p className="mt-2 text-[12.5px] text-secondary">
               portfolio password: {view.portfolioPassword}
             </p>
+          )}
+          {view.coach && viewer !== "owner" && (
+            <div className="mt-6 w-full empty:hidden">
+              <CoachConnect coach={view.coach} viewer={viewer} />
+            </div>
           )}
         </>
       )}

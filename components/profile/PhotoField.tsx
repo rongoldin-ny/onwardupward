@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import Cropper, { type Area } from "react-easy-crop";
 import { Camera } from "lucide-react";
+import { WithCoachBadge } from "@/components/CoachBadge";
 import { Avatar, Cta } from "@/components/ui";
 import { FileListInput, RequiredPill, useEdit } from "./edit-context";
 
@@ -11,10 +12,13 @@ export default function PhotoField({
   id,
   current,
   required,
+  isCoach = false,
 }: {
   id: string;
   current: string | null;
   required: boolean;
+  /** Live coach listing: badge the photo (view mode only). */
+  isCoach?: boolean;
 }) {
   const { editing, scheduleSave } = useEdit();
   const [rawImage, setRawImage] = useState<string | null>(null);
@@ -46,7 +50,13 @@ export default function PhotoField({
 
   const preview = croppedUrl ?? current;
 
-  if (!editing) return <Avatar id={id} src={preview} size={132} halo />;
+  if (!editing) {
+    return (
+      <WithCoachBadge show={isCoach}>
+        <Avatar id={id} src={preview} size={132} halo />
+      </WithCoachBadge>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center lg:items-start">
