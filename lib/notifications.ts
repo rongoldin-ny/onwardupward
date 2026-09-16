@@ -62,10 +62,13 @@ export async function sendWeeklyDigests(): Promise<DigestResult> {
   const now = Date.now();
   const weekMs = 7 * 24 * 3600_000;
 
+  // Approved only: a pending member's profile isn't live, so a digest could
+  // only ever tell them they got no views.
   const { data: profileRows } = await supabase
     .from("profiles")
     .select("id, name, email, notification_prefs, last_digest_sent_at")
     .eq("role", "candidate")
+    .eq("vetting_status", "approved")
     .not("email", "is", null);
 
   const all = (profileRows ?? []) as (Recipient & { last_digest_sent_at: string | null })[];
@@ -114,11 +117,20 @@ export async function sendWeeklyDigests(): Promise<DigestResult> {
     };
   });
 
+  // If the stamp can't be written (migration 0023 not applied), stop rather
+  // than keep going: without it the cooldown never engages and the next fire
+  // would mail everyone all over again.
   const sent = await sendSequentially(queue, async (id) => {
-    await supabase
+    const { error } = await supabase
       .from("profiles")
       .update({ last_digest_sent_at: new Date().toISOString() })
       .eq("id", id);
+    if (error) {
+      throw new Error(
+        `Digest sent to ${id} but last_digest_sent_at could not be written (${error.message}). ` +
+          "Aborting so the cooldown can't silently fail — check migration 0023.",
+      );
+    }
   });
 
   return { candidates: all.length, skipped: all.length - due.length, sent };
