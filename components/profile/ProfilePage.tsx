@@ -9,6 +9,7 @@ import { trackElementClick } from "@/app/actions/engage";
 import { saveProfilePage } from "@/app/actions/profile";
 import { fillProfileWithAI, reenrichProfile } from "@/app/actions/settings";
 import { CtaLink, PageFrame } from "@/components/ui";
+import { closeTarget } from "@/lib/route-history";
 import type { CoachMatch } from "@/lib/coach-match";
 import type { CoachReview } from "@/lib/coach-reviews-db";
 import type { Profile } from "@/lib/db";
@@ -140,11 +141,10 @@ export default function ProfilePage({
     router.refresh();
   }
 
-  /** Mobile close: save anything pending, then leave the way they came. */
+  /** Close: save anything pending, then return to the last in-app page (or home). */
   async function close() {
     if (editing) await flushSave();
-    if (window.history.length > 1) router.back();
-    else router.push("/");
+    router.push(closeTarget(window.location.pathname));
   }
 
   async function handleSubmitApplication() {
@@ -372,7 +372,7 @@ export default function ProfilePage({
               <button
                 type="button"
                 aria-label="Close"
-                onClick={() => router.back()}
+                onClick={close}
                 className="flex h-11 w-11 items-center justify-center rounded-full border border-border-2"
               >
                 <X size={16} strokeWidth={1.5} className="text-secondary" />
