@@ -2,7 +2,7 @@
 
 import { requireUser } from "@/lib/auth";
 import { getCoachByProfileId } from "@/lib/coaches-db";
-import { emailShell, sendEmail } from "@/lib/email";
+import { emailShell, escapeHtml, sendEmail, toParagraphs } from "@/lib/email";
 import { hasPublicProfile } from "@/lib/profile-required";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { labelForCareerStage, labelForRoleType } from "@/lib/taxonomy";
@@ -11,22 +11,6 @@ const MAX_MESSAGE = 2000;
 /** Requests any one member can send across all coaches in 24 hours. */
 const DAILY_LIMIT = 5;
 const DAY_MS = 24 * 60 * 60 * 1000;
-
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
-/** Member-authored text → paragraphs, escaped so it can't break the email. */
-function toParagraphs(body: string): string {
-  return body
-    .split(/\n{2,}/)
-    .map((p) => `<p style="margin:0 0 10px">${escapeHtml(p.trim()).replace(/\n/g, "<br />")}</p>`)
-    .join("");
-}
 
 /**
  * A member asks a claimed coach to work with them. Sent from the platform so

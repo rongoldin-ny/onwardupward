@@ -45,6 +45,8 @@ export type ProfileView = {
   portfolioPassword: string | null;
   player: PlayerView | null;
   coach: CoachRow | null;
+  /** This viewer may message them through the platform (see allow_coach_contact). */
+  canContact: boolean;
   missingRequired: RequiredLabel[];
   raw: { profile: Profile | null; work: WorkHistoryRow[]; references: ReferenceRow[] };
 };
@@ -94,6 +96,8 @@ export type ViewerAccess = {
   isOwner?: boolean;
   /** Admin/vetter review: email and private résumé too. */
   isAdmin?: boolean;
+  /** Has an approved coach listing — the only viewer who gets a Contact button. */
+  isCoach?: boolean;
   /** Owner-approved résumé sharing, for coaches and hiring managers. */
   canSeePublicResume?: boolean;
   /** Coaches (and admins) get portfolio passwords so they can open the work. */
@@ -134,7 +138,7 @@ const PROFILE_FIELD_ACCESS: Record<keyof Profile, "shared" | "private"> = {
   years_experience: "shared",
   industries: "shared",
   contact_preference: "private",
-  open_to_coaching_outreach: "shared",
+  allow_coach_contact: "shared",
   is_paid: "private",
   is_supporter: "private",
   notification_prefs: "private",
@@ -197,6 +201,9 @@ export function buildProfileView(
     background: profile.bio,
     urls,
     portfolioPassword: visible.portfolio_password,
+    // Coaches reaching members is the one direction of outreach the platform
+    // opens, and only to people who left it open.
+    canContact: !access.isOwner && !!access.isCoach && profile.allow_coach_contact,
     player: {
       roleLabel: profile.role_type ? labelForRoleType(profile.role_type) : null,
       careerStageLabel: profile.career_stage ? labelForCareerStage(profile.career_stage) : null,
@@ -263,6 +270,8 @@ export function coachOnlyProfileView(coach: CoachRow): ProfileView {
     portfolioPassword: null,
     player: null,
     coach: publicCoach(coach),
+    // No profile row behind a curated seed — the listing's own CTA is the route in.
+    canContact: false,
     missingRequired: [],
     raw: { profile: null, work: [], references: [] },
   };

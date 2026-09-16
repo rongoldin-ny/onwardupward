@@ -160,6 +160,17 @@ export async function saveNotificationPrefs(prefs: {
   return error ? { error: "Couldn't save — try again." } : {};
 }
 
+/** "Allow coaches to contact me" — see app/actions/member-contact.ts. */
+export async function saveCoachContact(allowed: boolean): Promise<{ error?: string }> {
+  const user = await requireUser();
+  const supabase = await supabaseServer();
+  const { error } = await supabase
+    .from("profiles")
+    .update({ allow_coach_contact: !!allowed })
+    .eq("id", user.id);
+  return error ? { error: "Couldn't save — try again." } : {};
+}
+
 /** Recruiter settings variant of the onboarding step — saves without redirecting. */
 export async function saveRecruiterPrefs(formData: FormData): Promise<{ error?: string }> {
   const user = await requireUser();

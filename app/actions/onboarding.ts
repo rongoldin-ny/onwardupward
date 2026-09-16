@@ -320,7 +320,7 @@ export async function finishOnboarding(formData: FormData) {
       location_country: str(formData, "country") ?? user.location_country,
       location_state: str(formData, "state") ?? user.location_state,
       location_city: str(formData, "city") ?? user.location_city,
-      open_to_coaching_outreach: formData.get("open_to_coaching_outreach") === "on",
+      allow_coach_contact: formData.get("allow_coach_contact") === "on",
       onboarding_complete: true,
     })
     .eq("id", user.id);

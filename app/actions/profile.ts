@@ -41,10 +41,15 @@ export async function saveProfilePage(formData: FormData): Promise<SaveProfileRe
 
   const patch: Partial<Profile> = {
     website_url: website,
-    open_to_coaching_outreach: formData.get("open_to_coaching_outreach") === "on",
     resume_public: formData.get("resume_public") === "on",
     contact_preference: "email",
   };
+  // An unchecked box sends nothing, so absence has to mean "this form didn't
+  // ask" rather than "off" — otherwise a save from any view without the
+  // checkbox would quietly revoke what they set in Settings.
+  if (formData.has("allow_coach_contact_asked")) {
+    patch.allow_coach_contact = formData.get("allow_coach_contact") === "on";
+  }
   const photo = formData.get("photo");
   if (photo instanceof File && photo.size > 0) {
     const url = await saveImage(photo, user.id);
