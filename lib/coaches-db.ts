@@ -29,7 +29,7 @@ export async function getDirectoryCoaches(): Promise<CoachRow[]> {
     .in("id", claimedIds);
   const publishable = new Set(
     ((profiles ?? []) as (RequiredFields & { id: string })[])
-      .filter((p) => isPublishable(p))
+      .filter((p) => isPublishable(p, { isCoach: true }))
       .map((p) => p.id),
   );
   return coaches.filter((c) => !c.profile_id || publishable.has(c.profile_id));

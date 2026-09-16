@@ -18,7 +18,7 @@ export default async function Dashboard() {
   ]);
   const firstName = (user.name ?? "there").split(" ")[0];
   const completionPct = profileCompletionPct(user);
-  const missing = missingRequired(user);
+  const missing = missingRequired(user, { isCoach: !!mentorListing });
 
   return (
     <PageFrame size="wide">

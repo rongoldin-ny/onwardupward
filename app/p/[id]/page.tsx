@@ -36,7 +36,7 @@ export default async function PublicProfilePage({
   // Drafts and pending listings are only visible to their owner.
   if (view.coach && view.coach.status !== "approved") view.coach = null;
   const approved = profile.vetting_status === "approved" || view.coach?.status === "approved";
-  if (!approved || !isPublishable(profile)) notFound();
+  if (!approved || !isPublishable(profile, { isCoach: !!view.coach })) notFound();
 
   const [reviews, ownReview] = view.coach
     ? await Promise.all([
