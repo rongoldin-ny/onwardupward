@@ -6,7 +6,7 @@ import { z } from "zod";
 import { disciplineLabel, type CoachRow } from "./coach-shared";
 import { getWorkHistory, type Profile, type WorkHistoryRow } from "./db";
 import { supabaseAdmin } from "./supabase/server";
-import { labelForCareerStage, labelForRoleType } from "./taxonomy";
+import { labelForCareerStage, labelForRoleType, labelForSpecialty } from "./taxonomy";
 
 /**
  * Smart coach matching — Claude reads a member's whole profile against the
@@ -94,7 +94,7 @@ function coachSummary(c: CoachRow): string {
     c.full_name,
     c.title || c.company,
     c.disciplines && `Discipline: ${disciplineLabel(c.disciplines)}`,
-    c.specialties.length > 0 && `Specialties: ${c.specialties.map(labelForRoleType).join(", ")}`,
+    c.specialties.length > 0 && `Specialties: ${c.specialties.map(labelForSpecialty).join(", ")}`,
     c.target_mentees.length > 0 && `Works with: ${c.target_mentees.join(", ")}`,
     c.years_coaching != null && `${c.years_coaching} years coaching`,
     c.credentials && `Credentials: ${c.credentials}`,
