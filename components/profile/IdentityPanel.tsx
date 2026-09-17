@@ -44,7 +44,7 @@ export default function IdentityPanel({ view, ver }: { view: ProfileView; ver: n
               <span className="text-muted"> · from your Google account</span>
             </p>
           </Labeled>
-          <Labeled label="Location" pill={pill("location")}>
+          <Labeled label="Location">
             <SelectField
               name="country"
               placeholder="Country"
@@ -111,9 +111,12 @@ export default function IdentityPanel({ view, ver }: { view: ProfileView; ver: n
                 placeholder="Website"
                 defaultValue={p.website_url ?? ""}
               />
-              <label className="flex h-[58px] w-full cursor-pointer items-center justify-between rounded-full border border-border-1 bg-surface-2 px-6 text-[15px] text-muted">
+              {/* A link, not a pill: an upload isn't a field with a value,
+                  and dressing it as one made the empty state read as
+                  placeholder text in a form the user hadn't filled in. */}
+              <label className="flex cursor-pointer px-1 text-[14px] font-bold text-gold">
                 <span className="min-w-0 truncate" data-resume-label>
-                  {p.resume_url ? "Résumé on file — tap to replace" : "Upload your résumé (PDF)"}
+                  {p.resume_url ? "Replace your résumé (PDF)" : "Upload your résumé (PDF)"}
                 </span>
                 <input
                   type="file"
@@ -128,7 +131,6 @@ export default function IdentityPanel({ view, ver }: { view: ProfileView; ver: n
                     if (label && f) label.textContent = f.name;
                   }}
                 />
-                <span className="shrink-0 pl-3 text-[13px] font-bold text-gold">Browse</span>
               </label>
               <label className="flex cursor-pointer items-start gap-3 rounded-[20px] border border-border-1 bg-surface-2 p-4">
                 <input

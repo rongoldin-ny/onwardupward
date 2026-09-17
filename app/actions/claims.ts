@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { requireUser } from "@/lib/auth";
+import { homeFor, requireUser } from "@/lib/auth";
 import { adoptClaimant, claimListing } from "@/lib/claims";
 import { syncCoachIdentity } from "@/lib/coaches-db";
 import { emailShell, sendEmail } from "@/lib/email";
@@ -19,9 +19,13 @@ export async function claimCoach(coachId: string): Promise<void> {
   if (user.role !== "candidate" && user.role !== "coach") redirect(`/coaches/${coachId}`);
 
   const outcome = await claimListing(coachId, user);
-  redirect(
-    outcome === "claimed" ? "/profile?side=coach&welcome=coach" : `/coaches/${coachId}`,
-  );
+  if (outcome !== "claimed") redirect(`/coaches/${coachId}`);
+  // Home, not the profile editor: the listing is theirs now, and home is
+  // where the "Complete your coaching profile" card lives. adoptClaimant is a
+  // no-op for an account that already picked a role — it's here so one that
+  // hasn't doesn't get sent into the member wizard by homeFor.
+  const fresh = await adoptClaimant(user, { becomesCoach: user.role === "coach" });
+  redirect(`${homeFor(fresh)}?welcome=coach`);
 }
 
 /** Hand the listing over to the claimant: link the profile, sync their identity in, and notify them. */

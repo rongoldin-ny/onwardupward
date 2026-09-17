@@ -2,23 +2,31 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { ArrowRight } from "lucide-react";
 import { requireCandidate } from "@/lib/auth";
+import { coachMissing } from "@/lib/coach-shared";
 import { getCoachByProfileId } from "@/lib/coaches-db";
 import { getMentorshipPosts } from "@/lib/mentorship-posts";
 import { missingRequired, profileCompletionPct } from "@/lib/stats";
 import { greeting } from "@/lib/greeting";
+import FlashToast from "@/components/FlashToast";
 import { Card, Eyebrow, Logo, PageFrame } from "@/components/ui";
 import GrowthGoalCard from "./GrowthGoalCard";
 import RecommendedCoaches, { RecommendedCoachesSkeleton } from "./RecommendedCoaches";
 
-export default async function Dashboard() {
+export default async function Dashboard({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
+  const { welcome } = await searchParams;
   const user = await requireCandidate();
   const [posts, mentorListing] = await Promise.all([
     getMentorshipPosts(),
     getCoachByProfileId(user.id),
   ]);
   const firstName = (user.name ?? "there").split(" ")[0];
-  const completionPct = profileCompletionPct(user);
+  const completionPct = profileCompletionPct(user, { isCoach: !!mentorListing });
   const missing = missingRequired(user, { isCoach: !!mentorListing });
+  const listingMissing = mentorListing ? coachMissing(mentorListing) : [];
 
   return (
     <PageFrame size="wide">
@@ -34,6 +42,13 @@ export default async function Dashboard() {
 
       <main className="mt-9 lg:grid lg:grid-cols-[1fr_320px] lg:items-start lg:gap-10">
         <div>
+          {/* Landing here straight from a claim — the listing is theirs, and
+              the card below it is how they finish it. */}
+          {welcome === "coach" && (
+            <div className="mb-4">
+              <FlashToast message="You're in! Your coaching profile is yours to edit." />
+            </div>
+          )}
           <GrowthGoalCard goal={user.growth_goal} />
 
           {!mentorListing ? (
@@ -47,6 +62,20 @@ export default async function Dashboard() {
                 </div>
                 <p className="mt-1.5 text-[13px] leading-[1.5] text-secondary">
                   Join the coach bench — share what you know, on your terms.
+                </p>
+              </Card>
+            </Link>
+          ) : listingMissing.length > 0 ? (
+            <Link href="/profile?side=coach" className="mt-4 block">
+              <Card className="card-hover">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-[18px] font-bold tracking-[-0.02em] text-cream">
+                    Complete your coaching profile
+                  </h2>
+                  <ArrowRight size={18} strokeWidth={1.5} className="text-gold" />
+                </div>
+                <p className="mt-1.5 text-[13px] leading-[1.5] text-secondary">
+                  {`Add ${listingMissing.map((m) => m.toLowerCase()).join(", ")} so members can be matched to you.`}
                 </p>
               </Card>
             </Link>

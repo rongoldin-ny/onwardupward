@@ -45,8 +45,12 @@ export function PageFrame({
           <Logo />
         </div>
       )}
+      {/* overflow-clip, not -hidden: the decorative hero glow is wider than the
+          frame, and a merely hidden box is still scrollable — focusing anything
+          inside (e.g. the Profile/Coach tabs) shifted the whole screen left by
+          the glow's overhang. */}
       <div
-        className={`relative flex w-full flex-1 flex-col overflow-hidden bg-surface-1 sm:rounded-[28px] md:flex-none md:rounded-[32px] md:border md:border-border-1 md:shadow-[0_30px_90px_rgba(0,0,0,0.55)] ${className}`}
+        className={`relative flex w-full flex-1 flex-col overflow-clip bg-surface-1 sm:rounded-[28px] md:flex-none md:rounded-[32px] md:border md:border-border-1 md:shadow-[0_30px_90px_rgba(0,0,0,0.55)] ${className}`}
       >
         {children}
       </div>

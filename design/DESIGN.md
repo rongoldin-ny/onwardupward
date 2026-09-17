@@ -46,6 +46,7 @@ Two-tone headline pattern: lead line in `text-primary`, continuation in `text-se
 | gold-active | rgba(232,201,135,.5) | Focused input / selected card border |
 | gold-tint | rgba(232,201,135,.08) | Highlight banner backgrounds |
 | success | #9DB78A | Positive deltas ("▲ 12%") |
+| alert | #C96A5B | Attention dot on a tab with required fields missing |
 | on-gold | #17130A | Text on gold CTAs |
 
 Links: `a { color:#E8C987 }`.

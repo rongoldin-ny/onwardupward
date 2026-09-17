@@ -3,7 +3,8 @@
  * client components (directory, listing form) can use them freely.
  */
 
-import type { ChecklistItem, RequiredFields } from "./profile-required";
+import type { Profile } from "./db";
+import type { ChecklistItem } from "./profile-required";
 
 export type CoachDiscipline = "design" | "product" | "both";
 
@@ -141,7 +142,7 @@ export function coachPricing(c: CoachRow): string {
 
 /** What the directory needs to know about a claimed listing's owner. */
 export type ListingOwner = Pick<
-  RequiredFields,
+  Profile,
   "name" | "email" | "linkedin_url" | "portfolio_url" | "website_url" | "resume_url"
 > & { archived_at: string | null };
 
@@ -170,29 +171,31 @@ export function coachListingVisible(
   return !!((c.full_name || owner.name) && (c.email || owner.email) && link);
 }
 
-// --------------------------------------------------------- practice nagging
+// ------------------------------------------------------- listing requirements
 
 /**
- * What a coach still has to say about their practice. None of it gates the
- * listing — it's what lib/coach-match.ts feeds Claude when it matches members
- * to coaches, so a thin listing is a listing that rarely gets matched.
+ * What a listing has to say about the practice before it's any use. The first
+ * three are what lib/coach-match.ts feeds Claude when it matches members to
+ * coaches; the rest are what a member reads before deciding, and the one link
+ * they need to actually reach them. Everything else on the card (pricing,
+ * credentials, newsletter) is a bonus and isn't nagged.
  */
 export function coachChecklist(c: CoachRow): ChecklistItem[] {
-  const item = (label: string, done: boolean) => ({ label, done, required: false });
+  const item = (label: string, done: boolean) => ({ label, done });
   return [
-    item("Photo", !!c.photo_url),
-    item("About you", !!c.short_description),
-    item("Discipline", !!c.disciplines),
-    item("Specialties", c.specialties.length > 0),
-    item("Who you work with", c.target_mentees.length > 0),
+    item("Disciplines", !!c.disciplines),
+    item("Who you mentor", c.target_mentees.length > 0),
+    item("Specialization", c.specialties.length > 0),
     item("The offering", !!c.offering),
     item("Best for", !!c.best_for),
-    item("Years coaching", c.years_coaching !== null && c.years_coaching !== undefined),
-    item("Credentials", !!c.credentials),
-    item("Pricing", !!c.pricing),
-    item("Booking link", !!c.booking_url),
-    item("Newsletter", !!c.substack_url),
+    item("Booking or contact link", !!c.booking_url),
   ];
+}
+
+export function coachMissing(c: CoachRow): string[] {
+  return coachChecklist(c)
+    .filter((i) => !i.done)
+    .map((i) => i.label);
 }
 
 export function coachCompletionPct(c: CoachRow): number {

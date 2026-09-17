@@ -10,11 +10,14 @@ export default function FlipCard({
   onSide,
   front,
   back,
+  needsAttention = { player: false, coach: false },
 }: {
   side: CardSide;
   onSide: (side: CardSide) => void;
   front: ReactNode;
   back: ReactNode;
+  /** Owner-only: a red dot on the side that's still missing something required. */
+  needsAttention?: Record<CardSide, boolean>;
 }) {
   return (
     <div>
@@ -30,11 +33,20 @@ export default function FlipCard({
             role="tab"
             aria-selected={side === s}
             onClick={() => onSide(s)}
-            className={`rounded-full px-5 py-2 text-[13px] font-bold transition-colors ${
+            className={`relative rounded-full px-5 py-2 text-[13px] font-bold transition-colors ${
               side === s ? "gold-gradient text-on-gold" : "text-secondary"
             }`}
           >
             {s === "player" ? "Profile" : "Coach"}
+            {needsAttention[s] && (
+              <>
+                <span
+                  aria-hidden
+                  className="absolute top-0.5 right-1 h-[7px] w-[7px] rounded-full bg-alert ring-2 ring-surface-2"
+                />
+                <span className="sr-only"> — needs attention</span>
+              </>
+            )}
           </button>
         ))}
       </div>

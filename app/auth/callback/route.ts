@@ -54,12 +54,10 @@ export async function GET(request: NextRequest) {
   // wizard back to the picker on every single sign-in.
   const destination = claimCoachId
     ? claimed
-      ? // A brand-new claimant is now a coach account, so this is the coach
-        // home. A member who already had an account keeps their own role, and
-        // their listing lives on their profile's Coach side.
-        profile.role === "coach"
-        ? "/coach?welcome=coach"
-        : "/profile?side=coach&welcome=coach"
+      ? // Their own home — the coach home for a brand-new claimant, the member
+        // home for someone who already had an account. Both carry the card
+        // that finishes the listing off.
+        `${homeFor(profile)}?welcome=coach`
       : `/coaches/${claimCoachId}?welcome=claim`
     : !profile.role_chosen
       ? "/role"
