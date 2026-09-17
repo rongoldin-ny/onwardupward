@@ -14,75 +14,15 @@ import { closeTarget } from "@/lib/route-history";
 import type { CoachMatch } from "@/lib/coach-match";
 import type { CoachReview } from "@/lib/coach-reviews-db";
 import type { Profile } from "@/lib/db";
-import { profileChecklist } from "@/lib/profile-required";
+import { coachMissing, coachCompletionPct } from "@/lib/coach-shared";
+import { profileCompletionPct } from "@/lib/profile-required";
 import type { ProfileView } from "@/lib/profile-view";
 import CoachCard from "./CoachCard";
+import CompletionCard from "./CompletionCard";
 import { EditContext, type TrackedElement, type Viewer } from "./edit-context";
 import FlipCard, { type CardSide } from "./FlipCard";
 import IdentityPanel from "./IdentityPanel";
 import PlayerCard, { type PlayerCardHandle } from "./PlayerCard";
-
-/**
- * Owner-only "what's left" card: required gaps first (they keep the profile
- * hidden), then the optional sections that round it out. Hidden once complete.
- */
-function ProfileChecklist({
-  profile,
-  isCoach,
-  missingRequired,
-  onEdit,
-}: {
-  profile: Profile;
-  /** Coaches are held to a looser required set — see lib/profile-required.ts. */
-  isCoach: boolean;
-  missingRequired: string[];
-  onEdit: () => void;
-}) {
-  const items = profileChecklist(profile, { isCoach });
-  const optional = items.filter((i) => !i.required && !i.done).map((i) => i.label);
-  if (missingRequired.length === 0 && optional.length === 0) return null;
-  const pct = Math.round((items.filter((i) => i.done).length / items.length) * 100);
-  const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-
-  return (
-    <section className="mt-5 rounded-[20px] border border-gold-border bg-gold-tint p-5 lg:mt-6 lg:p-6">
-      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-4">
-        <div className="w-full min-w-0 sm:w-auto sm:flex-1">
-          <p className="eyebrow text-gold">{pct}% complete</p>
-          <h2 className="mt-2 text-[18px] font-black tracking-[-0.02em] text-cream">
-            {missingRequired.length > 0 ? "A few things left before your profile goes live" : "What's left to add"}
-          </h2>
-          <div className="mt-2.5 h-[4px] w-full max-w-[420px] overflow-hidden rounded-full bg-border-1">
-            <div className="gold-gradient h-full rounded-full" style={{ width: `${pct}%` }} />
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={onEdit}
-          className="gold-gradient cta-glow order-last flex h-11 w-full shrink-0 items-center justify-center gap-2 rounded-full px-5 text-[14px] font-bold text-on-gold sm:order-none sm:w-auto"
-        >
-          <Pencil size={14} strokeWidth={2} />
-          Finish your profile
-        </button>
-      </div>
-      <div className="mt-4 flex flex-wrap gap-2">
-        {missingRequired.map((label) => (
-          <span
-            key={label}
-            className="rounded-full border border-gold-active bg-surface-1 px-3 py-1.5 text-[12px] font-bold text-gold"
-          >
-            {capitalize(label)} · required
-          </span>
-        ))}
-        {optional.map((label) => (
-          <span key={label} className="rounded-full border border-border-2 px-3 py-1.5 text-[12px] text-body-2">
-            {label}
-          </span>
-        ))}
-      </div>
-    </section>
-  );
-}
 
 /** Owner header actions: share a row evenly on mobile, natural width on desktop. */
 const actionClass =
@@ -308,42 +248,88 @@ export default function ProfilePage({
   // Visitors only get the Profile/Coach tabs when there's a live coach listing
   // to show. Owners always see both — their Coach side invites them to start.
   const showCoachSide = isOwner || v.coach?.status === "approved";
+  // Each side is nagged about its own required fields, on its own tab: the
+  // Profile side's identity, the listing's practice. A red dot on the other
+  // tab is how the owner finds out there's something over there.
+  const profileMissing = v.missingRequired;
+  const listingMissing = v.coach ? coachMissing(v.coach) : [];
+  const needsAttention = {
+    player: profileMissing.length > 0,
+    coach: listingMissing.length > 0,
+  };
+
+  // The card belongs to its side, so it rides inside the flip face rather
+  // than under the whole scene: the two faces share one grid cell sized to the
+  // taller of them, and anything after the scene sits below that dead space.
+  const profileCard = isOwner && !editing && v.raw.profile && (
+    <CompletionCard
+      pct={profileCompletionPct(v.raw.profile, { isCoach: !!v.coach })}
+      heading="A few things left before your profile goes live"
+      missing={profileMissing.map((m) => m.charAt(0).toUpperCase() + m.slice(1))}
+      ctaLabel="Finish your profile"
+      ctaLabelShort="Finish"
+      onEdit={() => setEditing(true)}
+    />
+  );
+  const listingCard = isOwner && !editing && v.coach && (
+    <CompletionCard
+      pct={coachCompletionPct(v.coach)}
+      heading="A few things left before members can be matched to you"
+      missing={listingMissing}
+      ctaLabel="Finish your listing"
+      ctaLabelShort="Add more"
+      onEdit={() => setEditing(true)}
+    />
+  );
+
+  const player = (
+    <>
+      <PlayerCard ref={playerRef} view={v} ver={ver} communitySkills={communitySkills} />
+      {profileCard}
+    </>
+  );
 
   const card = hasPlayer && !showCoachSide ? (
-    <PlayerCard ref={playerRef} view={v} ver={ver} communitySkills={communitySkills} />
+    player
   ) : hasPlayer ? (
     <FlipCard
       side={side}
       onSide={setSide}
-      front={<PlayerCard ref={playerRef} view={v} ver={ver} communitySkills={communitySkills} />}
+      needsAttention={isOwner ? needsAttention : undefined}
+      front={player}
       back={
-        <CoachCard
-          view={v}
-          coachingEnabled={coachingEnabled}
-          onStartCoaching={() => {
-            setCoachingEnabled(true);
-            setEditing(true);
-          }}
-          onEdit={() => setEditing(true)}
-          onSubmitApplication={handleSubmitApplication}
-          submitting={submitting}
-          topMatch={topMatch}
-          hasPendingClaim={hasPendingClaim}
-          reviews={reviews}
-          ownReview={ownReview}
-        />
+        <>
+          <CoachCard
+            view={v}
+            coachingEnabled={coachingEnabled}
+            onStartCoaching={() => {
+              setCoachingEnabled(true);
+              setEditing(true);
+            }}
+            onSubmitApplication={handleSubmitApplication}
+            submitting={submitting}
+            topMatch={topMatch}
+            hasPendingClaim={hasPendingClaim}
+            reviews={reviews}
+            ownReview={ownReview}
+          />
+          {listingCard}
+        </>
       }
     />
   ) : (
-    <CoachCard
-      view={v}
-      coachingEnabled={!!v.coach}
-      onStartCoaching={() => {}}
-      topMatch={topMatch}
-      hasPendingClaim={hasPendingClaim}
-      reviews={reviews}
-      ownReview={ownReview}
-    />
+    <>
+      <CoachCard
+        view={v}
+        coachingEnabled={!!v.coach}
+        onStartCoaching={() => {}}
+        topMatch={topMatch}
+        hasPendingClaim={hasPendingClaim}
+        reviews={reviews}
+        ownReview={ownReview}
+      />
+      {listingCard}
+    </>
   );
 
   return (
@@ -474,15 +460,6 @@ export default function ProfilePage({
             <div className="mt-5">
               <FlashToast message={notice} />
             </div>
-          )}
-
-          {isOwner && !editing && v.raw.profile && (
-            <ProfileChecklist
-              profile={v.raw.profile}
-              isCoach={!!v.coach}
-              missingRequired={v.missingRequired}
-              onEdit={() => setEditing(true)}
-            />
           )}
 
           <EditContext.Provider value={{ editing: isOwner && editing, viewer, scheduleSave, track }}>

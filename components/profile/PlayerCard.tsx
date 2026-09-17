@@ -9,7 +9,7 @@ import type { AiFillResult } from "@/lib/ai-fill";
 import type { PortfolioImage } from "@/lib/db";
 import type { ProfileView } from "@/lib/profile-view";
 import { INDUSTRIES } from "@/lib/taxonomy";
-import { autoGrow, CardSection as Section, chipClass, useEdit } from "./edit-context";
+import { autoGrow, CardSection as Section, chipClass, RequiredPill, useEdit } from "./edit-context";
 import PortfolioImagesField, {
   commitSavedItems,
   itemsFromImages,
@@ -128,6 +128,9 @@ export default function PlayerCard({
   const industryChips = [...new Set([...industries, ...INDUSTRIES])];
 
   const headline = [player.roleLabel, player.careerStageLabel].filter(Boolean).join(" · ");
+  // The Profile side's own required fields — the identity panel shows the rest.
+  const missing = new Set<string>(view.missingRequired);
+  const anyMissing = (...labels: string[]) => editing && labels.some((l) => missing.has(l));
   const visibleImages = editing ? [] : player.portfolioImages;
   const isEmpty =
     !headline &&
@@ -148,7 +151,10 @@ export default function PlayerCard({
         <div className="min-w-0 flex-1">
           {editing ? (
             <>
-              <p className="eyebrow text-secondary">Role &amp; Level</p>
+              <div className="flex items-center gap-2">
+                <p className="eyebrow text-secondary">Role &amp; Level</p>
+                {anyMissing("role", "level") && <RequiredPill />}
+              </div>
               <div key={`headline-${ver}`} className="mt-3.5 flex flex-col gap-3 sm:flex-row">
                 <SelectField
                   name="role_type"
@@ -182,7 +188,10 @@ export default function PlayerCard({
 
       <div className="mt-6 space-y-6">
         {(editing || player.growthGoal) && (
-          <Section title="Where I hope to grow">
+          <Section
+            title="Where I hope to grow"
+            pill={anyMissing("where you hope to grow") ? <RequiredPill /> : null}
+          >
             {editing ? (
               <>
                 <p className="-mt-1.5 mb-3 text-[12.5px] leading-[1.5] text-secondary">

@@ -18,6 +18,9 @@
   --gold-active: rgba(232, 201, 135, 0.5);
   --gold-tint: rgba(232, 201, 135, 0.08);
   --success: #9db78a;
+  /* Attention dot: something required is missing. Muted brick so it reads as
+     a flag in a warm palette rather than a browser error. */
+  --alert: #c96a5b;
   --on-gold: #17130a;
 }
 
@@ -39,6 +42,7 @@
   --color-gold-active: var(--gold-active);
   --color-gold-tint: var(--gold-tint);
   --color-success: var(--success);
+  --color-alert: var(--alert);
   --color-on-gold: var(--on-gold);
   --font-sans: var(--font-schibsted);
 }

@@ -49,10 +49,21 @@ export function Labeled({
   );
 }
 
-export function CardSection({ title, children }: { title: string; children: ReactNode }) {
+export function CardSection({
+  title,
+  pill,
+  children,
+}: {
+  title: string;
+  pill?: ReactNode;
+  children: ReactNode;
+}) {
   return (
     <section className="border-t border-border-1 pt-5">
-      <p className="eyebrow text-secondary">{title}</p>
+      <div className="flex items-center gap-2">
+        <p className="eyebrow text-secondary">{title}</p>
+        {pill}
+      </div>
       <div className="mt-3.5">{children}</div>
     </section>
   );

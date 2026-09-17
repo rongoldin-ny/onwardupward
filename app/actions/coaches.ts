@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
-import type { CoachRow } from "@/lib/coach-shared";
+import { coachMissing, type CoachRow } from "@/lib/coach-shared";
 import { getCoachByProfileId, TARGET_MENTEE_OPTIONS } from "@/lib/coaches-db";
 import { emailShell, sendEmail } from "@/lib/email";
 import { normalizeUrl } from "@/lib/extract";
@@ -145,8 +145,9 @@ export async function submitCoachApplication(): Promise<{ error?: string; coach?
   const existing = await getCoachByProfileId(user.id);
   if (!existing) return { error: "Fill in your coaching card first." };
   if (existing.status !== "draft") return { coach: existing };
-  if (!existing.offering || !existing.booking_url) {
-    return { error: "Add your offering and a booking link before submitting." };
+  const missing = coachMissing(existing);
+  if (missing.length > 0) {
+    return { error: `Add ${missing.map((m) => m.toLowerCase()).join(", ")} before submitting.` };
   }
   const { data, error } = await supabaseAdmin()
     .from("coaches")

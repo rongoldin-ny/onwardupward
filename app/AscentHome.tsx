@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef } from "react";
-import { CollapsingLogoMark, LogoMark } from "@/components/logo";
+import { CollapsingLogoMark } from "@/components/logo";
 import "./ascent.css";
 
 const MARQUEE =
@@ -206,16 +206,6 @@ export default function AscentHome() {
           </div>
         </section>
       </main>
-
-      <footer>
-        <span className="logo ou-logo" style={{ fontSize: 15 }}><LogoMark /></span>
-        <div className="links">
-          {/* Contact now lives in the shared SiteFooter. */}
-          {/* <Link href="/terms">Terms</Link>
-          <Link href="/privacy">Privacy</Link>
-          <Link href="/signup">For companies</Link> */}
-        </div>
-      </footer>
     </div>
   );
 }

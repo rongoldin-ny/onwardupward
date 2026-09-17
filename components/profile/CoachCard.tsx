@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { GraduationCap, Pencil } from "lucide-react";
+import { GraduationCap } from "lucide-react";
 import { claimCoach } from "@/app/actions/claims";
 import CoachBookLink from "@/components/CoachBookLink";
 import CoachRequestForm from "@/components/CoachRequestForm";
@@ -10,12 +10,10 @@ import { DisciplineChips, MenteeChips, SpecialtyChips } from "@/components/Coach
 import { TextArea, TextField } from "@/components/fields";
 import { Cta, Tag } from "@/components/ui";
 import {
-  coachChecklist,
-  coachCompletionPct,
   coachLevels,
+  coachMissing,
   disciplineLabel,
   type CoachDiscipline,
-  type CoachRow,
 } from "@/lib/coach-shared";
 import type { CoachMatch } from "@/lib/coach-match";
 import type { CoachReview } from "@/lib/coach-reviews-db";
@@ -29,7 +27,6 @@ export default function CoachCard({
   view,
   coachingEnabled,
   onStartCoaching,
-  onEdit,
   onSubmitApplication,
   submitting = false,
   topMatch = null,
@@ -40,7 +37,6 @@ export default function CoachCard({
   view: ProfileView;
   coachingEnabled: boolean;
   onStartCoaching: () => void;
-  onEdit?: () => void;
   onSubmitApplication?: () => void;
   submitting?: boolean;
   /** Streams in from the server for members; resolves null when this coach isn't one of their matches. */
@@ -98,7 +94,8 @@ export default function CoachCard({
   const status = coach?.status ?? "draft";
   const approved = status === "approved";
   const isDraft = status === "draft";
-  const canSubmit = !!coach?.offering && !!coach?.booking_url;
+  const missing = coach ? coachMissing(coach) : [];
+  const canSubmit = missing.length === 0;
   const levels = coach ? coachLevels(coach) : [];
   const autoSubtitle = coach
     ? [coach.company, disciplineLabel(coach.disciplines)].filter(Boolean).join(" · ")
@@ -111,12 +108,15 @@ export default function CoachCard({
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
           {editing ? (
-            <TextField
-              name="title"
-              placeholder={autoSubtitle || "Your coaching"}
-              defaultValue={coach?.title ?? ""}
-              className="!h-auto !py-2.5 text-[18px] font-black tracking-[-0.02em]"
-            />
+            <>
+              <TextField
+                name="title"
+                placeholder={autoSubtitle || "Your coaching"}
+                defaultValue={coach?.title ?? ""}
+                className="!h-auto !py-2.5 text-[18px] font-black tracking-[-0.02em]"
+              />
+              <p className="mt-2 px-1 text-[12px] text-muted">Your headline.</p>
+            </>
           ) : (
             <h2 className="text-[22px] leading-[1.15] font-black tracking-[-0.02em] text-cream">
               {subtitle || `Coaching with ${view.firstName}`}
@@ -128,9 +128,25 @@ export default function CoachCard({
             approved ? "border-success/35 text-success" : "border-border-2 text-muted"
           }`}
         >
-          {isDraft ? "Draft" : status === "pending" ? "Under review" : approved ? "Live" : "Unclaimed"}
+          {isDraft
+            ? "Draft"
+            : status === "pending"
+              ? "Under review"
+              : approved
+                ? "Claimed"
+                : "Unclaimed"}
         </span>
       </div>
+
+      {editing && (
+        <div className="mt-3">
+          <TextField
+            name="company"
+            placeholder="Company or practice (optional)"
+            defaultValue={coach?.company ?? ""}
+          />
+        </div>
+      )}
 
       {/* Unclaimed listings: "This you?" is the page's main call to action,
           so it leads the card instead of trailing the whole listing. */}
@@ -155,13 +171,21 @@ export default function CoachCard({
         </p>
       )}
 
-      {viewer === "owner" && coach && !editing && onEdit && (
-        <CoachChecklist coach={coach} onEdit={onEdit} />
-      )}
-
       <div className="mt-6 space-y-6">
         {editing ? (
           <>
+            <Section title="Booking or contact link">
+              <div className="space-y-3">
+                <TextField
+                  name="booking_url"
+                  placeholder="Calendly, website, or email"
+                  defaultValue={bookingDisplay}
+                />
+                <p className="px-1 text-[12px] text-muted">
+                  Links, ex. Calendly or your website — or just an email address to book you.
+                </p>
+              </div>
+            </Section>
             <Section title="Disciplines & levels">
               <div className="space-y-5">
                 <DisciplineChips
@@ -187,6 +211,33 @@ export default function CoachCard({
                 />
               </div>
             </Section>
+            <Section title="The offering">
+              <TextArea
+                name="offering"
+                rows={4}
+                placeholder="What a session with you covers"
+                defaultValue={coach?.offering ?? ""}
+              />
+            </Section>
+            <Section title="Best for">
+              <TextField
+                name="best_for"
+                placeholder="One line on who gets the most from you"
+                defaultValue={coach?.best_for ?? ""}
+              />
+            </Section>
+            <Section title="Newsletter">
+              <div className="space-y-3">
+                <TextField
+                  name="substack_url"
+                  placeholder="Your Substack or newsletter link (optional)"
+                  defaultValue={coach?.substack_url ?? ""}
+                />
+                <p className="px-1 text-[12px] text-muted">
+                  Your articles may be featured in our Reads section.
+                </p>
+              </div>
+            </Section>
             <Section title="Coaching credentials">
               <div className="space-y-3">
                 <TextField
@@ -205,50 +256,11 @@ export default function CoachCard({
                 />
               </div>
             </Section>
-            <Section title="The offering">
-              <TextArea
-                name="offering"
-                rows={4}
-                placeholder="What a session with you covers"
-                defaultValue={coach?.offering ?? ""}
-              />
-            </Section>
-            <Section title="Best for">
-              <TextField
-                name="best_for"
-                placeholder="One line on who gets the most from you"
-                defaultValue={coach?.best_for ?? ""}
-              />
-            </Section>
             <Section title="Pricing">
               <TextField
                 name="pricing"
                 placeholder="Pricing — a number or a range is fine"
                 defaultValue={coach?.pricing ?? ""}
-              />
-            </Section>
-            <Section title="Booking or contact link">
-              <div className="space-y-3">
-                <TextField
-                  name="booking_url"
-                  placeholder="Calendly, website, or email"
-                  defaultValue={bookingDisplay}
-                />
-                <p className="px-1 text-[12px] text-muted">
-                  Links, ex. Calendly or your website — or just an email address to book you.
-                </p>
-                <TextField
-                  name="company"
-                  placeholder="Company or practice (optional)"
-                  defaultValue={coach?.company ?? ""}
-                />
-              </div>
-            </Section>
-            <Section title="Newsletter">
-              <TextField
-                name="substack_url"
-                placeholder="Your Substack or newsletter link (optional)"
-                defaultValue={coach?.substack_url ?? ""}
               />
             </Section>
           </>
@@ -348,61 +360,13 @@ export default function CoachCard({
           </Cta>
           {!canSubmit && (
             <p className="mt-3 text-center text-[12.5px] text-secondary">
-              Add your offering and a booking link to submit.
+              {`Add ${missing.map((m) => m.toLowerCase()).join(", ")} to submit.`}
             </p>
           )}
         </div>
       )}
 
     </div>
-  );
-}
-
-/**
- * Owner-only "what's left" card, matching the one on the Profile side. Nothing
- * here gates the listing — these are the fields matching reads, so a thin
- * listing is one that rarely reaches a member's home page.
- */
-function CoachChecklist({ coach, onEdit }: { coach: CoachRow; onEdit: () => void }) {
-  const missing = coachChecklist(coach)
-    .filter((i) => !i.done)
-    .map((i) => i.label);
-  if (missing.length === 0) return null;
-  const pct = coachCompletionPct(coach);
-
-  return (
-    <section className="mt-5 rounded-[20px] border border-gold-border bg-gold-tint p-5">
-      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-4">
-        <div className="w-full min-w-0 sm:w-auto sm:flex-1">
-          <p className="eyebrow text-gold">{pct}% complete</p>
-          <h2 className="mt-2 text-[18px] leading-[1.2] font-black tracking-[-0.02em] text-cream">
-            Fuller listings get matched with more members
-          </h2>
-          <div className="mt-2.5 h-[4px] w-full max-w-[420px] overflow-hidden rounded-full bg-border-1">
-            <div className="gold-gradient h-full rounded-full" style={{ width: `${pct}%` }} />
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={onEdit}
-          className="gold-gradient cta-glow order-last flex h-11 w-full shrink-0 items-center justify-center gap-2 rounded-full px-5 text-[14px] font-bold text-on-gold sm:order-none sm:w-auto"
-        >
-          <Pencil size={14} strokeWidth={2} />
-          <span className="sm:hidden">Add more</span>
-          <span className="hidden sm:inline">Finish your listing</span>
-        </button>
-      </div>
-      <div className="mt-4 flex flex-wrap gap-2">
-        {missing.map((label) => (
-          <span
-            key={label}
-            className="rounded-full border border-border-2 px-3 py-1.5 text-[12px] text-body-2"
-          >
-            {label}
-          </span>
-        ))}
-      </div>
-    </section>
   );
 }
 
