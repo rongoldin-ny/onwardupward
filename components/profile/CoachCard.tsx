@@ -9,6 +9,7 @@ import { MatchReason } from "@/components/MatchReason";
 import {
   CertificationChips,
   DisciplineChips,
+  FormatChips,
   MenteeChips,
   SpecialtyChips,
 } from "@/components/CoachFormFields";
@@ -18,6 +19,7 @@ import { Cta, Tag } from "@/components/ui";
 import {
   certificationLabels,
   pricingNotes,
+  coachFormats,
   coachLevels,
   coachMissing,
   disciplineChips,
@@ -61,6 +63,7 @@ export default function CoachCard({
   const [specialties, setSpecialties] = useState<string[]>(coach?.specialties ?? []);
   const [certifications, setCertifications] = useState<string[]>(coach?.certifications ?? []);
   const [certOther, setCertOther] = useState(coach?.certification_other ?? "");
+  const [formats, setFormats] = useState<string[]>(coach?.formats ?? []);
   const [freeIntro, setFreeIntro] = useState(!!coach?.free_intro_call);
   const [pricingOnCall, setPricingOnCall] = useState(!!coach?.pricing_on_call);
   const [match, setMatch] = useState<CoachMatch | null>(null);
@@ -222,6 +225,13 @@ export default function CoachCard({
                     scheduleSave();
                   }}
                 />
+                <FormatChips
+                  value={formats}
+                  onChange={(f) => {
+                    setFormats(f);
+                    scheduleSave();
+                  }}
+                />
               </div>
             </Section>
             <Section title="The offering">
@@ -325,6 +335,11 @@ export default function CoachCard({
             {levels.length > 0 && (
               <Section title="Works with">
                 <ChipRow items={levels} />
+              </Section>
+            )}
+            {coach && coachFormats(coach).length > 0 && (
+              <Section title="Format">
+                <ChipRow items={coachFormats(coach)} />
               </Section>
             )}
             {coach?.credentials && (

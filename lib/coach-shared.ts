@@ -17,6 +17,8 @@ export type CoachRow = {
   short_description: string | null;
   offering: string | null;
   target_mentees: string[];
+  /** How they work with people — see FORMAT_OPTIONS. */
+  formats: string[];
   disciplines: CoachDiscipline | null;
   /** Which of the platform's role types (lib/taxonomy.ts ROLE_TYPES) this coach specializes in. */
   specialties: string[];
@@ -51,6 +53,8 @@ export type CoachRow = {
 export function publicCoach(coach: CoachRow): CoachRow {
   return { ...coach, email: null };
 }
+
+export const FORMAT_OPTIONS = ["1:1 coaching", "Groups & cohorts", "Programs & courses"] as const;
 
 export const TARGET_MENTEE_OPTIONS = [
   "Early career",
@@ -212,6 +216,11 @@ export function coachLevels(c: CoachRow): string[] {
 }
 
 export function coachFormats(c: CoachRow): string[] {
+  if (c.formats?.length > 0) return c.formats;
+  // Same rule as coachLevels: only a listing with nobody behind it has its
+  // formats read out of its copy. Once it's owned, it says what its owner
+  // chose — including nothing, if they haven't chosen yet.
+  if (c.profile_id) return [];
   const text = `${c.offering ?? ""} ${c.pricing ?? ""}`;
   const out: string[] = [];
   if (/1:1|one-on-one|sessions/i.test(text)) out.push("1:1 coaching");
@@ -307,6 +316,7 @@ export function coachChecklist(c: CoachRow): ChecklistItem[] {
     item("Certification", (c.certifications ?? []).length > 0),
     item("Disciplines", !!c.disciplines),
     item("Who you mentor", c.target_mentees.length > 0),
+    item("Format", (c.formats ?? []).length > 0),
     item("Specialization", c.specialties.length > 0),
     item("The offering", !!c.offering),
     item("Best for", !!c.best_for),

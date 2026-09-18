@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import {
+  FORMAT_OPTIONS,
   normalizeCertifications,
   coachMissing,
   type CoachRow,
@@ -75,6 +76,10 @@ export async function saveCoachAttributes(
   const certificationOther = certifications.includes("other")
     ? str("certification_other").slice(0, 120) || null
     : null;
+  const formats = formData
+    .getAll("formats")
+    .map(String)
+    .filter((f) => (FORMAT_OPTIONS as readonly string[]).includes(f));
   const disciplinesRaw = str("disciplines");
   const disciplines = (["design", "product", "both"] as const).includes(
     disciplinesRaw as "design" | "product" | "both",
@@ -99,6 +104,7 @@ export async function saveCoachAttributes(
     title: str("title") || null,
     offering: str("offering") || null,
     target_mentees: mentees,
+    formats,
     specialties,
     disciplines,
     best_for: str("best_for") || null,

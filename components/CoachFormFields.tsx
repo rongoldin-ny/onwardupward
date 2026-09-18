@@ -2,6 +2,7 @@
 
 import {
   CERTIFICATION_OPTIONS,
+  FORMAT_OPTIONS,
   normalizeCertifications,
   DISCIPLINE_OPTIONS,
   TARGET_MENTEE_OPTIONS,
@@ -72,6 +73,40 @@ export function CertificationChips({
       )}
       {value.map((v) => (
         <input key={v} type="hidden" name="certifications" value={v} />
+      ))}
+    </div>
+  );
+}
+
+export function FormatChips({
+  value,
+  onChange,
+}: {
+  value: string[];
+  onChange: (value: string[]) => void;
+}) {
+  return (
+    <div>
+      <p className="text-[13px] text-secondary">How do you work with people?</p>
+      <div className="mt-3 flex flex-wrap gap-2.5">
+        {FORMAT_OPTIONS.map((option) => {
+          const on = value.includes(option);
+          return (
+            <button
+              key={option}
+              type="button"
+              onClick={() => onChange(on ? value.filter((f) => f !== option) : [...value, option])}
+              className={`rounded-full border px-4 py-2.5 text-[13px] ${
+                on ? "border-gold-active font-bold text-gold" : "border-border-2 text-body-2"
+              }`}
+            >
+              {option}
+            </button>
+          );
+        })}
+      </div>
+      {value.map((f) => (
+        <input key={f} type="hidden" name="formats" value={f} />
       ))}
     </div>
   );
