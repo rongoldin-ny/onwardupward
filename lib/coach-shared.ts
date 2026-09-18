@@ -20,6 +20,10 @@ export type CoachRow = {
   disciplines: CoachDiscipline | null;
   /** Which of the platform's role types (lib/taxonomy.ts ROLE_TYPES) this coach specializes in. */
   specialties: string[];
+  /** What they are — see CERTIFICATION_OPTIONS. Several can be true at once. */
+  certifications: string[];
+  /** What "Other" stands for, when they picked it. */
+  certification_other: string | null;
   /** Custom headline overriding the auto-derived "<company> · <discipline>" line when set. */
   title: string | null;
   best_for: string | null;
@@ -57,6 +61,38 @@ export const DISCIPLINE_OPTIONS: { value: CoachDiscipline; label: string }[] = [
   { value: "product", label: "Product" },
   { value: "both", label: "Both" },
 ];
+
+/**
+ * Mentor and coach are different practices, and the ICF levels are a ladder
+ * within the second — so this is a separate question from discipline (what
+ * they coach in) and from levels (who they take). See components/
+ * CertificationInfo.tsx for the copy that explains the difference to people.
+ */
+export const CERTIFICATION_OPTIONS: { value: string; label: string }[] = [
+  { value: "mentor", label: "Mentor" },
+  { value: "coach", label: "Coach (non-certified)" },
+  { value: "icf_acc", label: "ICF Coach: Associate (L1)" },
+  { value: "icf_pcc", label: "ICF Coach: Professional (L2)" },
+  { value: "icf_mcc", label: "ICF Coach: Certified (L3)" },
+  { value: "other", label: "Other" },
+];
+
+export const CERTIFICATION_VALUES = CERTIFICATION_OPTIONS.map((o) => o.value);
+
+export function labelForCertification(value: string): string {
+  return CERTIFICATION_OPTIONS.find((o) => o.value === value)?.label ?? value;
+}
+
+/** Display labels, with "Other" replaced by whatever they named it. */
+export function certificationLabels(
+  c: Pick<CoachRow, "certifications" | "certification_other">,
+): string[] {
+  return (c.certifications ?? []).map((value) =>
+    value === "other" && c.certification_other
+      ? c.certification_other
+      : labelForCertification(value),
+  );
+}
 
 export function disciplineLabel(d: CoachDiscipline | null): string {
   if (d === "design") return "Design coaching";
@@ -197,6 +233,7 @@ export function coachListingVisible(
 export function coachChecklist(c: CoachRow): ChecklistItem[] {
   const item = (label: string, done: boolean) => ({ label, done });
   return [
+    item("Certification", (c.certifications ?? []).length > 0),
     item("Disciplines", !!c.disciplines),
     item("Who you mentor", c.target_mentees.length > 0),
     item("Specialization", c.specialties.length > 0),

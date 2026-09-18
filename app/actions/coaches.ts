@@ -2,7 +2,11 @@
 
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
-import { coachMissing, type CoachRow } from "@/lib/coach-shared";
+import {
+  CERTIFICATION_VALUES,
+  coachMissing,
+  type CoachRow,
+} from "@/lib/coach-shared";
 import { getCoachByProfileId, TARGET_MENTEE_OPTIONS } from "@/lib/coaches-db";
 import { emailShell, sendEmail } from "@/lib/email";
 import { normalizeUrl } from "@/lib/extract";
@@ -65,6 +69,15 @@ export async function saveCoachAttributes(
     .getAll("specialties")
     .map(String)
     .filter((s) => roleTypeValues.includes(s));
+  const certifications = formData
+    .getAll("certifications")
+    .map(String)
+    .filter((c) => CERTIFICATION_VALUES.includes(c));
+  // Only meaningful alongside "Other"; dropping it otherwise keeps a stale
+  // answer from resurfacing if they switch away and back.
+  const certificationOther = certifications.includes("other")
+    ? str("certification_other").slice(0, 120) || null
+    : null;
   const disciplinesRaw = str("disciplines");
   const disciplines = (["design", "product", "both"] as const).includes(
     disciplinesRaw as "design" | "product" | "both",
@@ -94,6 +107,8 @@ export async function saveCoachAttributes(
     specialties,
     disciplines,
     best_for: str("best_for") || null,
+    certifications,
+    certification_other: certificationOther,
     booking_url: booking,
     company: str("company") || null,
     pricing: str("pricing") || null,

@@ -6,10 +6,17 @@ import { claimCoach } from "@/app/actions/claims";
 import CoachBookLink from "@/components/CoachBookLink";
 import CoachRequestForm from "@/components/CoachRequestForm";
 import { MatchReason } from "@/components/MatchReason";
-import { DisciplineChips, MenteeChips, SpecialtyChips } from "@/components/CoachFormFields";
+import {
+  CertificationChips,
+  DisciplineChips,
+  MenteeChips,
+  SpecialtyChips,
+} from "@/components/CoachFormFields";
+import CertificationInfo from "@/components/CertificationInfo";
 import { TextArea, TextField } from "@/components/fields";
 import { Cta, Tag } from "@/components/ui";
 import {
+  certificationLabels,
   coachLevels,
   coachMissing,
   disciplineLabel,
@@ -50,6 +57,8 @@ export default function CoachCard({
   const [discipline, setDiscipline] = useState<CoachDiscipline | null>(coach?.disciplines ?? null);
   const [mentees, setMentees] = useState<string[]>(coach?.target_mentees ?? []);
   const [specialties, setSpecialties] = useState<string[]>(coach?.specialties ?? []);
+  const [certifications, setCertifications] = useState<string[]>(coach?.certifications ?? []);
+  const [certOther, setCertOther] = useState(coach?.certification_other ?? "");
   const [match, setMatch] = useState<CoachMatch | null>(null);
   useEffect(() => {
     let live = true;
@@ -239,7 +248,19 @@ export default function CoachCard({
               </div>
             </Section>
             <Section title="Coaching credentials">
-              <div className="space-y-3">
+              <div className="space-y-5">
+                <CertificationChips
+                  value={certifications}
+                  other={certOther}
+                  onChange={(c) => {
+                    setCertifications(c);
+                    scheduleSave();
+                  }}
+                  onOther={(o) => {
+                    setCertOther(o);
+                    scheduleSave();
+                  }}
+                />
                 <TextField
                   name="years_coaching"
                   type="number"
@@ -266,9 +287,15 @@ export default function CoachCard({
           </>
         ) : (
           <>
-            {/* Three different claims, so three rows: the discipline they coach
-                in, the practice they specialize in, and who they take. Stacked
-                as one row of unlabelled chips they read as one list. */}
+            {/* Four different claims, so four rows: what they're certified as,
+                the discipline they coach in, the practice they specialize in,
+                and who they take. Stacked as one row of unlabelled chips they
+                read as one list. */}
+            {coach && certificationLabels(coach).length > 0 && (
+              <Section title="Certification" pill={<CertificationInfo />}>
+                <ChipRow items={certificationLabels(coach)} />
+              </Section>
+            )}
             {coach && disciplineLabel(coach.disciplines) && (
               <Section title="Discipline">
                 <ChipRow items={[disciplineLabel(coach.disciplines)]} />
