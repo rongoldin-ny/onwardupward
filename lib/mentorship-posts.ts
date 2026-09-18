@@ -9,7 +9,7 @@
 
 import { getCoachFeeds } from "./coaches-db";
 import { decodeHtmlEntities } from "./html-entities";
-import { coachDisciplineLabels } from "./coach-shared";
+import { coachSpecialtyLabels } from "./coach-shared";
 
 export type MentorshipPost = {
   title: string;
@@ -123,7 +123,7 @@ async function fetchFreshPosts(): Promise<MentorshipPost[]> {
         house: url === HOUSE_FEED,
         isCoach: !!coach,
         author: coach?.full_name,
-        disciplines: coach ? coachDisciplineLabels(coach) : undefined,
+        disciplines: coach ? coachSpecialtyLabels(coach) : undefined,
       }));
     }),
   );

@@ -49,7 +49,6 @@ const SITE = "https://onwardupward.io";
       substack_url: c.substackUrl ?? null,
       source: c.source,
       status: c.status === "claimed" ? "approved" : "unclaimed",
-      disciplines: c.disciplines ?? "design",
       specialties: c.specialties ?? [],
     };
     const { data, error } = await sb

@@ -25,7 +25,6 @@ function seedValues(c: (typeof COACHES)[number]) {
     website: c.source ? `https://${c.source.replace(/^https?:\/\//, "")}` : null,
     substack_url: c.substackUrl ?? null,
     source: c.source,
-    disciplines: c.disciplines ?? "design",
     specialties: c.specialties ?? [],
   };
 }

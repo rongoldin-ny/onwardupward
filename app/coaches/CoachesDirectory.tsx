@@ -8,9 +8,9 @@ import {
   coachFormats,
   coachLevels,
   FORMAT_OPTIONS,
+  SPECIALTY_FILTERS,
   coachPricingFacets,
-  DISCIPLINE_FILTERS,
-  disciplineLabel,
+  coachSpecialtyLabels,
   PRICING_FILTERS,
   TARGET_MENTEE_OPTIONS,
   type CoachRow,
@@ -20,30 +20,10 @@ import { Card } from "@/components/ui";
 import { MatchReason } from "@/components/MatchReason";
 import { FilterRow, MultiSelect } from "@/components/MultiSelect";
 
-// Everything past "Design" and "Product" is a specialty tag (lib/taxonomy.ts
-// COACH_SPECIALTIES) a coach sets on themselves; the first two match the
-// coarser discipline field.
-const SPECIALTY_FILTERS: Record<string, string> = {
-  "Content Design": "content_design",
-  Research: "user_research",
-  Executive: "executive_coaching",
-  "Startup founder": "founder_coaching",
-};
-
-function matchesDiscipline(coach: CoachRow, active: string[]): boolean {
+/** Matched on the specialties a coach picked, in the picker's own words. */
+function matchesSpecialty(coach: CoachRow, active: string[]): boolean {
   if (active.length === 0) return true;
-  if (active.some((a) => SPECIALTY_FILTERS[a] && coach.specialties.includes(SPECIALTY_FILTERS[a]))) {
-    return true;
-  }
-  // A selection that's only specialty tags has had its say — don't let the
-  // coarse field answer for it, or picking "Executive" returns every designer.
-  if (active.every((a) => SPECIALTY_FILTERS[a])) return false;
-  // No answer yet (curated seeds pre-migration), and coaches covering both
-  // disciplines, match a Design and/or Product filter — select both to see them.
-  const d = coach.disciplines ?? "both";
-  if (d === "design") return active.includes("Design");
-  if (d === "product") return active.includes("Product");
-  return active.includes("Design") || active.includes("Product");
+  return coachSpecialtyLabels(coach).some((label) => active.includes(label));
 }
 
 export default function CoachesDirectory({
@@ -72,7 +52,7 @@ export default function CoachesDirectory({
   const [levels, setLevels] = useState<string[]>([]);
   const [formats, setFormats] = useState<string[]>([]);
   const [pricing, setPricing] = useState<string[]>([]);
-  const [disciplines, setDisciplines] = useState<string[]>([]);
+  const [specialties, setSpecialties] = useState<string[]>([]);
 
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
@@ -90,14 +70,14 @@ export default function CoachesDirectory({
       if (formats.length > 0 && !coachFormats(c).some((f) => formats.includes(f))) return false;
       if (pricing.length > 0 && !coachPricingFacets(c).some((f) => pricing.includes(f)))
         return false;
-      if (!matchesDiscipline(c, disciplines)) return false;
+      if (!matchesSpecialty(c, specialties)) return false;
       return true;
     });
     // Best matches lead, in Claude's ranking; everyone else keeps directory order.
     if (!matches) return shown;
     const rank = (c: CoachRow) => matches[c.id]?.rank ?? Infinity;
     return shown.map((c, i) => ({ c, i })).sort((a, b) => rank(a.c) - rank(b.c) || a.i - b.i).map(({ c }) => c);
-  }, [coaches, q, levels, formats, pricing, disciplines, matches]);
+  }, [coaches, q, levels, formats, pricing, specialties, matches]);
 
   const lastFired = useRef<string>("");
   useEffect(() => {
@@ -129,10 +109,10 @@ export default function CoachesDirectory({
 
       <FilterRow className="mt-4">
         <MultiSelect
-          label="Discipline"
-          options={DISCIPLINE_FILTERS}
-          value={disciplines}
-          onChange={setDisciplines}
+          label="Specializes in"
+          options={SPECIALTY_FILTERS}
+          value={specialties}
+          onChange={setSpecialties}
         />
         <MultiSelect label="Level" options={TARGET_MENTEE_OPTIONS} value={levels} onChange={setLevels} />
         <MultiSelect
@@ -208,7 +188,7 @@ export default function CoachesDirectory({
                       {coach.full_name}
                     </h2>
                     <p className="mt-1 truncate text-[13px] text-secondary">
-                      {[coach.company, disciplineLabel(coach.disciplines)].filter(Boolean).join(" · ")}
+                      {[coach.company, coachSpecialtyLabels(coach)[0]].filter(Boolean).join(" · ")}
                     </p>
                     {reviewCounts[coach.id] > 0 && (
                       <p className="mt-1 flex items-center gap-1 text-[12px] text-success">

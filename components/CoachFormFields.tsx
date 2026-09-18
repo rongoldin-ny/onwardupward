@@ -3,10 +3,9 @@
 import {
   CERTIFICATION_OPTIONS,
   FORMAT_OPTIONS,
+  FORMAT_OTHER,
   normalizeCertifications,
-  DISCIPLINE_OPTIONS,
   TARGET_MENTEE_OPTIONS,
-  type CoachDiscipline,
 } from "@/lib/coach-shared";
 import { COACH_SPECIALTIES } from "@/lib/taxonomy";
 import CertificationInfo from "@/components/CertificationInfo";
@@ -80,10 +79,14 @@ export function CertificationChips({
 
 export function FormatChips({
   value,
+  other,
   onChange,
+  onOther,
 }: {
   value: string[];
+  other: string;
   onChange: (value: string[]) => void;
+  onOther: (value: string) => void;
 }) {
   return (
     <div>
@@ -105,41 +108,19 @@ export function FormatChips({
           );
         })}
       </div>
+      {value.includes(FORMAT_OTHER) && (
+        <div className="mt-3">
+          <TextField
+            name="format_other"
+            placeholder="How else? e.g. Intensive weekend retreats"
+            value={other}
+            onChange={(e) => onOther(e.target.value)}
+          />
+        </div>
+      )}
       {value.map((f) => (
         <input key={f} type="hidden" name="formats" value={f} />
       ))}
-    </div>
-  );
-}
-
-export function DisciplineChips({
-  value,
-  onChange,
-}: {
-  value: CoachDiscipline | null;
-  onChange: (value: CoachDiscipline) => void;
-}) {
-  return (
-    <div>
-      <p className="text-[13px] text-secondary">What disciplines do you coach for?</p>
-      <div className="mt-3 flex flex-wrap gap-2.5">
-        {DISCIPLINE_OPTIONS.map((option) => {
-          const on = value === option.value;
-          return (
-            <button
-              key={option.value}
-              type="button"
-              onClick={() => onChange(option.value)}
-              className={`rounded-full border px-4 py-2.5 text-[13px] ${
-                on ? "border-gold-active font-bold text-gold" : "border-border-2 text-body-2"
-              }`}
-            >
-              {option.label}
-            </button>
-          );
-        })}
-      </div>
-      <input type="hidden" name="disciplines" value={value ?? ""} />
     </div>
   );
 }

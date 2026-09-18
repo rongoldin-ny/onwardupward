@@ -14,7 +14,7 @@ import { closeTarget } from "@/lib/route-history";
 import type { CoachMatch } from "@/lib/coach-match";
 import type { CoachReview } from "@/lib/coach-reviews-db";
 import type { Profile } from "@/lib/db";
-import { coachMissing, coachCompletionPct } from "@/lib/coach-shared";
+import { coachCompletionPct, coachFromForm, coachMissing } from "@/lib/coach-shared";
 import { profileCompletionPct } from "@/lib/profile-required";
 import type { ProfileView } from "@/lib/profile-view";
 import CoachCard from "./CoachCard";
@@ -68,6 +68,10 @@ export default function ProfilePage({
   const [aiPending, setAiPending] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [ver, setVer] = useState(0);
+  // What the open form says is still missing, recomputed on every edit so the
+  // Coach tab's dot clears the moment the gap is filled rather than after the
+  // save that follows a second and a half later.
+  const [liveListingMissing, setLiveListingMissing] = useState<string[] | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const playerRef = useRef<PlayerCardHandle>(null);
 
@@ -114,6 +118,8 @@ export default function ProfilePage({
         missingRequired: result.missingRequired ?? cur.missingRequired,
         coach: result.coach ?? cur.coach,
       }));
+      // The saved row is the better answer now.
+      setLiveListingMissing(null);
       if (enrichTimer.current) clearTimeout(enrichTimer.current);
       enrichTimer.current = setTimeout(() => void reenrichProfile(), 20_000);
     })();
@@ -124,9 +130,16 @@ export default function ProfilePage({
   }, []);
 
   const scheduleSave = useCallback(() => {
+    // Answer "what's still missing" from the open form, so the Coach tab's dot
+    // clears as the gap is filled rather than after the save a second and a
+    // half later. The saved row takes over again when that save returns.
+    const listing = v.coach;
+    if (formRef.current && listing) {
+      setLiveListingMissing(coachMissing(coachFromForm(new FormData(formRef.current), listing)));
+    }
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => void runSave(), 1500);
-  }, [runSave]);
+  }, [runSave, v.coach]);
 
   useEffect(
     () => () => {
@@ -251,7 +264,7 @@ export default function ProfilePage({
   // Profile side's identity, the listing's practice. A red dot on the other
   // tab is how the owner finds out there's something over there.
   const profileMissing = v.missingRequired;
-  const listingMissing = v.coach ? coachMissing(v.coach) : [];
+  const listingMissing = liveListingMissing ?? (v.coach ? coachMissing(v.coach) : []);
   const needsAttention = {
     player: profileMissing.length > 0,
     coach: listingMissing.length > 0,

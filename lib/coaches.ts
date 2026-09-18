@@ -20,8 +20,6 @@ export type Coach = {
   source: string;
   /** Verified Substack newsletter, if the coach runs one. */
   substackUrl?: string;
-  /** Defaults to "design" in the seed script when omitted. */
-  disciplines?: "design" | "product" | "both";
   /** Role types (lib/taxonomy.ts ROLE_TYPES values) this coach specializes in, if known. */
   specialties?: string[];
   /** Custom headline overriding the auto-derived "<org> · <discipline>" line. */
@@ -70,6 +68,7 @@ export const COACHES: Coach[] = [
     bestFor: "Director/VP/CDO-level leaders wanting a peer-level thinking partner",
     contact: "https://jessejamesgarrett.com/coaching/ · linkedin.com/in/jessejamesgarrett",
     source: "jessejamesgarrett.com",
+    specialties: ["product_design"],
   },
   {
     slug: "peter-merholz",
@@ -84,6 +83,7 @@ export const COACHES: Coach[] = [
     bestFor: "Leaders working on org structure, career ladders, and design's operating model",
     contact: "https://www.petermerholz.com/ · linkedin.com/in/petermerholz",
     source: "petermerholz.com",
+    specialties: ["product_design"],
   },
   {
     slug: "andy-polaine",
@@ -98,6 +98,7 @@ export const COACHES: Coach[] = [
     bestFor: "Leaders at a career or life inflection point who want depth, not frameworks",
     contact: "https://www.polaine.com/coaching/ · linkedin.com/in/apolaine",
     source: "polaine.com",
+    specialties: ["product_design"],
   },
   {
     slug: "mia-blume",
@@ -113,6 +114,7 @@ export const COACHES: Coach[] = [
     contact: "https://www.designdept.co/contact-coaching",
     source: "designdept.co",
     substackUrl: "https://designdept.substack.com",
+    specialties: ["product_design"],
   },
   {
     slug: "sally-grisedale",
@@ -127,6 +129,7 @@ export const COACHES: Coach[] = [
     bestFor: "Leaders focused on positioning, negotiation and next-chapter decisions",
     contact: "https://sallygrisedale.com/",
     source: "sallygrisedale.com",
+    specialties: ["product_design"],
   },
   {
     slug: "nick-finck",
@@ -141,6 +144,7 @@ export const COACHES: Coach[] = [
     bestFor: "IC to senior IC designers, job seekers, career changers",
     contact: "https://www.nickfinck.com/mentoring.html · linkedin.com/in/nickfinck",
     source: "nickfinck.com",
+    specialties: ["product_design"],
   },
   {
     slug: "judd-garratt",
@@ -155,6 +159,7 @@ export const COACHES: Coach[] = [
     bestFor: "New and mid-level design managers, and senior ICs leading through craft",
     contact: "https://guideplusmentor.com/design-leadership-coaching",
     source: "guideplusmentor.com",
+    specialties: ["product_design"],
   },
   {
     slug: "good-maven",
@@ -170,6 +175,7 @@ export const COACHES: Coach[] = [
     contact: "https://goodmaven.com/coaching-for-designers",
     source: "goodmaven.com",
     substackUrl: "https://goodmaven.substack.com",
+    specialties: ["product_design"],
   },
   {
     slug: "julia-whitney",
@@ -184,6 +190,7 @@ export const COACHES: Coach[] = [
     bestFor: "Experienced leaders who want peer cohort learning rather than solo coaching",
     contact: "https://leadingdesign.com/coaching/group-coaching-for-experienced-design-leaders",
     source: "leadingdesign.com",
+    specialties: ["product_design"],
   },
   {
     slug: "design-leadership-guild",
@@ -198,6 +205,7 @@ export const COACHES: Coach[] = [
     bestFor: "Senior leaders wanting network plus coaching, roughly 90 min every two weeks",
     contact: "https://designlab.com/design-leadership-guild",
     source: "designlab.com",
+    specialties: ["product_design"],
   },
   {
     slug: "kat-take",
@@ -212,6 +220,7 @@ export const COACHES: Coach[] = [
     bestFor: "Designers interviewing at big tech, or pushing for promotion",
     contact: "https://www.kattake.com/coach",
     source: "kattake.com",
+    specialties: ["product_design"],
   },
   {
     slug: "mike-dekker",
@@ -226,6 +235,7 @@ export const COACHES: Coach[] = [
     bestFor: "Independent designers, freelancers and people building a practice outside big tech",
     contact: "https://www.mikedekker.com/service-career-coaching",
     source: "mikedekker.com",
+    specialties: ["product_design"],
   },
   {
     slug: "alexis-specter",
@@ -240,6 +250,7 @@ export const COACHES: Coach[] = [
     bestFor: "Career changers and juniors, not senior leaders",
     contact: "https://www.specter.coach/",
     source: "specter.coach",
+    specialties: ["product_design"],
   },
   // ---- Added September 2026, from a design + product leadership coach
   // roundup (incl. The CPO Club's 2026 list). See supabase/migrations for
@@ -258,6 +269,7 @@ export const COACHES: Coach[] = [
     bestFor: "Design leaders who need commercial credibility, executive presence, and a clearer story for business stakeholders",
     contact: "https://www.andybudd.com/coaching",
     source: "andybudd.com",
+    specialties: ["product_design"],
   },
   {
     slug: "ryan-rumsey",
@@ -272,6 +284,7 @@ export const COACHES: Coach[] = [
     bestFor: "Design leaders who need to speak the language of the business and win influence with non-design executives",
     contact: "https://www.secondwavedive.com/",
     source: "secondwavedive.com",
+    specialties: ["product_design"],
   },
   {
     slug: "maria-giudice",
@@ -285,6 +298,7 @@ export const COACHES: Coach[] = [
     bestFor: "Design executives taking on broader business or change-leadership scope, with a personal, whole-self coaching style",
     contact: "https://hotstudio.com",
     source: "hotstudio.com",
+    specialties: ["product_design"],
   },
   {
     slug: "doug-powell",
@@ -298,6 +312,7 @@ export const COACHES: Coach[] = [
     bestFor: "Leaders of large, scaled design orgs or enterprise design programs, and design leaders in a mid-career job search",
     contact: "https://dougpowell.design",
     source: "dougpowell.design",
+    specialties: ["product_design"],
   },
   {
     slug: "jason-mesut",
@@ -312,6 +327,7 @@ export const COACHES: Coach[] = [
     bestFor: "Leaders at a crossroads — job search, IC vs. manager, or reinvention — and teams mapping skills. UK-based.",
     contact: "https://www.linkedin.com/in/jasonmesut",
     source: "linkedin.com/in/jasonmesut",
+    specialties: ["product_design"],
   },
   {
     slug: "whitney-hess",
@@ -325,6 +341,7 @@ export const COACHES: Coach[] = [
     bestFor: "Leaders who want a whole-person, values-driven approach, often at mission-driven organizations",
     contact: "https://whitneyhess.com",
     source: "whitneyhess.com",
+    specialties: ["product_design"],
   },
   {
     slug: "ken-norton",
@@ -338,7 +355,7 @@ export const COACHES: Coach[] = [
     bestFor: "The most senior product leader in a company who feels isolated, stuck, or burnt out — inner-game work more than frameworks",
     contact: "https://www.bringthedonuts.com/coaching/",
     source: "bringthedonuts.com",
-    disciplines: "product",
+    specialties: ["product_management"],
   },
   {
     slug: "nikhyl-singhal",
@@ -354,7 +371,7 @@ export const COACHES: Coach[] = [
     contact: "https://skip.coach",
     source: "skip.coach",
     substackUrl: "https://theskip.substack.com",
-    disciplines: "product",
+    specialties: ["product_management"],
   },
   {
     slug: "petra-wille",
@@ -368,7 +385,7 @@ export const COACHES: Coach[] = [
     bestFor: "New leaders of PMs who need to hire, coach, and grow their team. Hamburg-based, works globally.",
     contact: "https://www.petra-wille.com/",
     source: "petra-wille.com",
-    disciplines: "product",
+    specialties: ["product_management"],
   },
   {
     slug: "hope-gurion",
@@ -382,7 +399,7 @@ export const COACHES: Coach[] = [
     bestFor: "Leaders moving an org from shipping features to hitting outcomes",
     contact: "https://fearless-product.com/about-me",
     source: "fearless-product.com",
-    disciplines: "product",
+    specialties: ["product_management"],
   },
   {
     slug: "rich-mironov",
@@ -396,7 +413,7 @@ export const COACHES: Coach[] = [
     bestFor: "Heads of product fixing org structure, executive alignment, or a struggling product function",
     contact: "https://www.mironov.com/",
     source: "mironov.com",
-    disciplines: "product",
+    specialties: ["product_management"],
   },
   {
     slug: "joni-hoadley",
@@ -410,7 +427,7 @@ export const COACHES: Coach[] = [
     bestFor: "First-time product leaders with a bigger scope and fewer resources",
     contact: "https://jonihoadley.com/",
     source: "jonihoadley.com",
-    disciplines: "product",
+    specialties: ["product_management"],
   },
   {
     slug: "kate-leto",
@@ -424,7 +441,7 @@ export const COACHES: Coach[] = [
     bestFor: "Leaders working on leadership style, team culture, and org design",
     contact: "https://www.kateleto.com/",
     source: "kateleto.com",
-    disciplines: "product",
+    specialties: ["product_management"],
   },
   {
     slug: "gabrielle-bufrem",
@@ -438,7 +455,7 @@ export const COACHES: Coach[] = [
     bestFor: "Leaders who want coaching on strategy, discovery, and empowered teams, with an NYC-based coach",
     contact: "https://www.gabriellebufrem.com/",
     source: "gabriellebufrem.com",
-    disciplines: "product",
+    specialties: ["product_management"],
   },
   {
     slug: "melissa-perri",
@@ -453,7 +470,7 @@ export const COACHES: Coach[] = [
     bestFor: "VPs aiming for a CPO seat who want a structured curriculum and a peer cohort",
     contact: "https://melissaperri.com/",
     source: "melissaperri.com",
-    disciplines: "product",
+    specialties: ["product_management"],
   },
   {
     slug: "teresa-torres",
@@ -467,7 +484,7 @@ export const COACHES: Coach[] = [
     bestFor: "Product trios and their leaders adopting a discovery practice — relevant to design leaders as well as PMs",
     contact: "https://www.producttalk.org/",
     source: "producttalk.org",
-    disciplines: "both",
+    specialties: ["product_design", "product_management"],
   },
   {
     slug: "shreyas-doshi",
@@ -481,7 +498,7 @@ export const COACHES: Coach[] = [
     bestFor: "Leaders sharpening judgment, product sense, and strategy",
     contact: "https://shreyasdoshi.com/",
     source: "shreyasdoshi.com",
-    disciplines: "product",
+    specialties: ["product_management"],
   },
   {
     slug: "ant-murphy",
@@ -495,7 +512,7 @@ export const COACHES: Coach[] = [
     bestFor: "PMs and new leaders who want practical help on strategy and stakeholders — good for APAC time zones",
     contact: "https://www.antmurphy.me/",
     source: "antmurphy.me",
-    disciplines: "product",
+    specialties: ["product_management"],
   },
   {
     slug: "itamar-gilad",
@@ -509,7 +526,7 @@ export const COACHES: Coach[] = [
     bestFor: "Orgs moving to evidence-based goals and prioritization",
     contact: "https://itamargilad.com/",
     source: "itamargilad.com",
-    disciplines: "product",
+    specialties: ["product_management"],
   },
   {
     slug: "tim-herbig",
@@ -523,7 +540,7 @@ export const COACHES: Coach[] = [
     bestFor: "Teams trying to connect strategy, OKRs, and discovery work",
     contact: "https://herbig.co/",
     source: "herbig.co",
-    disciplines: "product",
+    specialties: ["product_management"],
   },
   {
     slug: "gibson-biddle",
@@ -537,7 +554,7 @@ export const COACHES: Coach[] = [
     bestFor: "Consumer product leaders working on strategy and culture",
     contact: "https://www.gibsonbiddle.com/",
     source: "gibsonbiddle.com",
-    disciplines: "product",
+    specialties: ["product_management"],
   },
   {
     slug: "tami-reiss",
@@ -551,7 +568,7 @@ export const COACHES: Coach[] = [
     bestFor: "Leaders working on influence, executive communication, and alignment",
     contact: "https://tamireiss.com/",
     source: "tamireiss.com",
-    disciplines: "product",
+    specialties: ["product_management"],
   },
   {
     slug: "marty-cagan",
@@ -565,7 +582,7 @@ export const COACHES: Coach[] = [
     bestFor: "Companies moving to a product operating model — less suited to individual career coaching",
     contact: "https://www.svpg.com/team/marty-cagan/",
     source: "svpg.com/team/marty-cagan",
-    disciplines: "product",
+    specialties: ["product_management"],
   },
   {
     slug: "frank-harris",
@@ -582,7 +599,7 @@ export const COACHES: Coach[] = [
     contact: "https://hirefrank.com/coaching/",
     source: "hirefrank.com",
     substackUrl: "https://www.franktakeaways.com",
-    disciplines: "product",
+    specialties: ["product_management"],
   },
   // ---- Content design and user research specialists, added September 2026.
   {
@@ -598,8 +615,7 @@ export const COACHES: Coach[] = [
     bestFor: "Leaders of UX content design practices (management or staff/principal IC track), plus senior ICs growing into leadership",
     contact: "https://www.contentdesignleaders.com/",
     source: "contentdesignleaders.com",
-    disciplines: "design",
-    specialties: ["content_design"],
+    specialties: ["content_design", "product_design"],
   },
   {
     slug: "marie-anne-chaloupecky",
@@ -614,8 +630,7 @@ export const COACHES: Coach[] = [
     bestFor: "Content designers at any career level wanting individual coaching",
     contact: "https://waysofwords.com/coaching-mentorship-for-content-designers/",
     source: "waysofwords.com",
-    disciplines: "design",
-    specialties: ["content_design"],
+    specialties: ["content_design", "product_design"],
   },
   {
     slug: "content-design-london",
@@ -629,8 +644,7 @@ export const COACHES: Coach[] = [
     bestFor: "Content design leaders wanting direct, arranged coaching",
     contact: "mailto:hello@contentdesign.london",
     source: "contentdesign.london",
-    disciplines: "design",
-    specialties: ["content_design"],
+    specialties: ["content_design", "product_design"],
   },
   {
     slug: "ux-content-collective",
@@ -645,8 +659,7 @@ export const COACHES: Coach[] = [
     bestFor: "Content designers at any stage — breaking in, leveling up, or moving into leadership",
     contact: "https://uxcontent.com/ux-coaching-mentoring/",
     source: "uxcontent.com",
-    disciplines: "design",
-    specialties: ["content_design"],
+    specialties: ["content_design", "product_design"],
   },
   {
     slug: "nikki-anderson",
@@ -662,8 +675,7 @@ export const COACHES: Coach[] = [
     contact: "https://maven.com/user-research-strategist",
     source: "userresearchstrategist.com",
     substackUrl: "https://www.userresearchstrategist.com",
-    disciplines: "both",
-    specialties: ["user_research"],
+    specialties: ["user_research", "product_design", "product_management"],
   },
   {
     slug: "amy-santee",
@@ -678,8 +690,7 @@ export const COACHES: Coach[] = [
     bestFor: "Burned-out or restless professionals with a research/UX background wanting clarity on what's next",
     contact: "https://amysantee.com",
     source: "amysantee.com",
-    disciplines: "both",
-    specialties: ["user_research"],
+    specialties: ["user_research", "product_design", "product_management"],
   },
   {
     slug: "meltem-naz-kaso",
@@ -694,8 +705,7 @@ export const COACHES: Coach[] = [
     bestFor: "Senior researchers stuck on the path to a lead or manager role",
     contact: "https://careerwithmel.com",
     source: "careerwithmel.com",
-    disciplines: "both",
-    specialties: ["user_research"],
+    specialties: ["user_research", "product_design", "product_management"],
   },
   {
     slug: "mb-collab",
@@ -710,8 +720,7 @@ export const COACHES: Coach[] = [
     bestFor: "New and mid-career UX researchers, and professionals transitioning into research from design or development",
     contact: "https://mbcollab.com/coaching/ux-research-coaching",
     source: "mbcollab.com",
-    disciplines: "both",
-    specialties: ["user_research"],
+    specialties: ["user_research", "product_design", "product_management"],
   },
   // ---- Executive coaching, added September 2026.
   {
@@ -728,7 +737,6 @@ export const COACHES: Coach[] = [
     bestFor: "Design leaders and executives at an inflection point — stepping up, scaling a team, or working out how they want to lead",
     contact: "https://jennbove.com/",
     source: "jennbove.com",
-    disciplines: "design",
-    specialties: ["executive_coaching"],
+    specialties: ["executive_coaching", "product_design"],
   },
 ];

@@ -39,7 +39,7 @@ export async function getDirectoryCoaches(): Promise<CoachRow[]> {
 export async function getCoachFeeds(): Promise<CoachFeed[]> {
   const { data } = await supabaseAdmin()
     .from("coaches")
-    .select("substack_url, full_name, disciplines, specialties")
+    .select("substack_url, full_name, specialties")
     .not("substack_url", "is", null)
     .in("status", ["approved", "unclaimed"]);
   return ((data ?? []) as (Omit<CoachFeed, "substack_url"> & { substack_url: string | null })[])

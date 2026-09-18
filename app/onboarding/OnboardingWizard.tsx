@@ -5,7 +5,7 @@ import { useRef, useState, useTransition } from "react";
 import { ArrowLeft, Check, LoaderCircle } from "lucide-react";
 import { saveCoachAttributes } from "@/app/actions/coaches";
 import { importFromLinks, finishOnboarding } from "@/app/actions/onboarding";
-import { DisciplineChips, MenteeChips } from "@/components/CoachFormFields";
+import { MenteeChips } from "@/components/CoachFormFields";
 import { Cta, PageFrame } from "@/components/ui";
 import {
   CAREER_STAGES,
@@ -15,7 +15,6 @@ import {
   TextArea,
   TextField,
 } from "@/components/fields";
-import type { CoachDiscipline } from "@/lib/coach-shared";
 import type { Profile } from "@/lib/db";
 
 const BASE_STEPS = [
@@ -54,7 +53,6 @@ export default function OnboardingWizard({ profile, exitHref = "/role" }: Props)
   // What step 1 is reading, e.g. "your résumé and portfolio" — shown while it works.
   const [readingWhat, setReadingWhat] = useState<string | null>(null);
   const [outreach, setOutreach] = useState(profile.allow_coach_contact ?? true);
-  const [discipline, setDiscipline] = useState<CoachDiscipline | null>(null);
   const [mentees, setMentees] = useState<string[]>([]);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -290,7 +288,6 @@ export default function OnboardingWizard({ profile, exitHref = "/role" }: Props)
                 rows={3}
                 placeholder="Your offering — what a session with you covers"
               />
-              <DisciplineChips value={discipline} onChange={setDiscipline} />
               <MenteeChips value={mentees} onChange={setMentees} />
               <TextField name="best_for" placeholder="Best for — one line on who gets the most from you" />
               <TextField name="booking_url" placeholder="Booking link — Calendly, website, or an email address" />
