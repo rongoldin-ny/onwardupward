@@ -1,9 +1,10 @@
 "use client";
 
-import { Bug, X } from "lucide-react";
+import { Bug } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
+import Modal from "@/components/Modal";
 import { submitFeedback } from "@/app/actions/feedback";
 import { SelectField, TextArea } from "@/components/fields";
 import { Cta } from "@/components/ui";
@@ -80,61 +81,37 @@ export default function FeedbackWidget() {
       {mounted &&
         createPortal(
           <>
-            {open && (
-              <div
-                className="fixed inset-0 z-40 flex items-center justify-center bg-[rgba(10,10,12,0.85)] px-6"
-                onClick={() => setOpen(false)}
-              >
-                <form
-                  role="dialog"
-                  aria-modal="true"
-                  aria-labelledby="feedback-title"
-                  onSubmit={send}
-                  onClick={(e) => e.stopPropagation()}
-                  className="w-full max-w-[382px] rounded-[28px] border border-gold-border bg-surface-2 p-5"
-                >
-                  <div className="flex items-center justify-between">
-                    <h2
-                      id="feedback-title"
-                      className="text-[20px] font-black tracking-[-0.02em] text-cream"
-                    >
-                      Send feedback
-                    </h2>
-                    <button
-                      type="button"
-                      aria-label="Close"
-                      onClick={() => setOpen(false)}
-                      className="text-secondary"
-                    >
-                      <X size={20} strokeWidth={1.5} />
-                    </button>
-                  </div>
-                  <SelectField
-                    aria-label="Type"
-                    className="mt-4"
-                    value={kind}
-                    onChange={(e) => setKind(e.target.value)}
-                    options={KINDS}
-                  />
-                  <TextArea
-                    ref={textRef}
-                    aria-label="Feedback"
-                    className="mt-3"
-                    rows={5}
-                    maxLength={5000}
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    placeholder={
-                      kind === "bug" ? "What happened, and what did you expect?" : "What would make this better?"
-                    }
-                  />
-                  {error && <p className="mt-3 text-[13px] text-gold">{error}</p>}
-                  <Cta type="submit" className="mt-4" disabled={pending || !message.trim()}>
-                    {pending ? "Sending…" : "Submit"}
-                  </Cta>
-                </form>
-              </div>
-            )}
+            <Modal
+              open={open}
+              onClose={() => setOpen(false)}
+              title="Send feedback"
+              maxWidth={382}
+            >
+              <form onSubmit={send}>
+                <SelectField
+                  aria-label="Type"
+                  value={kind}
+                  onChange={(e) => setKind(e.target.value)}
+                  options={KINDS}
+                />
+                <TextArea
+                  ref={textRef}
+                  aria-label="Feedback"
+                  className="mt-3"
+                  rows={5}
+                  maxLength={5000}
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder={
+                    kind === "bug" ? "What happened, and what did you expect?" : "What would make this better?"
+                  }
+                />
+                {error && <p className="mt-3 text-[13px] text-gold">{error}</p>}
+                <Cta type="submit" className="mt-4" disabled={pending || !message.trim()}>
+                  {pending ? "Sending…" : "Submit"}
+                </Cta>
+              </form>
+            </Modal>
             <div
               role="status"
               className={`fixed top-6 left-1/2 z-50 w-[calc(100%-48px)] max-w-[382px] -translate-x-1/2 rounded-full border border-gold-border bg-surface-2 px-6 py-4 text-center text-[15px] font-medium text-cream transition-opacity duration-300 ${

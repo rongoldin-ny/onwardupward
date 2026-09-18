@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Search, X } from "lucide-react";
+import Modal from "@/components/Modal";
 import { archiveMember } from "./actions";
 import { FilterRow, MultiSelect } from "@/components/MultiSelect";
 import { Avatar, Card } from "@/components/ui";
@@ -81,45 +82,30 @@ function RemoveMemberDialog({
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(10,10,12,0.85)] px-6"
-      onClick={onCancel}
-    >
-      <div
-        role="alertdialog"
-        aria-modal="true"
-        aria-labelledby="remove-member-title"
-        onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-[400px] rounded-[28px] border border-border-1 bg-surface-2 p-6"
-      >
-        <h2 id="remove-member-title" className="text-[20px] font-black tracking-[-0.02em] text-cream">
-          Remove {name}?
-        </h2>
-        <p className="mt-2 text-[14px] leading-[1.5] text-secondary">
-          Are you sure? They&apos;ll be archived — hidden from Members, search, public links and
-          emails. Nothing is deleted, so they can be restored later.
-        </p>
-        {error && <p className="mt-3 text-[13px] text-[#e5484d]">{error}</p>}
-        <div className="mt-6 flex gap-3">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="h-[48px] flex-1 rounded-full border border-border-2 text-[14px] font-bold text-cream"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={remove}
-            disabled={pending}
-            autoFocus
-            className="h-[48px] flex-1 rounded-full bg-[#e5484d] text-[14px] font-bold text-white disabled:opacity-60"
-          >
-            {pending ? "Removing…" : "Remove"}
-          </button>
-        </div>
+    <Modal open onClose={onCancel} title={`Remove ${name}?`} maxWidth={400} role="alertdialog">
+      <p className="text-[14px] leading-[1.5] text-secondary">
+        Are you sure? They&apos;ll be archived — hidden from Members, search, public links and
+        emails. Nothing is deleted, so they can be restored later.
+      </p>
+      {error && <p className="mt-3 text-[13px] text-[#e5484d]">{error}</p>}
+      <div className="mt-6 flex gap-3">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="h-[48px] flex-1 rounded-full border border-border-2 text-[14px] font-bold text-cream"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={remove}
+          disabled={pending}
+          className="h-[48px] flex-1 rounded-full bg-[#e5484d] text-[14px] font-bold text-white disabled:opacity-60"
+        >
+          {pending ? "Removing…" : "Remove"}
+        </button>
       </div>
-    </div>
+    </Modal>
   );
 }
 
