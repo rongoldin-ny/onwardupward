@@ -82,6 +82,20 @@ export const CERTIFICATION_OPTIONS: { value: string; label: string }[] = [
 
 export const CERTIFICATION_VALUES = CERTIFICATION_OPTIONS.map((o) => o.value);
 
+/** The ICF ladder, lowest first. You hold one rung of it, not several. */
+export const ICF_LEVELS = ["icf_acc", "icf_pcc", "icf_mcc"];
+
+/**
+ * Drops anything unrecognised and keeps a single ICF level — the highest,
+ * since MCC already requires having held PCC. Mentor and Other are unaffected;
+ * they say something different from what rung you're on.
+ */
+export function normalizeCertifications(values: string[]): string[] {
+  const known = values.filter((v) => CERTIFICATION_VALUES.includes(v));
+  const highest = ICF_LEVELS.filter((l) => known.includes(l)).pop();
+  return known.filter((v) => !ICF_LEVELS.includes(v) || v === highest);
+}
+
 export function labelForCertification(value: string): string {
   return CERTIFICATION_OPTIONS.find((o) => o.value === value)?.label ?? value;
 }
