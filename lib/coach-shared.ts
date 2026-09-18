@@ -72,7 +72,7 @@ export const CERTIFICATION_OPTIONS: { value: string; label: string }[] = [
   { value: "coach", label: "Coach (non-certified)" },
   { value: "icf_acc", label: "ICF Coach: Associate (L1)" },
   { value: "icf_pcc", label: "ICF Coach: Professional (L2)" },
-  { value: "icf_mcc", label: "ICF Coach: Certified (L3)" },
+  { value: "icf_mcc", label: "ICF Coach: Master (L3)" },
   { value: "other", label: "Other" },
 ];
 
