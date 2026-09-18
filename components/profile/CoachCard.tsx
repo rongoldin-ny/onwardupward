@@ -272,7 +272,7 @@ export default function CoachCard({
                 <TextArea
                   name="credentials"
                   rows={3}
-                  placeholder="Certifications, training, or other credentials (optional)"
+                  placeholder="Any additional credentials or training (optional)"
                   defaultValue={coach?.credentials ?? ""}
                 />
               </div>
