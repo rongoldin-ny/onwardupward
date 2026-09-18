@@ -17,12 +17,7 @@ export default function IdentityPanel({ view, ver }: { view: ProfileView; ver: n
   const missing = new Set<string>(view.missingRequired);
   const pill = (label: string) => (editing && missing.has(label) ? <RequiredPill /> : null);
 
-  const metaLine = [
-    view.location,
-    view.yearsExperience !== null ? `${view.yearsExperience} years` : "",
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  const metaLine = view.location;
 
   return (
     <div className="flex flex-col items-center text-center lg:sticky lg:top-2 lg:items-start lg:text-left">
@@ -65,16 +60,6 @@ export default function IdentityPanel({ view, ver }: { view: ProfileView; ver: n
                 className="min-w-0 flex-1"
               />
             </div>
-          </Labeled>
-          <Labeled label="Years of experience">
-            <TextField
-              name="years_experience"
-              type="number"
-              min={0}
-              max={60}
-              placeholder="Years"
-              defaultValue={p.years_experience ?? ""}
-            />
           </Labeled>
           <Labeled label="Background" pill={pill("background")}>
             <TextArea

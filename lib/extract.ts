@@ -16,7 +16,6 @@ export type ExtractedProfile = {
   city?: string;
   state?: string;
   country?: string;
-  yearsExperience?: number;
   industries: string[];
   work: { title: string; company: string }[];
 };
@@ -311,18 +310,6 @@ export function extractProfile(html: string): ExtractedProfile {
     country = COUNTRIES.map((c) => c.value).find((c) => searchable.includes(c));
   }
 
-  // "12 years", "12+ years of experience", "over a decade", "two decades"
-  let yearsExperience: number | undefined;
-  const numericYears = searchable.match(/(\d{1,2})\+?\s*years?(?:\s+of)?(?:\s+(?:experience|design|designing|product))?/i);
-  if (numericYears) {
-    const n = parseInt(numericYears[1], 10);
-    if (n >= 1 && n <= 40) yearsExperience = n;
-  }
-  if (!yearsExperience) {
-    if (/two decades/i.test(searchable)) yearsExperience = 20;
-    else if (/(?:a|one) decade|over a decade/i.test(searchable)) yearsExperience = 10;
-  }
-
   // Industries: canonical labels from the taxonomy, matched against page text.
   const INDUSTRY_MATCHERS: [RegExp, string][] = [
     [/fintech|banking|financial services|lending|investing/i, "Fintech"],
@@ -396,5 +383,5 @@ export function extractProfile(html: string): ExtractedProfile {
     work.push({ title: m[1].trim(), company });
   }
 
-  return { name, bio, roleType, careerStage, city, state, country, yearsExperience, industries, work };
+  return { name, bio, roleType, careerStage, city, state, country, industries, work };
 }

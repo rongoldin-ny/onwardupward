@@ -94,7 +94,6 @@ export async function importFromLinks(formData: FormData): Promise<ImportResult>
         city: extractions.find((e) => e.city)?.city,
         state: extractions.find((e) => e.state)?.state,
         country: extractions.find((e) => e.country)?.country,
-        yearsExperience: extractions.find((e) => e.yearsExperience)?.yearsExperience,
         industries: extractions.find((e) => e.industries.length > 0)?.industries ?? [],
         work: extractions.find((e) => e.work.length > 0)?.work ?? [],
       };
@@ -111,10 +110,6 @@ export async function importFromLinks(formData: FormData): Promise<ImportResult>
       set("location_city", extracted.city, user.location_city, "city");
       set("location_state", extracted.state, user.location_state, "state");
       set("location_country", extracted.country, user.location_country, "country");
-      if (extracted.yearsExperience && user.years_experience == null) {
-        patch.years_experience = extracted.yearsExperience;
-        found.push("years of experience");
-      }
       if (extracted.industries.length > 0 && user.industries.length === 0) {
         patch.industries = extracted.industries;
         found.push("industries");
@@ -149,8 +144,6 @@ export async function saveBasics(formData: FormData): Promise<{ error?: string }
   const linkedin = str(formData, "linkedin_url");
   const country = str(formData, "country");
   const city = str(formData, "city");
-  const yearsRaw = str(formData, "years_experience");
-  const years = yearsRaw ? parseInt(yearsRaw, 10) : null;
   const industries = [
     ...new Set(
       formData
@@ -171,8 +164,6 @@ export async function saveBasics(formData: FormData): Promise<{ error?: string }
       location_country: country,
       location_state: str(formData, "state"),
       location_city: city,
-      years_experience:
-        years !== null && !Number.isNaN(years) && years >= 0 && years <= 60 ? years : null,
       industries,
       ai_superpowers: sanitizeSuperpowers(String(formData.get("ai_superpowers") ?? "[]")),
     })

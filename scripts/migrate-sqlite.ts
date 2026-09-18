@@ -116,7 +116,6 @@ async function main() {
         portfolio_url: p.portfolio_url,
         portfolio_password: p.portfolio_password,
         portfolio_images: images,
-        years_experience: p.years_experience,
         industries: JSON.parse(p.industries || "[]"),
         contact_preference: p.contact_preference,
         is_paid: !!p.is_paid,

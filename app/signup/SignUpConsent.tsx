@@ -18,6 +18,7 @@ export default function SignUpConsent() {
     <div>
       <GoogleButton
         label="Sign up with Google"
+        accepted={accepted}
         disabled={!accepted}
         onBlockedClick={() => {
           setNudged(true);

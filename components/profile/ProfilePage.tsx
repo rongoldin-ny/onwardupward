@@ -192,7 +192,6 @@ export default function ProfilePage({
         location_country: f.location_country ?? p.location_country,
         location_state: f.location_state ?? p.location_state,
         location_city: f.location_city ?? p.location_city,
-        years_experience: f.years_experience ?? p.years_experience,
         bio: f.bio ?? p.bio,
         last_role_text: f.last_role_text ?? p.last_role_text,
         // dream_job is deliberately never AI-filled — that one stays theirs.

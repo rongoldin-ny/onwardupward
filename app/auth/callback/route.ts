@@ -3,6 +3,7 @@ import { supabaseRoute } from "@/lib/supabase/server";
 import { homeFor } from "@/lib/auth";
 import { adoptClaimant, claimListing, COACH_CLAIM_COOKIE } from "@/lib/claims";
 import type { Profile } from "@/lib/db";
+import { recordTermsAcceptance, TERMS_COOKIE } from "@/lib/terms";
 
 /**
  * Where Google sends people back to. Trades the one-time code for a session,
@@ -37,6 +38,10 @@ export async function GET(request: NextRequest) {
   // on a blank page pretending they're signed in.
   if (!profile) return fail("google");
 
+  if (request.cookies.get(TERMS_COOKIE)?.value) {
+    await recordTermsAcceptance(profile).catch(() => {});
+  }
+
   // Arriving from a shared coach listing they say is theirs. Settled here
   // because it's the one point that runs exactly once per sign-in and the
   // account definitely exists — /role and the wizard can both be abandoned.
@@ -68,5 +73,6 @@ export async function GET(request: NextRequest) {
   const response = NextResponse.redirect(new URL(destination, origin));
   applyCookies(response);
   if (claimCoachId) response.cookies.delete(COACH_CLAIM_COOKIE);
+  response.cookies.delete(TERMS_COOKIE);
   return response;
 }

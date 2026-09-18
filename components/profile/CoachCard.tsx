@@ -261,14 +261,6 @@ export default function CoachCard({
                     scheduleSave();
                   }}
                 />
-                <TextField
-                  name="years_coaching"
-                  type="number"
-                  min={0}
-                  max={60}
-                  placeholder="Years of coaching experience"
-                  defaultValue={coach?.years_coaching ?? ""}
-                />
                 <TextArea
                   name="credentials"
                   rows={3}
@@ -311,15 +303,9 @@ export default function CoachCard({
                 <ChipRow items={levels} />
               </Section>
             )}
-            {(coach?.years_coaching || coach?.credentials) && (
+            {coach?.credentials && (
               <Section title="Coaching credentials">
-                <p className="text-[15px] leading-[1.6] text-body">
-                  {coach?.years_coaching
-                    ? `${coach.years_coaching} ${coach.years_coaching === 1 ? "year" : "years"} of coaching experience`
-                    : null}
-                  {coach?.years_coaching && coach?.credentials ? " — " : null}
-                  {coach?.credentials}
-                </p>
+                <p className="text-[15px] leading-[1.6] text-body">{coach.credentials}</p>
               </Section>
             )}
             {coach?.offering && (

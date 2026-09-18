@@ -67,7 +67,6 @@ export async function contactMember(
   const coachName = listing?.full_name || user.name || "A coach";
   const credentials = [
     listing?.title || listing?.company,
-    listing?.years_coaching != null && `${listing.years_coaching} years coaching`,
     listing?.best_for && `Best for: ${listing.best_for}`,
   ].filter((f): f is string => !!f);
 

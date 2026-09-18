@@ -27,7 +27,6 @@ const AiFill = z.object({
   location_country: z.enum(countryValues).nullable(),
   location_state: z.string().nullable().describe("State or province, if evident"),
   location_city: z.string().nullable(),
-  years_experience: z.number().int().min(0).max(60).nullable(),
   industries: z
     .array(z.string())
     .describe("Industries they've worked in — infer from employers and projects"),

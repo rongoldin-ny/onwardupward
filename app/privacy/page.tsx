@@ -64,10 +64,9 @@ export default function PrivacyPage() {
             address and profile photo.
           </li>
           <li>
-            <strong>Your profile.</strong> Location, role, career stage, years of experience,
-            background, LinkedIn, portfolio and website links, work history, career highlights, your
-            last role, the dream job, where you hope to grow, industries, AI skills and portfolio
-            images.
+            <strong>Your profile.</strong> Location, role, career stage, background, LinkedIn,
+            portfolio and website links, work history, career highlights, your last role, the dream
+            job, where you hope to grow, industries, AI skills and portfolio images.
           </li>
           <li>
             <strong>Résumé and portfolio password.</strong> If you upload a résumé or add a password for
