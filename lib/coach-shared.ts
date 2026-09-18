@@ -263,8 +263,8 @@ export function pricingNotes(
   c: Pick<CoachRow, "free_intro_call" | "pricing_on_call">,
 ): string[] {
   const out: string[] = [];
-  if (c.free_intro_call) out.push("Free introductory call");
   if (c.pricing_on_call) out.push("Pricing discussed on the call");
+  if (c.free_intro_call) out.push("Free introductory call");
   return out;
 }
 

@@ -113,6 +113,9 @@ export default function CoachCard({
   const missing = coach ? coachMissing(coach) : [];
   const canSubmit = missing.length === 0;
   const levels = coach ? coachLevels(coach) : [];
+  // Saying the number comes on the call and then printing one is two answers
+  // to the same question. The text is kept, just not shown.
+  const shownPrice = coach?.pricing_on_call ? null : coach?.pricing;
   const autoSubtitle = coach
     ? [coach.company, disciplineLabel(coach.disciplines)].filter(Boolean).join(" · ")
     : "";
@@ -287,17 +290,13 @@ export default function CoachCard({
               <div className="space-y-3">
                 <TextField
                   name="pricing"
-                  placeholder="Pricing — a number or a range is fine"
+                  placeholder={
+                    pricingOnCall ? "Discussed on the call" : "Pricing — a number or a range is fine"
+                  }
                   defaultValue={coach?.pricing ?? ""}
-                />
-                <PricingCheck
-                  name="free_intro_call"
-                  label="Free introductory call"
-                  checked={freeIntro}
-                  onChange={(v) => {
-                    setFreeIntro(v);
-                    scheduleSave();
-                  }}
+                  readOnly={pricingOnCall}
+                  aria-disabled={pricingOnCall}
+                  className={pricingOnCall ? "opacity-40" : ""}
                 />
                 <PricingCheck
                   name="pricing_on_call"
@@ -305,6 +304,15 @@ export default function CoachCard({
                   checked={pricingOnCall}
                   onChange={(v) => {
                     setPricingOnCall(v);
+                    scheduleSave();
+                  }}
+                />
+                <PricingCheck
+                  name="free_intro_call"
+                  label="Free introductory call"
+                  checked={freeIntro}
+                  onChange={(v) => {
+                    setFreeIntro(v);
                     scheduleSave();
                   }}
                 />
@@ -357,13 +365,11 @@ export default function CoachCard({
                 <p className="text-[15px] leading-[1.6] text-body">{coach.best_for}</p>
               </Section>
             )}
-            {coach && (coach.pricing || pricingNotes(coach).length > 0) && (
+            {coach && (shownPrice || pricingNotes(coach).length > 0) && (
               <Section title="Pricing">
-                {coach.pricing && (
-                  <p className="text-[15px] leading-[1.6] text-body">{coach.pricing}</p>
-                )}
+                {shownPrice && <p className="text-[15px] leading-[1.6] text-body">{shownPrice}</p>}
                 {pricingNotes(coach).length > 0 && (
-                  <div className={`flex flex-wrap gap-2.5 ${coach.pricing ? "mt-3" : ""}`}>
+                  <div className={`flex flex-wrap gap-2.5 ${shownPrice ? "mt-3" : ""}`}>
                     <ChipRow items={pricingNotes(coach)} />
                   </div>
                 )}
