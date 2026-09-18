@@ -82,18 +82,23 @@ export const CERTIFICATION_OPTIONS: { value: string; label: string }[] = [
 
 export const CERTIFICATION_VALUES = CERTIFICATION_OPTIONS.map((o) => o.value);
 
-/** The ICF ladder, lowest first. You hold one rung of it, not several. */
-export const ICF_LEVELS = ["icf_acc", "icf_pcc", "icf_mcc"];
+/**
+ * One answer to "what kind of coach are you": uncertified, or a rung of the
+ * ICF ladder. At most one is true of a person — you don't hold PCC and
+ * non-certified at once, and MCC already requires having held PCC.
+ */
+export const COACH_CREDENTIALS = ["coach", "icf_acc", "icf_pcc", "icf_mcc"];
 
 /**
- * Drops anything unrecognised and keeps a single ICF level — the highest,
- * since MCC already requires having held PCC. Mentor and Other are unaffected;
- * they say something different from what rung you're on.
+ * Drops anything unrecognised and keeps one credential. Last one wins: in the
+ * picker that's the chip just clicked, so moving between levels — or dropping
+ * back to non-certified — replaces the old answer instead of being ignored.
+ * Mentor and Other are untouched; they answer a different question.
  */
 export function normalizeCertifications(values: string[]): string[] {
   const known = values.filter((v) => CERTIFICATION_VALUES.includes(v));
-  const highest = ICF_LEVELS.filter((l) => known.includes(l)).pop();
-  return known.filter((v) => !ICF_LEVELS.includes(v) || v === highest);
+  const chosen = known.filter((v) => COACH_CREDENTIALS.includes(v)).pop();
+  return known.filter((v) => !COACH_CREDENTIALS.includes(v) || v === chosen);
 }
 
 export function labelForCertification(value: string): string {
