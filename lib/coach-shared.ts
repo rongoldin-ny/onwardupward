@@ -195,6 +195,24 @@ export function coachPricing(c: CoachRow): string {
     : "Inquire";
 }
 
+/** What the directory's Pricing filter offers. */
+export const PRICING_FILTERS = [
+  "Published pricing",
+  "Inquire",
+  "Free introductory call",
+] as const;
+
+/**
+ * Everything the Pricing filter can match a listing on. A free first call is
+ * its own answer rather than a third value of the published/inquire question:
+ * a coach can publish a rate and still talk first.
+ */
+export function coachPricingFacets(c: CoachRow): string[] {
+  const out = [coachPricing(c)];
+  if (c.free_intro_call) out.push("Free introductory call");
+  return out;
+}
+
 /** The pricing lines a listing shows, in the order they read best. */
 export function pricingNotes(
   c: Pick<CoachRow, "free_intro_call" | "pricing_on_call">,

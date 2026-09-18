@@ -7,9 +7,10 @@ import { trackCoachImpressions } from "@/app/actions/track";
 import {
   coachFormats,
   coachLevels,
-  coachPricing,
+  coachPricingFacets,
   DISCIPLINE_FILTERS,
   disciplineLabel,
+  PRICING_FILTERS,
   TARGET_MENTEE_OPTIONS,
   type CoachRow,
 } from "@/lib/coach-shared";
@@ -19,7 +20,6 @@ import { MatchReason } from "@/components/MatchReason";
 import { FilterRow, MultiSelect } from "@/components/MultiSelect";
 
 const FORMATS = ["1:1 coaching", "Groups & cohorts", "Programs & courses"];
-const PRICING = ["Published pricing", "Inquire"];
 // Everything past "Design" and "Product" is a specialty tag (lib/taxonomy.ts
 // COACH_SPECIALTIES) a coach sets on themselves; the first two match the
 // coarser discipline field.
@@ -88,7 +88,8 @@ export default function CoachesDirectory({
         return false;
       if (levels.length > 0 && !coachLevels(c).some((l) => levels.includes(l))) return false;
       if (formats.length > 0 && !coachFormats(c).some((f) => formats.includes(f))) return false;
-      if (pricing.length > 0 && !pricing.includes(coachPricing(c))) return false;
+      if (pricing.length > 0 && !coachPricingFacets(c).some((f) => pricing.includes(f)))
+        return false;
       if (!matchesDiscipline(c, disciplines)) return false;
       return true;
     });
@@ -135,7 +136,12 @@ export default function CoachesDirectory({
         />
         <MultiSelect label="Level" options={TARGET_MENTEE_OPTIONS} value={levels} onChange={setLevels} />
         <MultiSelect label="Format" options={FORMATS} value={formats} onChange={setFormats} />
-        <MultiSelect label="Pricing" options={PRICING} value={pricing} onChange={setPricing} />
+        <MultiSelect
+          label="Pricing"
+          options={PRICING_FILTERS}
+          value={pricing}
+          onChange={setPricing}
+        />
       </FilterRow>
 
       <p className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-secondary">
