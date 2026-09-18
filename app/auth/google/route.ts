@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { supabaseRoute } from "@/lib/supabase/server";
+import { TERMS_COOKIE } from "@/lib/terms";
 
 /**
  * Kicks off Google sign-in. The "Continue with Google" buttons are plain
@@ -31,5 +32,16 @@ export async function GET(request: NextRequest) {
     error || !data.url ? new URL("/signin?error=google", origin) : data.url,
   );
   applyCookies(response);
+  // Their answer to the terms checkbox, held until the callback can write it
+  // against an account that exists.
+  if (searchParams.get("accepted") === "1") {
+    response.cookies.set(TERMS_COOKIE, "1", {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: origin.startsWith("https://"),
+      path: "/",
+      maxAge: 60 * 60,
+    });
+  }
   return response;
 }

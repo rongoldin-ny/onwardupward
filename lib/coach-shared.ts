@@ -34,7 +34,6 @@ export type CoachRow = {
   company: string | null;
   pricing: string | null;
   credentials: string | null;
-  years_coaching: number | null;
   source: string | null;
   status: "draft" | "unclaimed" | "pending" | "approved";
   created_at: string;

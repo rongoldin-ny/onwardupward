@@ -2,8 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { currentUser, homeFor } from "@/lib/auth";
 import { greeting } from "@/lib/greeting";
-import GoogleButton from "@/components/GoogleButton";
 import { Logo, PageFrame } from "@/components/ui";
+import SignUpConsent from "./SignUpConsent";
 
 export default async function SignUpPage() {
   const user = await currentUser();
@@ -24,20 +24,8 @@ export default async function SignUpPage() {
           <p className="mt-3 text-[17px] text-secondary">{`${greeting()} — let's get you set up.`}</p>
 
           <div className="mt-9">
-            <GoogleButton label="Sign up with Google" />
+            <SignUpConsent />
           </div>
-
-          <p className="mt-5 text-[13px] leading-[1.5] text-muted">
-            By continuing you agree to our{" "}
-            <Link href="/terms" className="text-secondary">
-              Terms
-            </Link>{" "}
-            and{" "}
-            <Link href="/privacy" className="text-secondary">
-              Privacy Policy
-            </Link>
-            .
-          </p>
 
           {/* Inside <main> so it sits with the form rather than pinned to the
               bottom edge, where mobile browser chrome cut it off. */}

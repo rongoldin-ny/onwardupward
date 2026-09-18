@@ -44,10 +44,11 @@ export type Profile = {
   resume_public: boolean;
   ai_superpowers: { skill: string; xp: "basic" | "fluent" | "expert" }[];
   portfolio_images: PortfolioImage[];
-  years_experience: number | null;
   industries: string[];
   contact_preference: "email" | "linkedin";
   allow_coach_contact: boolean;
+  /** When they accepted the Terms and Privacy Policy at sign-up. */
+  terms_accepted_at: string | null;
   is_paid: boolean;
   is_supporter: boolean;
   notification_prefs: NotificationPrefs;

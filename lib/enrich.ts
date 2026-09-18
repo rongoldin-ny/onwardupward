@@ -33,7 +33,6 @@ function candidateDataBlock(profile: Profile, work: WorkHistoryRow[]): string {
     `Name: ${profile.name ?? "unknown"}`,
     `Role type: ${profile.role_type ?? "unknown"}`,
     `Career stage: ${profile.career_stage ?? "unknown"}`,
-    `Years of experience: ${profile.years_experience ?? "unknown"}`,
     `Location: ${[profile.location_city, profile.location_state, profile.location_country].filter(Boolean).join(", ") || "unknown"}`,
     `Self-declared industries: ${profile.industries.join(", ") || "none"}`,
     `Work history: ${work.map((w) => `${w.title ?? "?"} at ${w.company ?? "?"}`).join("; ") || "none"}`,

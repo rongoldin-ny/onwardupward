@@ -60,7 +60,6 @@ export async function autoFillProfile(profileId: string): Promise<string[]> {
   fillIfEmpty("location_country", profile.location_country, fill.location_country);
   fillIfEmpty("location_state", profile.location_state, fill.location_state);
   fillIfEmpty("location_city", profile.location_city, fill.location_city);
-  fillIfEmpty("years_experience", profile.years_experience, fill.years_experience);
   fillIfEmpty("bio", profile.bio, fill.bio);
   fillIfEmpty("last_role_text", profile.last_role_text, fill.last_role_text);
   fillIfEmpty("brags", profile.brags, fill.brags.slice(0, 5));

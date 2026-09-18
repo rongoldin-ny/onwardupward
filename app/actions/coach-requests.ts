@@ -73,7 +73,6 @@ export async function requestCoaching(
     user.role_type && `Role: ${labelForRoleType(user.role_type)}`,
     labelForCareerStage(user.career_stage) && `Stage: ${labelForCareerStage(user.career_stage)}`,
     user.location_country && `Based in: ${user.location_country}`,
-    user.years_experience !== null && `Experience: ${user.years_experience} years`,
     user.last_role_text && `Recently: ${user.last_role_text}`,
     user.growth_goal && `Hoping to grow: ${user.growth_goal}`,
     user.dream_job && `Aiming for: ${user.dream_job}`,

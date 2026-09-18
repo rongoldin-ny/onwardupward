@@ -39,7 +39,6 @@ export type ProfileView = {
   email: string | null;
   photoUrl: string | null;
   location: string;
-  yearsExperience: number | null;
   background: string | null;
   urls: ProfileUrl[];
   portfolioPassword: string | null;
@@ -135,10 +134,10 @@ const PROFILE_FIELD_ACCESS: Record<keyof Profile, "shared" | "private"> = {
   resume_public: "shared",
   ai_superpowers: "shared",
   portfolio_images: "shared",
-  years_experience: "shared",
   industries: "shared",
   contact_preference: "private",
   allow_coach_contact: "shared",
+  terms_accepted_at: "private",
   is_paid: "private",
   is_supporter: "private",
   notification_prefs: "private",
@@ -197,7 +196,6 @@ export function buildProfileView(
     email: visible.email,
     photoUrl: profile.photo_url,
     location: locationLabel(profile),
-    yearsExperience: profile.years_experience,
     background: profile.bio,
     urls,
     portfolioPassword: visible.portfolio_password,
@@ -266,7 +264,6 @@ export function coachOnlyProfileView(coach: CoachRow): ProfileView {
     email: null,
     photoUrl: coach.photo_url,
     location: "",
-    yearsExperience: null,
     background: coach.short_description,
     urls: coach.website ? [{ label: "Website", href: coach.website }] : [],
     portfolioPassword: null,

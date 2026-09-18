@@ -22,7 +22,6 @@ function fillToView(fill: AiFillResult, portfolioUrl: string | null): ProfileVie
     location: [fill.location_city, fill.location_state, fill.location_country]
       .filter(Boolean)
       .join(", "),
-    yearsExperience: fill.years_experience,
     background: fill.bio,
     urls: portfolioUrl ? [{ label: "Portfolio", href: portfolioUrl }] : [],
     portfolioPassword: null,
