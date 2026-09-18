@@ -116,6 +116,19 @@ export function certificationLabels(
   );
 }
 
+/**
+ * The disciplines a listing shows, in the picker's own words. "Both" becomes
+ * two chips rather than the word: a reader wants to know which disciplines,
+ * and "Both" only answers that if you can see the question.
+ */
+export function disciplineChips(d: CoachDiscipline | null): string[] {
+  if (d === "design") return ["Design"];
+  if (d === "product") return ["Product"];
+  if (d === "both") return ["Design", "Product"];
+  return [];
+}
+
+/** Prose form, for a subtitle or a sentence — "Design coaching". */
 export function disciplineLabel(d: CoachDiscipline | null): string {
   if (d === "design") return "Design coaching";
   if (d === "product") return "Product coaching";
@@ -184,6 +197,10 @@ export function coachDisciplineLabels(c: {
 /** Explicit target mentees when set; derived from copy for curated seeds. */
 export function coachLevels(c: CoachRow): string[] {
   if (c.target_mentees.length > 0) return c.target_mentees;
+  // Only a listing with nobody behind it gets levels read out of its copy.
+  // Once someone owns it, the card must say what they ticked and nothing
+  // else — a chip they never chose is one they can't remove.
+  if (c.profile_id) return [];
   const text = `${c.best_for ?? ""} ${c.offering ?? ""} ${c.short_description ?? ""}`;
   const out: string[] = [];
   if (/cxo|vp\b|executive|director|cdo/i.test(text)) out.push("Directors & execs");
