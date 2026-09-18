@@ -7,6 +7,7 @@ import { trackCoachImpressions } from "@/app/actions/track";
 import {
   coachFormats,
   coachLevels,
+  FORMAT_OPTIONS,
   coachPricingFacets,
   DISCIPLINE_FILTERS,
   disciplineLabel,
@@ -19,7 +20,6 @@ import { Card } from "@/components/ui";
 import { MatchReason } from "@/components/MatchReason";
 import { FilterRow, MultiSelect } from "@/components/MultiSelect";
 
-const FORMATS = ["1:1 coaching", "Groups & cohorts", "Programs & courses"];
 // Everything past "Design" and "Product" is a specialty tag (lib/taxonomy.ts
 // COACH_SPECIALTIES) a coach sets on themselves; the first two match the
 // coarser discipline field.
@@ -135,7 +135,12 @@ export default function CoachesDirectory({
           onChange={setDisciplines}
         />
         <MultiSelect label="Level" options={TARGET_MENTEE_OPTIONS} value={levels} onChange={setLevels} />
-        <MultiSelect label="Format" options={FORMATS} value={formats} onChange={setFormats} />
+        <MultiSelect
+          label="Format"
+          options={FORMAT_OPTIONS}
+          value={formats}
+          onChange={setFormats}
+        />
         <MultiSelect
           label="Pricing"
           options={PRICING_FILTERS}
