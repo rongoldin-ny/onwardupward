@@ -20,6 +20,7 @@ import {
   pricingNotes,
   coachLevels,
   coachMissing,
+  disciplineChips,
   disciplineLabel,
   type CoachDiscipline,
 } from "@/lib/coach-shared";
@@ -311,9 +312,9 @@ export default function CoachCard({
                 <ChipRow items={certificationLabels(coach)} />
               </Section>
             )}
-            {coach && disciplineLabel(coach.disciplines) && (
+            {coach && disciplineChips(coach.disciplines).length > 0 && (
               <Section title="Discipline">
-                <ChipRow items={[disciplineLabel(coach.disciplines)]} />
+                <ChipRow items={disciplineChips(coach.disciplines)} />
               </Section>
             )}
             {coach && coach.specialties.length > 0 && (
