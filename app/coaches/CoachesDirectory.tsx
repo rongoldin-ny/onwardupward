@@ -8,6 +8,7 @@ import {
   coachFormats,
   coachLevels,
   coachPricing,
+  DISCIPLINE_FILTERS,
   disciplineLabel,
   TARGET_MENTEE_OPTIONS,
   type CoachRow,
@@ -19,14 +20,24 @@ import { FilterRow, MultiSelect } from "@/components/MultiSelect";
 
 const FORMATS = ["1:1 coaching", "Groups & cohorts", "Programs & courses"];
 const PRICING = ["Published pricing", "Inquire"];
-// "Content Design" and "Research" are the finer-grained specialty tags
-// (lib/taxonomy.ts ROLE_TYPES); the rest match the coarser discipline field.
-const DISCIPLINES = ["Design", "Product", "Content Design", "Research"];
+// Everything past "Design" and "Product" is a specialty tag (lib/taxonomy.ts
+// COACH_SPECIALTIES) a coach sets on themselves; the first two match the
+// coarser discipline field.
+const SPECIALTY_FILTERS: Record<string, string> = {
+  "Content Design": "content_design",
+  Research: "user_research",
+  Executive: "executive_coaching",
+  "Startup founder": "founder_coaching",
+};
 
 function matchesDiscipline(coach: CoachRow, active: string[]): boolean {
   if (active.length === 0) return true;
-  if (active.includes("Content Design") && coach.specialties.includes("content_design")) return true;
-  if (active.includes("Research") && coach.specialties.includes("user_research")) return true;
+  if (active.some((a) => SPECIALTY_FILTERS[a] && coach.specialties.includes(SPECIALTY_FILTERS[a]))) {
+    return true;
+  }
+  // A selection that's only specialty tags has had its say — don't let the
+  // coarse field answer for it, or picking "Executive" returns every designer.
+  if (active.every((a) => SPECIALTY_FILTERS[a])) return false;
   // No answer yet (curated seeds pre-migration), and coaches covering both
   // disciplines, match a Design and/or Product filter — select both to see them.
   const d = coach.disciplines ?? "both";
@@ -116,7 +127,12 @@ export default function CoachesDirectory({
       </div>
 
       <FilterRow className="mt-4">
-        <MultiSelect label="Discipline" options={DISCIPLINES} value={disciplines} onChange={setDisciplines} />
+        <MultiSelect
+          label="Discipline"
+          options={DISCIPLINE_FILTERS}
+          value={disciplines}
+          onChange={setDisciplines}
+        />
         <MultiSelect label="Level" options={TARGET_MENTEE_OPTIONS} value={levels} onChange={setLevels} />
         <MultiSelect label="Format" options={FORMATS} value={formats} onChange={setFormats} />
         <MultiSelect label="Pricing" options={PRICING} value={pricing} onChange={setPricing} />

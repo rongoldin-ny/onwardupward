@@ -713,4 +713,22 @@ export const COACHES: Coach[] = [
     disciplines: "both",
     specialties: ["user_research"],
   },
+  // ---- Executive coaching, added September 2026.
+  {
+    slug: "jennifer-bove",
+    name: "Jennifer Bove",
+    org: "Independent",
+    title: "Executive coaching for design leaders",
+    status: "unclaimed",
+    photoUrl: null,
+    bio: "Two decades leading design teams at Salesforce, Capital One, Accenture and GE, and a founder herself — she co-founded the product design firm Kicker Studio and the IxDA Interaction Awards. Now an executive coach and strategic advisor, based in Brooklyn.",
+    offerings:
+      "One-on-one coaching, usually bi-weekly, with most partnerships starting at six months; a shorter, focused engagement for leaders at a specific inflection point. Also advises organizations on design leadership and scaling a design practice.",
+    price: "Not published",
+    bestFor: "Design leaders and executives at an inflection point — stepping up, scaling a team, or working out how they want to lead",
+    contact: "https://jennbove.com/",
+    source: "jennbove.com",
+    disciplines: "design",
+    specialties: ["executive_coaching"],
+  },
 ];

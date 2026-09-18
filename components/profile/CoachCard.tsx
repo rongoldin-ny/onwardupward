@@ -18,7 +18,7 @@ import {
 import type { CoachMatch } from "@/lib/coach-match";
 import type { CoachReview } from "@/lib/coach-reviews-db";
 import type { ProfileView } from "@/lib/profile-view";
-import { labelForRoleType } from "@/lib/taxonomy";
+import { labelForSpecialty } from "@/lib/taxonomy";
 import { CardSection as Section, useEdit, type Viewer } from "./edit-context";
 import CoachReviews from "./CoachReviews";
 
@@ -271,7 +271,7 @@ export default function CoachCard({
                 {coach.specialties.length > 0
                   ? coach.specialties.map((s) => (
                       <Tag key={s} variant="neutral">
-                        {labelForRoleType(s)}
+                        {labelForSpecialty(s)}
                       </Tag>
                     ))
                   : disciplineLabel(coach.disciplines) && (

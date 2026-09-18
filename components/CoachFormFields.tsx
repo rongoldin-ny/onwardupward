@@ -5,7 +5,7 @@ import {
   TARGET_MENTEE_OPTIONS,
   type CoachDiscipline,
 } from "@/lib/coach-shared";
-import { ROLE_TYPES } from "@/lib/taxonomy";
+import { COACH_SPECIALTIES } from "@/lib/taxonomy";
 
 /** Shared chip pickers for the coach face and the onboarding coaching step. */
 
@@ -86,7 +86,7 @@ export function SpecialtyChips({
     <div>
       <p className="text-[13px] text-secondary">What do you specialize in coaching?</p>
       <div className="mt-3 flex flex-wrap gap-2.5">
-        {ROLE_TYPES.map((option) => {
+        {COACH_SPECIALTIES.map((option) => {
           const on = value.includes(option.value);
           return (
             <button

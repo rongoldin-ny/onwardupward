@@ -5,6 +5,20 @@ export const ROLE_TYPES = [
   { value: "product_management", label: "Product Management" },
 ];
 
+/**
+ * Coaching practices that aren't one of the platform's member role types.
+ * A member is never a "startup founder" in our taxonomy — these describe what
+ * a coach works on, which is a different axis from who they work with
+ * (TARGET_MENTEE_OPTIONS, where "Directors & execs" lives).
+ */
+export const COACHING_SPECIALTIES = [
+  { value: "executive_coaching", label: "Executive" },
+  { value: "founder_coaching", label: "Startup founder" },
+];
+
+/** Everything a coach can say they specialize in. */
+export const COACH_SPECIALTIES = [...ROLE_TYPES, ...COACHING_SPECIALTIES];
+
 export const CAREER_STAGES = [
   { value: "early_ic", label: "Early IC" },
   { value: "mid_ic", label: "Mid career IC" },
@@ -77,6 +91,15 @@ export const INDUSTRIES = [
 
 export function labelForRoleType(value: string | null): string {
   return ROLE_TYPES.find((r) => r.value === value)?.label ?? "Product Design";
+}
+
+/**
+ * A coach specialty's label. Not labelForRoleType: that falls back to "Product
+ * Design" for anything it doesn't know, which would mislabel every coaching
+ * practice above.
+ */
+export function labelForSpecialty(value: string): string {
+  return COACH_SPECIALTIES.find((s) => s.value === value)?.label ?? value;
 }
 
 export function labelForCareerStage(value: string | null): string {

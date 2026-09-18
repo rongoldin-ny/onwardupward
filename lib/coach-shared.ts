@@ -73,8 +73,20 @@ export type CoachFeed = {
   specialties: string[];
 };
 
-/** The discipline facets a reader can filter by, matching the coaches directory. */
-export const DISCIPLINE_FILTERS = ["Design", "Product", "Content Design", "Research"] as const;
+/**
+ * What a coach can be filtered by. The first four are the discipline they
+ * coach in; the last two are a practice, and sit on this axis rather than
+ * leaning on the "Directors & execs" level — coaching an exec through their
+ * first quarter isn't the same claim as being willing to take exec clients.
+ */
+export const DISCIPLINE_FILTERS = [
+  "Design",
+  "Product",
+  "Content Design",
+  "Research",
+  "Executive",
+  "Startup founder",
+] as const;
 
 /** A member's own role, expressed in the same vocabulary as coach facets. */
 const ROLE_TYPE_DISCIPLINE: Record<string, string> = {
@@ -104,6 +116,8 @@ export function coachDisciplineLabels(c: {
   const specialties = c.specialties ?? [];
   if (specialties.includes("content_design")) out.push("Content Design");
   if (specialties.includes("user_research")) out.push("Research");
+  if (specialties.includes("executive_coaching")) out.push("Executive");
+  if (specialties.includes("founder_coaching")) out.push("Startup founder");
   return out;
 }
 
