@@ -3,7 +3,7 @@
 import { Pencil } from "lucide-react";
 
 /**
- * Owner-only "what's left" card, shown under the card it belongs to — the
+ * Owner-only "what's left" card, shown above the card it belongs to — the
  * Profile side's gaps on the Profile tab, the listing's on the Coach tab.
  * There's deliberately only ever one on screen: two of these, each asking the
  * owner to "finish your profile" about different fields, read as a conflict.
@@ -28,7 +28,7 @@ export default function CompletionCard({
   if (missing.length === 0) return null;
 
   return (
-    <section className="mt-5 rounded-[20px] border border-gold-border bg-gold-tint p-5 lg:mt-6 lg:p-6">
+    <section className="mb-5 rounded-[20px] border border-gold-border bg-gold-tint p-5 lg:mb-6 lg:p-6">
       <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-4">
         <div className="w-full min-w-0 sm:w-auto sm:flex-1">
           <p className="eyebrow text-gold">{pct}% complete</p>

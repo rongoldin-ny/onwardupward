@@ -266,23 +266,23 @@ export default function CoachCard({
           </>
         ) : (
           <>
-            {coach && (coach.specialties.length > 0 || levels.length > 0) && (
-              <div className="flex flex-wrap gap-2.5">
-                {coach.specialties.length > 0
-                  ? coach.specialties.map((s) => (
-                      <Tag key={s} variant="neutral">
-                        {labelForSpecialty(s)}
-                      </Tag>
-                    ))
-                  : disciplineLabel(coach.disciplines) && (
-                      <Tag variant="neutral">{disciplineLabel(coach.disciplines)}</Tag>
-                    )}
-                {levels.map((l) => (
-                  <Tag key={l} variant="neutral">
-                    {l}
-                  </Tag>
-                ))}
-              </div>
+            {/* Three different claims, so three rows: the discipline they coach
+                in, the practice they specialize in, and who they take. Stacked
+                as one row of unlabelled chips they read as one list. */}
+            {coach && disciplineLabel(coach.disciplines) && (
+              <Section title="Discipline">
+                <ChipRow items={[disciplineLabel(coach.disciplines)]} />
+              </Section>
+            )}
+            {coach && coach.specialties.length > 0 && (
+              <Section title="Specializes in">
+                <ChipRow items={coach.specialties.map(labelForSpecialty)} />
+              </Section>
+            )}
+            {levels.length > 0 && (
+              <Section title="Works with">
+                <ChipRow items={levels} />
+              </Section>
             )}
             {(coach?.years_coaching || coach?.credentials) && (
               <Section title="Coaching credentials">
@@ -366,6 +366,19 @@ export default function CoachCard({
         </div>
       )}
 
+    </div>
+  );
+}
+
+/** A row of neutral chips — the read-mode counterpart of the chip pickers. */
+function ChipRow({ items }: { items: string[] }) {
+  return (
+    <div className="flex flex-wrap gap-2.5">
+      {items.map((item) => (
+        <Tag key={item} variant="neutral">
+          {item}
+        </Tag>
+      ))}
     </div>
   );
 }

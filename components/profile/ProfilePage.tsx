@@ -261,6 +261,8 @@ export default function ProfilePage({
   // The card belongs to its side, so it rides inside the flip face rather
   // than under the whole scene: the two faces share one grid cell sized to the
   // taller of them, and anything after the scene sits below that dead space.
+  // It leads the face rather than trailing it — what's left to fill in is a
+  // reminder, and a reminder below a screenful of content is a footnote.
   const profileCard = isOwner && !editing && v.raw.profile && (
     <CompletionCard
       pct={profileCompletionPct(v.raw.profile, { isCoach: !!v.coach })}
@@ -284,8 +286,8 @@ export default function ProfilePage({
 
   const player = (
     <>
-      <PlayerCard ref={playerRef} view={v} ver={ver} communitySkills={communitySkills} />
       {profileCard}
+      <PlayerCard ref={playerRef} view={v} ver={ver} communitySkills={communitySkills} />
     </>
   );
 
@@ -299,6 +301,7 @@ export default function ProfilePage({
       front={player}
       back={
         <>
+          {listingCard}
           <CoachCard
             view={v}
             coachingEnabled={coachingEnabled}
@@ -313,12 +316,12 @@ export default function ProfilePage({
             reviews={reviews}
             ownReview={ownReview}
           />
-          {listingCard}
         </>
       }
     />
   ) : (
     <>
+      {listingCard}
       <CoachCard
         view={v}
         coachingEnabled={!!v.coach}
@@ -328,7 +331,6 @@ export default function ProfilePage({
         reviews={reviews}
         ownReview={ownReview}
       />
-      {listingCard}
     </>
   );
 
