@@ -3,7 +3,12 @@ import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { unstable_cache } from "next/cache";
 import { z } from "zod";
-import { certificationLabels, disciplineLabel, type CoachRow } from "./coach-shared";
+import {
+  certificationLabels,
+  disciplineLabel,
+  pricingNotes,
+  type CoachRow,
+} from "./coach-shared";
 import { getWorkHistory, type Profile, type WorkHistoryRow } from "./db";
 import { supabaseAdmin } from "./supabase/server";
 import { labelForCareerStage, labelForRoleType, labelForSpecialty } from "./taxonomy";
@@ -97,6 +102,7 @@ function coachSummary(c: CoachRow): string {
     certificationLabels(c).length > 0 && `Certified as: ${certificationLabels(c).join(", ")}`,
     c.target_mentees.length > 0 && `Works with: ${c.target_mentees.join(", ")}`,
     c.credentials && `Credentials: ${c.credentials}`,
+    pricingNotes(c).length > 0 && pricingNotes(c).join("; "),
     c.best_for && `Best for: ${c.best_for}`,
     c.offering && `Offers: ${c.offering}`,
     c.short_description && `About: ${c.short_description}`,

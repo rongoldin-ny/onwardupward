@@ -110,6 +110,8 @@ export async function saveCoachAttributes(
     booking_url: booking,
     company: str("company") || null,
     pricing: str("pricing") || null,
+    free_intro_call: formData.get("free_intro_call") === "on",
+    pricing_on_call: formData.get("pricing_on_call") === "on",
     credentials: str("credentials") || null,
     substack_url: substackUrl,
   };

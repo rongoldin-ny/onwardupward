@@ -33,6 +33,10 @@ export type CoachRow = {
   substack_url: string | null;
   company: string | null;
   pricing: string | null;
+  /** The first conversation costs nothing. */
+  free_intro_call: boolean;
+  /** The number comes on the call rather than on the listing. */
+  pricing_on_call: boolean;
   credentials: string | null;
   source: string | null;
   status: "draft" | "unclaimed" | "pending" | "approved";
@@ -182,9 +186,23 @@ export function coachFormats(c: CoachRow): string[] {
 }
 
 export function coachPricing(c: CoachRow): string {
+  // Saying the price is discussed on a call is an answer, not a blank — it
+  // lands in "Inquire" either way, but it stops a published number being
+  // inferred from stray digits in the prose.
+  if (c.pricing_on_call) return "Inquire";
   return /[$£€]\s?\d|\d+\s?(per|\/)\s?session/i.test(c.pricing ?? "")
     ? "Published pricing"
     : "Inquire";
+}
+
+/** The pricing lines a listing shows, in the order they read best. */
+export function pricingNotes(
+  c: Pick<CoachRow, "free_intro_call" | "pricing_on_call">,
+): string[] {
+  const out: string[] = [];
+  if (c.free_intro_call) out.push("Free introductory call");
+  if (c.pricing_on_call) out.push("Pricing discussed on the call");
+  return out;
 }
 
 // ------------------------------------------------------- listing visibility
