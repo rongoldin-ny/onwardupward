@@ -60,7 +60,9 @@ export function CardSection({
 }) {
   return (
     <section className="border-t border-border-1 pt-5">
-      <div className="flex items-center gap-2">
+      {/* Wraps because a pill can be a disclosure that opens a full-width
+          panel beneath the title (see CertificationInfo). */}
+      <div className="flex flex-wrap items-center gap-2">
         <p className="eyebrow text-secondary">{title}</p>
         {pill}
       </div>

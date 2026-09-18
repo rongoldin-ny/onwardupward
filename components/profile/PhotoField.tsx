@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import Cropper, { type Area } from "react-easy-crop";
 import { Camera } from "lucide-react";
+import Modal from "@/components/Modal";
 import { WithCoachBadge } from "@/components/CoachBadge";
 import { Avatar, Cta } from "@/components/ui";
 import { FileListInput, RequiredPill, useEdit } from "./edit-context";
@@ -101,13 +102,15 @@ export default function PhotoField({
         }}
       />
 
-      {rawImage && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-[rgba(10,10,12,0.85)] px-6">
-          <div className="w-full max-w-[382px] rounded-[28px] border border-gold-border bg-surface-2 p-5">
-            <h2 className="text-[20px] font-black tracking-[-0.02em] text-cream">
-              Frame your photo
-            </h2>
-            <div className="relative mt-4 h-[300px] overflow-hidden rounded-[20px]">
+      <Modal
+        open={!!rawImage}
+        onClose={() => setRawImage(null)}
+        title="Frame your photo"
+        maxWidth={382}
+      >
+        {rawImage && (
+          <>
+            <div className="relative h-[300px] overflow-hidden rounded-[20px]">
               <Cropper
                 image={rawImage}
                 crop={crop}
@@ -125,6 +128,7 @@ export default function PhotoField({
               step={0.05}
               value={zoom}
               onChange={(e) => setZoom(Number(e.target.value))}
+              aria-label="Zoom"
               className="mt-5 w-full accent-[#E8C987]"
             />
             <div className="mt-4 flex gap-3">
@@ -135,9 +139,9 @@ export default function PhotoField({
                 Use photo
               </Cta>
             </div>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </Modal>
     </div>
   );
 }
