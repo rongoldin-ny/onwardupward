@@ -8,7 +8,8 @@
  */
 
 import { coachAnalytics } from "./coach-analytics";
-import { coachDisciplineLabels, disciplineForRoleType } from "./coach-shared";
+import { coachSpecialtyLabels } from "./coach-shared";
+import { labelForSpecialty } from "./taxonomy";
 import { getDirectoryCoaches } from "./coaches-db";
 import { emailShell, sendEmail } from "./email";
 import { getReadsPageData } from "./mentorship-posts";
@@ -140,12 +141,13 @@ export async function sendWeeklyDigests(): Promise<DigestResult> {
   let empty = 0;
 
   for (const p of due) {
-    const discipline = disciplineForRoleType(p.role_type);
+    // A member's role type is a specialty value, so it reads as one label.
+    const discipline = p.role_type ? labelForSpecialty(p.role_type) : null;
     const blocks: string[] = [];
 
     const coachPicks = (
       discipline
-        ? newCoaches.filter((c) => coachDisciplineLabels(c).includes(discipline))
+        ? newCoaches.filter((c) => coachSpecialtyLabels(c).includes(discipline))
         : newCoaches
     ).slice(0, SECTION_LIMIT);
     if (coachPicks.length > 0) {

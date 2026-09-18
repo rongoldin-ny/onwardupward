@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import {
   FORMAT_OPTIONS,
+  FORMAT_OTHER,
   normalizeCertifications,
   coachMissing,
   type CoachRow,
@@ -80,12 +81,6 @@ export async function saveCoachAttributes(
     .getAll("formats")
     .map(String)
     .filter((f) => (FORMAT_OPTIONS as readonly string[]).includes(f));
-  const disciplinesRaw = str("disciplines");
-  const disciplines = (["design", "product", "both"] as const).includes(
-    disciplinesRaw as "design" | "product" | "both",
-  )
-    ? (disciplinesRaw as "design" | "product" | "both")
-    : null;
   const bookingRaw = str("booking_url");
   const booking = bookingRaw ? normalizeBooking(bookingRaw) : null;
   if (bookingRaw && !booking) return { error: "That booking link doesn't look right." };
@@ -105,8 +100,8 @@ export async function saveCoachAttributes(
     offering: str("offering") || null,
     target_mentees: mentees,
     formats,
+    format_other: formats.includes(FORMAT_OTHER) ? str("format_other").slice(0, 120) || null : null,
     specialties,
-    disciplines,
     best_for: str("best_for") || null,
     certifications,
     certification_other: certificationOther,

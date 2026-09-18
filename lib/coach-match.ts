@@ -5,7 +5,6 @@ import { unstable_cache } from "next/cache";
 import { z } from "zod";
 import {
   certificationLabels,
-  disciplineLabel,
   pricingNotes,
   type CoachRow,
 } from "./coach-shared";
@@ -97,7 +96,6 @@ function coachSummary(c: CoachRow): string {
   return [
     c.full_name,
     c.title || c.company,
-    c.disciplines && `Discipline: ${disciplineLabel(c.disciplines)}`,
     c.specialties.length > 0 && `Specialties: ${c.specialties.map(labelForSpecialty).join(", ")}`,
     certificationLabels(c).length > 0 && `Certified as: ${certificationLabels(c).join(", ")}`,
     c.target_mentees.length > 0 && `Works with: ${c.target_mentees.join(", ")}`,

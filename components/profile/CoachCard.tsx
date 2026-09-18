@@ -8,7 +8,6 @@ import CoachRequestForm from "@/components/CoachRequestForm";
 import { MatchReason } from "@/components/MatchReason";
 import {
   CertificationChips,
-  DisciplineChips,
   FormatChips,
   MenteeChips,
   SpecialtyChips,
@@ -20,11 +19,9 @@ import {
   certificationLabels,
   pricingNotes,
   coachFormats,
+  coachSpecialtyLabels,
   coachLevels,
   coachMissing,
-  disciplineChips,
-  disciplineLabel,
-  type CoachDiscipline,
 } from "@/lib/coach-shared";
 import type { CoachMatch } from "@/lib/coach-match";
 import type { CoachReview } from "@/lib/coach-reviews-db";
@@ -58,12 +55,12 @@ export default function CoachCard({
 }) {
   const { editing, viewer, scheduleSave } = useEdit();
   const coach = view.coach;
-  const [discipline, setDiscipline] = useState<CoachDiscipline | null>(coach?.disciplines ?? null);
   const [mentees, setMentees] = useState<string[]>(coach?.target_mentees ?? []);
   const [specialties, setSpecialties] = useState<string[]>(coach?.specialties ?? []);
   const [certifications, setCertifications] = useState<string[]>(coach?.certifications ?? []);
   const [certOther, setCertOther] = useState(coach?.certification_other ?? "");
   const [formats, setFormats] = useState<string[]>(coach?.formats ?? []);
+  const [formatOther, setFormatOther] = useState(coach?.format_other ?? "");
   const [freeIntro, setFreeIntro] = useState(!!coach?.free_intro_call);
   const [pricingOnCall, setPricingOnCall] = useState(!!coach?.pricing_on_call);
   const [match, setMatch] = useState<CoachMatch | null>(null);
@@ -117,7 +114,7 @@ export default function CoachCard({
   // to the same question. The text is kept, just not shown.
   const shownPrice = coach?.pricing_on_call ? null : coach?.pricing;
   const autoSubtitle = coach
-    ? [coach.company, disciplineLabel(coach.disciplines)].filter(Boolean).join(" · ")
+    ? [coach.company, coachSpecialtyLabels(coach)[0]].filter(Boolean).join(" · ")
     : "";
   const subtitle = coach?.title || autoSubtitle;
   const bookingDisplay = (coach?.booking_url ?? "").replace(/^mailto:/, "");
@@ -205,12 +202,12 @@ export default function CoachCard({
                 </p>
               </div>
             </Section>
-            <Section title="Disciplines & levels">
+            <Section title="Who you coach, and how">
               <div className="space-y-5">
-                <DisciplineChips
-                  value={discipline}
-                  onChange={(d) => {
-                    setDiscipline(d);
+                <SpecialtyChips
+                  value={specialties}
+                  onChange={(s) => {
+                    setSpecialties(s);
                     scheduleSave();
                   }}
                 />
@@ -221,17 +218,15 @@ export default function CoachCard({
                     scheduleSave();
                   }}
                 />
-                <SpecialtyChips
-                  value={specialties}
-                  onChange={(s) => {
-                    setSpecialties(s);
-                    scheduleSave();
-                  }}
-                />
                 <FormatChips
                   value={formats}
+                  other={formatOther}
                   onChange={(f) => {
                     setFormats(f);
+                    scheduleSave();
+                  }}
+                  onOther={(o) => {
+                    setFormatOther(o);
                     scheduleSave();
                   }}
                 />
@@ -321,18 +316,12 @@ export default function CoachCard({
           </>
         ) : (
           <>
-            {/* Four different claims, so four rows: what they're certified as,
-                the discipline they coach in, the practice they specialize in,
-                and who they take. Stacked as one row of unlabelled chips they
-                read as one list. */}
+            {/* Each claim gets its own titled row: what they're certified as,
+                what they specialize in, who they take, and how they work.
+                Stacked as one row of chips they read as a single list. */}
             {coach && certificationLabels(coach).length > 0 && (
               <Section title="Certification" pill={<CertificationInfo />}>
                 <ChipRow items={certificationLabels(coach)} />
-              </Section>
-            )}
-            {coach && disciplineChips(coach.disciplines).length > 0 && (
-              <Section title="Discipline">
-                <ChipRow items={disciplineChips(coach.disciplines)} />
               </Section>
             )}
             {coach && coach.specialties.length > 0 && (

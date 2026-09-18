@@ -5,8 +5,7 @@
 
 import type { Profile } from "./db";
 import type { ChecklistItem } from "./profile-required";
-
-export type CoachDiscipline = "design" | "product" | "both";
+import { COACH_SPECIALTIES, labelForSpecialty } from "./taxonomy";
 
 export type CoachRow = {
   id: string;
@@ -19,7 +18,8 @@ export type CoachRow = {
   target_mentees: string[];
   /** How they work with people — see FORMAT_OPTIONS. */
   formats: string[];
-  disciplines: CoachDiscipline | null;
+  /** What "Other" stands for, when they picked it. */
+  format_other: string | null;
   /** Which of the platform's role types (lib/taxonomy.ts ROLE_TYPES) this coach specializes in. */
   specialties: string[];
   /** What they are — see CERTIFICATION_OPTIONS. Several can be true at once. */
@@ -54,7 +54,15 @@ export function publicCoach(coach: CoachRow): CoachRow {
   return { ...coach, email: null };
 }
 
-export const FORMAT_OPTIONS = ["1:1 coaching", "Groups & cohorts", "Programs & courses"] as const;
+/** Its own constant so the picker, the filter and the save agree on the word. */
+export const FORMAT_OTHER = "Other";
+
+export const FORMAT_OPTIONS = [
+  "1:1 coaching",
+  "Groups & cohorts",
+  "Programs & courses",
+  FORMAT_OTHER,
+] as const;
 
 export const TARGET_MENTEE_OPTIONS = [
   "Early career",
@@ -62,12 +70,6 @@ export const TARGET_MENTEE_OPTIONS = [
   "Managers & leads",
   "Directors & execs",
 ] as const;
-
-export const DISCIPLINE_OPTIONS: { value: CoachDiscipline; label: string }[] = [
-  { value: "design", label: "Design" },
-  { value: "product", label: "Product" },
-  { value: "both", label: "Both" },
-];
 
 /**
  * Mentor and coach are different practices, and the ICF levels are a ladder
@@ -120,80 +122,23 @@ export function certificationLabels(
   );
 }
 
-/**
- * The disciplines a listing shows, in the picker's own words. "Both" becomes
- * two chips rather than the word: a reader wants to know which disciplines,
- * and "Both" only answers that if you can see the question.
- */
-export function disciplineChips(d: CoachDiscipline | null): string[] {
-  if (d === "design") return ["Design"];
-  if (d === "product") return ["Product"];
-  if (d === "both") return ["Design", "Product"];
-  return [];
-}
-
-/** Prose form, for a subtitle or a sentence — "Design coaching". */
-export function disciplineLabel(d: CoachDiscipline | null): string {
-  if (d === "design") return "Design coaching";
-  if (d === "product") return "Product coaching";
-  if (d === "both") return "Design & Product";
-  return "";
-}
-
 /** A coach's newsletter plus the facets their posts are attributed and tagged with. */
 export type CoachFeed = {
   substack_url: string;
   full_name: string;
-  disciplines: CoachDiscipline | null;
   specialties: string[];
 };
 
 /**
- * What a coach can be filtered by. The first four are the discipline they
- * coach in; the last two are a practice, and sit on this axis rather than
- * leaning on the "Directors & execs" level — coaching an exec through their
- * first quarter isn't the same claim as being willing to take exec clients.
+ * What a coach can be filtered by: the specialties they picked, in the words
+ * the picker used. There's no separate discipline question any more — "design
+ * or product?" was the same question this one answers precisely.
  */
-export const DISCIPLINE_FILTERS = [
-  "Design",
-  "Product",
-  "Content Design",
-  "Research",
-  "Executive",
-  "Startup founder",
-] as const;
+export const SPECIALTY_FILTERS = COACH_SPECIALTIES.map((o) => o.label);
 
-/** A member's own role, expressed in the same vocabulary as coach facets. */
-const ROLE_TYPE_DISCIPLINE: Record<string, string> = {
-  product_design: "Design",
-  content_design: "Content Design",
-  user_research: "Research",
-  product_management: "Product",
-};
-
-export function disciplineForRoleType(roleType: string | null): string | null {
-  return roleType ? (ROLE_TYPE_DISCIPLINE[roleType] ?? null) : null;
-}
-
-/**
- * Which discipline filters a coach answers to. "both" (and no answer yet, for
- * curated seeds) covers Design and Product; the finer-grained specialty tags
- * add themselves on top.
- */
-export function coachDisciplineLabels(c: {
-  disciplines: CoachDiscipline | null;
-  specialties: string[] | null;
-}): string[] {
-  const out: string[] = [];
-  if (c.disciplines === "design") out.push("Design");
-  else if (c.disciplines === "product") out.push("Product");
-  else out.push("Design", "Product");
-  const specialties = c.specialties ?? [];
-  if (specialties.includes("content_design")) out.push("Content Design");
-  if (specialties.includes("user_research")) out.push("Research");
-  if (specialties.includes("executive_coaching")) out.push("Executive");
-  if (specialties.includes("founder_coaching")) out.push("Startup founder");
-  return out;
+/** A coach's specialties as labels, for the reads feed and the weekly digest. */
+export function coachSpecialtyLabels(c: { specialties: string[] | null }): string[] {
+  return (c.specialties ?? []).map(labelForSpecialty);
 }
 
 // ---------------------------------------------------------------- facets
@@ -216,7 +161,9 @@ export function coachLevels(c: CoachRow): string[] {
 }
 
 export function coachFormats(c: CoachRow): string[] {
-  if (c.formats?.length > 0) return c.formats;
+  if (c.formats?.length > 0) {
+    return c.formats.map((f) => (f === FORMAT_OTHER && c.format_other ? c.format_other : f));
+  }
   // Same rule as coachLevels: only a listing with nobody behind it has its
   // formats read out of its copy. Once it's owned, it says what its owner
   // chose — including nothing, if they haven't chosen yet.
@@ -314,7 +261,6 @@ export function coachChecklist(c: CoachRow): ChecklistItem[] {
   const item = (label: string, done: boolean) => ({ label, done });
   return [
     item("Certification", (c.certifications ?? []).length > 0),
-    item("Disciplines", !!c.disciplines),
     item("Who you mentor", c.target_mentees.length > 0),
     item("Format", (c.formats ?? []).length > 0),
     item("Specialization", c.specialties.length > 0),
@@ -322,6 +268,26 @@ export function coachChecklist(c: CoachRow): ChecklistItem[] {
     item("Best for", !!c.best_for),
     item("Booking or contact link", !!c.booking_url),
   ];
+}
+
+/**
+ * The listing as the open form currently describes it, so what's missing can
+ * be answered without a round trip. Only the fields coachChecklist reads are
+ * taken from the form; the rest come from the saved row.
+ */
+export function coachFromForm(form: FormData, saved: CoachRow): CoachRow {
+  const str = (k: string) => String(form.get(k) ?? "").trim() || null;
+  const all = (k: string) => form.getAll(k).map(String);
+  return {
+    ...saved,
+    certifications: all("certifications"),
+    specialties: all("specialties"),
+    target_mentees: all("target_mentees"),
+    formats: all("formats"),
+    offering: str("offering"),
+    best_for: str("best_for"),
+    booking_url: str("booking_url"),
+  };
 }
 
 export function coachMissing(c: CoachRow): string[] {
