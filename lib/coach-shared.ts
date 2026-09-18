@@ -33,6 +33,10 @@ export type CoachRow = {
   substack_url: string | null;
   company: string | null;
   pricing: string | null;
+  /** The first conversation costs nothing. */
+  free_intro_call: boolean;
+  /** The number comes on the call rather than on the listing. */
+  pricing_on_call: boolean;
   credentials: string | null;
   source: string | null;
   status: "draft" | "unclaimed" | "pending" | "approved";
@@ -77,6 +81,20 @@ export const CERTIFICATION_OPTIONS: { value: string; label: string }[] = [
 ];
 
 export const CERTIFICATION_VALUES = CERTIFICATION_OPTIONS.map((o) => o.value);
+
+/** The ICF ladder, lowest first. You hold one rung of it, not several. */
+export const ICF_LEVELS = ["icf_acc", "icf_pcc", "icf_mcc"];
+
+/**
+ * Drops anything unrecognised and keeps a single ICF level — the highest,
+ * since MCC already requires having held PCC. Mentor and Other are unaffected;
+ * they say something different from what rung you're on.
+ */
+export function normalizeCertifications(values: string[]): string[] {
+  const known = values.filter((v) => CERTIFICATION_VALUES.includes(v));
+  const highest = ICF_LEVELS.filter((l) => known.includes(l)).pop();
+  return known.filter((v) => !ICF_LEVELS.includes(v) || v === highest);
+}
 
 export function labelForCertification(value: string): string {
   return CERTIFICATION_OPTIONS.find((o) => o.value === value)?.label ?? value;
@@ -182,9 +200,41 @@ export function coachFormats(c: CoachRow): string[] {
 }
 
 export function coachPricing(c: CoachRow): string {
+  // Saying the price is discussed on a call is an answer, not a blank — it
+  // lands in "Inquire" either way, but it stops a published number being
+  // inferred from stray digits in the prose.
+  if (c.pricing_on_call) return "Inquire";
   return /[$£€]\s?\d|\d+\s?(per|\/)\s?session/i.test(c.pricing ?? "")
     ? "Published pricing"
     : "Inquire";
+}
+
+/** What the directory's Pricing filter offers. */
+export const PRICING_FILTERS = [
+  "Published pricing",
+  "Inquire",
+  "Free introductory call",
+] as const;
+
+/**
+ * Everything the Pricing filter can match a listing on. A free first call is
+ * its own answer rather than a third value of the published/inquire question:
+ * a coach can publish a rate and still talk first.
+ */
+export function coachPricingFacets(c: CoachRow): string[] {
+  const out = [coachPricing(c)];
+  if (c.free_intro_call) out.push("Free introductory call");
+  return out;
+}
+
+/** The pricing lines a listing shows, in the order they read best. */
+export function pricingNotes(
+  c: Pick<CoachRow, "free_intro_call" | "pricing_on_call">,
+): string[] {
+  const out: string[] = [];
+  if (c.free_intro_call) out.push("Free introductory call");
+  if (c.pricing_on_call) out.push("Pricing discussed on the call");
+  return out;
 }
 
 // ------------------------------------------------------- listing visibility

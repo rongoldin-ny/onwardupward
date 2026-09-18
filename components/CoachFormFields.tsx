@@ -2,6 +2,7 @@
 
 import {
   CERTIFICATION_OPTIONS,
+  normalizeCertifications,
   DISCIPLINE_OPTIONS,
   TARGET_MENTEE_OPTIONS,
   type CoachDiscipline,
@@ -42,7 +43,13 @@ export function CertificationChips({
               key={option.value}
               type="button"
               onClick={() =>
-                onChange(on ? value.filter((v) => v !== option.value) : [...value, option.value])
+                onChange(
+                  on
+                    ? value.filter((v) => v !== option.value)
+                    : // Picking a rung of the ICF ladder steps off the one
+                      // below rather than refusing the click.
+                      normalizeCertifications([...value, option.value]),
+                )
               }
               className={`rounded-full border px-4 py-2.5 text-[13px] ${
                 on ? "border-gold-active font-bold text-gold" : "border-border-2 text-body-2"
@@ -154,7 +161,13 @@ export function SpecialtyChips({
               key={option.value}
               type="button"
               onClick={() =>
-                onChange(on ? value.filter((v) => v !== option.value) : [...value, option.value])
+                onChange(
+                  on
+                    ? value.filter((v) => v !== option.value)
+                    : // Picking a rung of the ICF ladder steps off the one
+                      // below rather than refusing the click.
+                      normalizeCertifications([...value, option.value]),
+                )
               }
               className={`rounded-full border px-4 py-2.5 text-[13px] ${
                 on ? "border-gold-active font-bold text-gold" : "border-border-2 text-body-2"

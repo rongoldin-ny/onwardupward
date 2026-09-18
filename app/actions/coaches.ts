@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import {
-  CERTIFICATION_VALUES,
+  normalizeCertifications,
   coachMissing,
   type CoachRow,
 } from "@/lib/coach-shared";
@@ -69,10 +69,7 @@ export async function saveCoachAttributes(
     .getAll("specialties")
     .map(String)
     .filter((s) => roleTypeValues.includes(s));
-  const certifications = formData
-    .getAll("certifications")
-    .map(String)
-    .filter((c) => CERTIFICATION_VALUES.includes(c));
+  const certifications = normalizeCertifications(formData.getAll("certifications").map(String));
   // Only meaningful alongside "Other"; dropping it otherwise keeps a stale
   // answer from resurfacing if they switch away and back.
   const certificationOther = certifications.includes("other")
@@ -110,6 +107,8 @@ export async function saveCoachAttributes(
     booking_url: booking,
     company: str("company") || null,
     pricing: str("pricing") || null,
+    free_intro_call: formData.get("free_intro_call") === "on",
+    pricing_on_call: formData.get("pricing_on_call") === "on",
     credentials: str("credentials") || null,
     substack_url: substackUrl,
   };

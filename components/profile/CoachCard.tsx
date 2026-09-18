@@ -17,6 +17,7 @@ import { TextArea, TextField } from "@/components/fields";
 import { Cta, Tag } from "@/components/ui";
 import {
   certificationLabels,
+  pricingNotes,
   coachLevels,
   coachMissing,
   disciplineLabel,
@@ -59,6 +60,8 @@ export default function CoachCard({
   const [specialties, setSpecialties] = useState<string[]>(coach?.specialties ?? []);
   const [certifications, setCertifications] = useState<string[]>(coach?.certifications ?? []);
   const [certOther, setCertOther] = useState(coach?.certification_other ?? "");
+  const [freeIntro, setFreeIntro] = useState(!!coach?.free_intro_call);
+  const [pricingOnCall, setPricingOnCall] = useState(!!coach?.pricing_on_call);
   const [match, setMatch] = useState<CoachMatch | null>(null);
   useEffect(() => {
     let live = true;
@@ -270,11 +273,31 @@ export default function CoachCard({
               </div>
             </Section>
             <Section title="Pricing">
-              <TextField
-                name="pricing"
-                placeholder="Pricing — a number or a range is fine"
-                defaultValue={coach?.pricing ?? ""}
-              />
+              <div className="space-y-3">
+                <TextField
+                  name="pricing"
+                  placeholder="Pricing — a number or a range is fine"
+                  defaultValue={coach?.pricing ?? ""}
+                />
+                <PricingCheck
+                  name="free_intro_call"
+                  label="Free introductory call"
+                  checked={freeIntro}
+                  onChange={(v) => {
+                    setFreeIntro(v);
+                    scheduleSave();
+                  }}
+                />
+                <PricingCheck
+                  name="pricing_on_call"
+                  label="Pricing discussed on the call"
+                  checked={pricingOnCall}
+                  onChange={(v) => {
+                    setPricingOnCall(v);
+                    scheduleSave();
+                  }}
+                />
+              </div>
             </Section>
           </>
         ) : (
@@ -318,9 +341,16 @@ export default function CoachCard({
                 <p className="text-[15px] leading-[1.6] text-body">{coach.best_for}</p>
               </Section>
             )}
-            {coach?.pricing && (
+            {coach && (coach.pricing || pricingNotes(coach).length > 0) && (
               <Section title="Pricing">
-                <p className="text-[15px] leading-[1.6] text-body">{coach.pricing}</p>
+                {coach.pricing && (
+                  <p className="text-[15px] leading-[1.6] text-body">{coach.pricing}</p>
+                )}
+                {pricingNotes(coach).length > 0 && (
+                  <div className={`flex flex-wrap gap-2.5 ${coach.pricing ? "mt-3" : ""}`}>
+                    <ChipRow items={pricingNotes(coach)} />
+                  </div>
+                )}
               </Section>
             )}
             {coach?.substack_url && (
@@ -380,6 +410,32 @@ export default function CoachCard({
       )}
 
     </div>
+  );
+}
+
+/** A labelled checkbox that posts nothing when unticked, like any checkbox. */
+function PricingCheck({
+  name,
+  label,
+  checked,
+  onChange,
+}: {
+  name: string;
+  label: string;
+  checked: boolean;
+  onChange: (value: boolean) => void;
+}) {
+  return (
+    <label className="flex cursor-pointer items-start gap-3 rounded-[16px] border border-border-1 bg-surface-1 p-4">
+      <input
+        type="checkbox"
+        name={name}
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="mt-0.5 h-5 w-5 shrink-0 accent-[#E8C987]"
+      />
+      <span className="text-[13px] leading-[1.5] text-body-2">{label}</span>
+    </label>
   );
 }
 
