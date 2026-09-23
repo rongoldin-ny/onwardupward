@@ -56,7 +56,7 @@ export type ClaimOutcome =
 
 type Claimant = { id: string; name: string | null; email: string | null };
 
-function sameEmail(a: string | null, b: string | null): boolean {
+export function sameEmail(a: string | null, b: string | null): boolean {
   if (!a || !b) return false;
   return a.trim().toLowerCase() === b.trim().toLowerCase();
 }

@@ -5,18 +5,20 @@ import { getReviewCounts } from "@/lib/coach-reviews-db";
 import { getCoachMatches } from "@/lib/coach-match";
 import { publicCoach } from "@/lib/coach-shared";
 import { getDirectoryCoaches } from "@/lib/coaches-db";
+import { isVetter } from "@/lib/vetting";
 import { Eyebrow, Logo, PageFrame } from "@/components/ui";
 import CoachesDirectory from "./CoachesDirectory";
 
 export const metadata = { title: "Coaches — onward/upward" };
 
 /**
- * Coach directory with search + smart filters. Unclaimed listings show no
- * direct contact routes; claimed coaches are bookable.
+ * Coach directory with search + smart filters. Members see claimed coaches
+ * only; admins also see the unclaimed listings, which show no contact routes.
  */
 export default async function CoachesPage() {
   const user = await requireUser();
-  const coaches = await getDirectoryCoaches();
+  const admin = isVetter(user);
+  const coaches = await getDirectoryCoaches({ includeUnclaimed: admin });
   // Not awaited: the directory renders right away and the match badges and
   // ordering stream in once Claude has read the member's profile.
   const matches = user.role === "candidate" ? getCoachMatches(user, coaches) : null;
@@ -41,17 +43,17 @@ export default async function CoachesPage() {
             Coaches and mentors who&apos;ve made the climb.
           </h1>
           <p className="mt-3 hidden max-w-[560px] text-[15px] leading-[1.5] text-secondary md:block">
-            A curated bench of design and product leadership coaches. Unclaimed
-            profiles haven&apos;t joined the network yet — introductions open up
-            once they do.
+            A curated bench of design and product leadership coaches.
           </p>
 
           <CoachesDirectory coaches={coaches.map(publicCoach)} matches={matches} reviewCounts={reviewCounts} />
 
-          <p className="mt-8 text-[12px] text-muted">
-            Unclaimed coaches can&apos;t be contacted through onward/upward yet.
-            Know one of them? Encourage them to claim their profile.
-          </p>
+          {admin && (
+            <p className="mt-8 text-[12px] text-muted">
+              Unclaimed listings are visible to admins only until their coach
+              claims them.
+            </p>
+          )}
         </main>
       </div>
     </PageFrame>

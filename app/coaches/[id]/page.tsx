@@ -8,6 +8,8 @@ import { getDirectoryCoaches } from "@/lib/coaches-db";
 import type { Profile } from "@/lib/db";
 import { coachOnlyProfileView, toProfileView } from "@/lib/profile-view";
 import { accessFor } from "@/lib/viewer-access";
+import { isVetter } from "@/lib/vetting";
+import { sameEmail } from "@/lib/claims";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { trackingOptedOut } from "@/lib/tracking-consent";
 
@@ -45,6 +47,31 @@ export default async function CoachDetailPage({
   }
   if (coach.profile_id && user?.id === coach.profile_id) redirect("/profile?side=coach");
 
+  let hasPendingClaim = false;
+  if (user && coach.status === "unclaimed") {
+    const { data: claim } = await admin
+      .from("coach_claims")
+      .select("id")
+      .eq("coach_id", coach.id)
+      .eq("profile_id", user.id)
+      .eq("status", "pending")
+      .maybeSingle();
+    hasPendingClaim = !!claim;
+  }
+  // Unclaimed listings are private to members and coaches until claimed.
+  // Admins see them all; so does the coach the listing describes — signed out
+  // off a share link (the way in to claiming it), signed in under the listing's
+  // email, or waiting on a claim they've already made.
+  if (
+    coach.status === "unclaimed" &&
+    user &&
+    !isVetter(user) &&
+    !hasPendingClaim &&
+    !sameEmail(user.email, coach.email)
+  ) {
+    notFound();
+  }
+
   if (!(await trackingOptedOut())) await admin.from("analytics_events").insert({
     user_id: user?.id ?? null,
     event_type: "coach_view",
@@ -61,18 +88,6 @@ export default async function CoachDetailPage({
           .then((matches) => matches[coach.id] ?? null)
           .catch(() => null)
       : null;
-
-  let hasPendingClaim = false;
-  if (user && coach.status === "unclaimed") {
-    const { data: claim } = await admin
-      .from("coach_claims")
-      .select("id")
-      .eq("coach_id", coach.id)
-      .eq("profile_id", user.id)
-      .eq("status", "pending")
-      .maybeSingle();
-    hasPendingClaim = !!claim;
-  }
 
   const [reviews, ownReview] = await Promise.all([
     getCoachReviews(coach.id),
