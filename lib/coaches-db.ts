@@ -5,17 +5,21 @@ export type { CoachFeed, CoachRow } from "./coach-shared";
 export { TARGET_MENTEE_OPTIONS, coachLevels, coachFormats, coachPricing } from "./coach-shared";
 
 /**
- * Directory listings: approved first, then curated unclaimed. A claimed
+ * Directory listings: approved first, then curated unclaimed. Unclaimed
+ * listings were written from public info before the coach joined, so only
+ * admins browse them — pass `includeUnclaimed` for an admin viewer. A claimed
  * listing stays up on the strength of its own fields (see coachListingVisible)
  * — accepting a claim used to hide the card behind the claimant's member
  * profile, which took working listings down the moment they were handed over.
  */
-export async function getDirectoryCoaches(): Promise<CoachRow[]> {
+export async function getDirectoryCoaches({
+  includeUnclaimed = false,
+}: { includeUnclaimed?: boolean } = {}): Promise<CoachRow[]> {
   const admin = supabaseAdmin();
   const { data } = await admin
     .from("coaches")
     .select("*")
-    .in("status", ["approved", "unclaimed"])
+    .in("status", includeUnclaimed ? ["approved", "unclaimed"] : ["approved"])
     .order("status", { ascending: true }) // approved < unclaimed
     .order("created_at", { ascending: true });
   const coaches = (data ?? []) as CoachRow[];

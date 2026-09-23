@@ -154,6 +154,12 @@ export default function CoachCard({
         </span>
       </div>
 
+      {!editing && status === "unclaimed" && viewer !== "owner" && (
+        <p className="mt-2 text-[12.5px] leading-[1.5] text-muted">
+          This profile is hidden until claimed.
+        </p>
+      )}
+
       {editing && (
         <div className="mt-3">
           <TextField
