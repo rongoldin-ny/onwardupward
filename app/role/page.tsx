@@ -6,5 +6,5 @@ export default async function RolePage() {
   const user = await currentUser();
   if (!user) redirect("/signup");
   if (user.onboarding_complete) redirect(homeFor(user));
-  return <RoleSelect />;
+  return <RoleSelect initial={user.role === "coach" ? "coach" : "candidate"} />;
 }

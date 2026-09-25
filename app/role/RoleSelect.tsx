@@ -18,8 +18,9 @@ const roles = [
   },
 ] as const;
 
-export default function RoleSelect() {
-  const [selected, setSelected] = useState<"candidate" | "coach">("candidate");
+export default function RoleSelect({ initial = "candidate" }: { initial?: "candidate" | "coach" }) {
+  // Coming back from step 1 of onboarding, their earlier pick is preselected.
+  const [selected, setSelected] = useState<"candidate" | "coach">(initial);
   const [pending, startTransition] = useTransition();
 
   return (

@@ -65,7 +65,7 @@ export default async function SignInPage({
           <p className="mt-10 text-[15px] text-secondary">
             New here?{" "}
             <Link href="/signup" className="font-bold">
-              Create an account
+              Join the waitlist
             </Link>
           </p>
         </main>

@@ -19,9 +19,9 @@ export default async function SignUpPage() {
           </span>
 
           <h1 className="mt-9 text-[34px] leading-[1.08] font-black tracking-[-0.02em] text-cream">
-            Create an account.
+            Join the waitlist.
           </h1>
-          <p className="mt-3 text-[17px] text-secondary">{`${greeting()} — let's get you set up.`}</p>
+          <p className="mt-3 text-[17px] text-balance text-secondary">{`${greeting()} — tell us a little about you.`}</p>
 
           <div className="mt-9">
             <SignUpConsent />

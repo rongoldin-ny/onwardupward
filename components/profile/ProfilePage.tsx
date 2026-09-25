@@ -368,7 +368,7 @@ export default function ProfilePage({
                   href="/signup"
                   className="gold-gradient cta-glow shrink-0 rounded-full px-5 py-2.5 text-[14px] font-bold text-on-gold"
                 >
-                  Sign up to join the network
+                  Join the waitlist
                 </Link>
               )}
             </div>
@@ -487,7 +487,7 @@ export default function ProfilePage({
 
           {viewer === "public" && !claimable && (
             <footer className="mt-10">
-              <CtaLink href="/signup">Join the network</CtaLink>
+              <CtaLink href="/signup">Join the waitlist</CtaLink>
             </footer>
           )}
         </form>

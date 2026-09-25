@@ -17,7 +17,7 @@ export default function SignUpConsent() {
   return (
     <div>
       <GoogleButton
-        label="Sign up with Google"
+        label="Join the waitlist with Google"
         accepted={accepted}
         disabled={!accepted}
         onBlockedClick={() => {

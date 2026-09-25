@@ -1,4 +1,4 @@
-import { currentUser } from "@/lib/auth";
+import { currentUser, onWaitlist } from "@/lib/auth";
 import SiteNavClient from "./SiteNavClient";
 
 /**
@@ -21,6 +21,7 @@ export default async function SiteNav() {
       photoUrl={user.photo_url}
       profileHref={profileHref}
       isVetter={isVetter}
+      waitlisted={onWaitlist(user)}
     />
   );
 }

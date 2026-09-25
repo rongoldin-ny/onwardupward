@@ -145,6 +145,7 @@ const PROFILE_FIELD_ACCESS: Record<keyof Profile, "shared" | "private"> = {
   onboarding_complete: "shared",
   vetting_status: "shared",
   archived_at: "private",
+  waitlisted_at: "private",
   last_digest_sent_at: "private",
   last_sign_in_at: "private",
   created_at: "shared",
