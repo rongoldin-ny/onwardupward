@@ -8,10 +8,10 @@ import type { Profile } from "@/lib/db";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { labelForRoleType } from "@/lib/taxonomy";
 import { requireVetter } from "@/lib/vetting";
-import { Avatar, Cta, Eyebrow, Logo, PageFrame, Tag } from "@/components/ui";
+import { Avatar, Eyebrow, Logo, PageFrame, Tag } from "@/components/ui";
 import ReviewActions from "@/components/admin/ReviewActions";
 import AdminTabs from "../AdminTabs";
-import { letInFromWaitlist } from "./actions";
+import { letInFromWaitlist, rejectFromWaitlist } from "./actions";
 
 export const metadata = { title: "Waitlist — onward/upward" };
 
@@ -34,6 +34,7 @@ export default async function WaitlistPage() {
       .select("*")
       .eq("role", "coach")
       .not("waitlisted_at", "is", null)
+      .neq("vetting_status", "rejected")
       .order("waitlisted_at", { ascending: false }),
   ]);
   const members = (memberRows ?? []) as Profile[];
@@ -245,16 +246,18 @@ export default async function WaitlistPage() {
                         </p>
                       </div>
                       <Link
-                        href={`/candidate/${p.id}`}
+                        href={`/admin/vetting/${p.id}`}
                         aria-label="View full profile"
                         className="shrink-0 text-gold"
                       >
                         <ArrowRight size={17} strokeWidth={1.5} />
                       </Link>
                     </div>
-                    <form action={letInFromWaitlist.bind(null, p.id)} className="mt-4">
-                      <Cta type="submit">Let in</Cta>
-                    </form>
+                    <ReviewActions
+                      approveAction={letInFromWaitlist.bind(null, p.id)}
+                      rejectAction={rejectFromWaitlist.bind(null, p.id)}
+                      approveLabel="Let in"
+                    />
                   </div>
                 ))}
               </div>
