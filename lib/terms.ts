@@ -2,7 +2,8 @@ import type { Profile } from "./db";
 import { supabaseAdmin } from "./supabase/server";
 
 /**
- * Whether they ticked the box, carried across the round trip to Google.
+ * Whether they agreed at sign-up (joined past the Terms notice), carried
+ * across the round trip to Google.
  *
  * A cookie rather than a query param on the callback: the callback URL is
  * built by Supabase and comes back from Google, so anything we want to

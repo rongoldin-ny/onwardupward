@@ -19,7 +19,7 @@ import type { Profile } from "@/lib/db";
 
 const BASE_STEPS = [
   { title: "Start with your links.", subtitle: "We'll pull in what we can from your portfolio, résumé, or LinkedIn.", required: true },
-  { title: "A little more about you.", subtitle: "Optional — you can finish this from your profile any time.", required: false },
+  { title: "A little more about you.", subtitle: "Where you are in your career, and in the world.", required: true },
 ];
 const COACH_STEP = {
   title: "Your coaching.",
@@ -97,6 +97,26 @@ export default function OnboardingWizard({ profile }: Props) {
         setStep(1);
       });
       return;
+    }
+    if (index === 1) {
+      // Checked here rather than with `required`: every step lives in one
+      // form, and the browser can't point at a required field on a hidden step.
+      const missing = [
+        ["career_stage", "career stage"],
+        ["role_type", "type of work"],
+        ["country", "country"],
+        ["city", "city"],
+      ]
+        .filter(([name]) => !String(formData.get(name) ?? "").trim())
+        .map(([, label]) => label);
+      if (missing.length > 0) {
+        const list =
+          missing.length > 1
+            ? `${missing.slice(0, -1).join(", ")} and ${missing[missing.length - 1]}`
+            : missing[0];
+        setError(`Add your ${list} to continue.`);
+        return;
+      }
     }
     if (index < lastStep) {
       setStep(index + 1);
@@ -274,21 +294,23 @@ export default function OnboardingWizard({ profile }: Props) {
                 className="min-w-0 flex-1"
               />
             </div>
-            {/* Coaches get asked too — they're on the receiving end of another
-                coach's note as often as a member is. */}
-            <label className="flex cursor-pointer items-start gap-3 rounded-[20px] border border-border-1 bg-surface-2 p-5">
-              <input
-                type="checkbox"
-                name="allow_coach_contact"
-                checked={outreach}
-                onChange={(e) => setOutreach(e.target.checked)}
-                className="mt-0.5 h-5 w-5 shrink-0 accent-[#E8C987]"
-              />
-              <span className="text-[14px] leading-[1.5] text-secondary">
-                Allow coaches to contact me. They message you through onward/upward — your
-                email address stays private either way.
-              </span>
-            </label>
+            {/* Members only: it's about being approached as a mentee, which
+                isn't why someone signs up to coach. */}
+            {!isCoach && (
+              <label className="flex cursor-pointer items-start gap-3 rounded-[20px] border border-border-1 bg-surface-2 p-5">
+                <input
+                  type="checkbox"
+                  name="allow_coach_contact"
+                  checked={outreach}
+                  onChange={(e) => setOutreach(e.target.checked)}
+                  className="mt-0.5 h-5 w-5 shrink-0 accent-[#E8C987]"
+                />
+                <span className="text-[14px] leading-[1.5] text-secondary">
+                  Allow coaches to contact me. They message you through onward/upward — your
+                  email address stays private either way.
+                </span>
+              </label>
+            )}
           </div>
 
           {isCoach && (

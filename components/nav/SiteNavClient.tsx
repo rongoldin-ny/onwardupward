@@ -20,11 +20,11 @@ const NAV_ITEMS = [
 const OWN_CHROME = /^\/(profile|p\/[^/]+|coaches\/[^/]+)\/?$/;
 
 /**
- * Sign-up (role picker, onboarding wizard) and the waitlist get a bare nav:
- * nothing to wander off to mid-sign-up, and nothing a waitlisted member can
- * open yet. The waitlist screen carries its own sign-out, so it gets none.
+ * Sign-up (role picker, onboarding wizard) gets a bare nav: nothing to wander
+ * off to mid-sign-up. Waitlisted accounts are signed out as soon as they're
+ * seen, but get the same bare nav on the off chance a page renders first.
  */
-const SIGNUP_FLOW = /^\/(role|onboarding|waitlist)(\/|$)/;
+const SIGNUP_FLOW = /^\/(role|onboarding)(\/|$)/;
 
 export function inSignupFlow(pathname: string, waitlisted: boolean): boolean {
   return waitlisted || SIGNUP_FLOW.test(pathname);
@@ -51,7 +51,6 @@ export default function SiteNavClient({
   const [open, setOpen] = useState(false);
 
   if (inSignupFlow(pathname, waitlisted)) {
-    if (pathname.startsWith("/waitlist")) return null;
     return (
       <nav className="fixed top-5 right-5 z-40 flex items-center gap-6 md:right-7">
         {isVetter && (

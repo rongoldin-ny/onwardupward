@@ -6,6 +6,7 @@ import type { Profile } from "@/lib/db";
 import { toProfileView } from "@/lib/profile-view";
 import ProfilePage from "@/components/profile/ProfilePage";
 import { approveCandidate } from "./actions";
+import { letInFromWaitlist } from "@/app/admin/waitlist/actions";
 import { Cta } from "@/components/ui";
 
 /** Review one application: full profile preview + the accept switch. */
@@ -22,12 +23,17 @@ export default async function VettingReviewPage({
     .from("profiles")
     .select("*")
     .eq("id", id)
-    .eq("role", "candidate")
+    .in("role", ["candidate", "coach"])
     .maybeSingle();
   if (!data) notFound();
   const profile = data as Profile;
-  const approved = profile.vetting_status === "approved";
-  const approve = approveCandidate.bind(null, profile.id);
+  // Members are accepted through vetting; a waitlisted coach without a
+  // submitted card is simply let in (their card is reviewed on its own later).
+  const isCoach = profile.role === "coach";
+  const approved = isCoach ? !profile.waitlisted_at : profile.vetting_status === "approved";
+  const approve = isCoach
+    ? letInFromWaitlist.bind(null, profile.id)
+    : approveCandidate.bind(null, profile.id);
 
   return (
     <div>
@@ -41,7 +47,9 @@ export default async function VettingReviewPage({
             <p className="text-[15px] font-bold text-cream">
               {profile.name ?? profile.email ?? "Unnamed"}{" "}
               <span className={`eyebrow ml-2 ${approved ? "text-success" : "text-gold"}`}>
-                {approved ? "Approved" : "Pending review"}
+                {approved
+                  ? isCoach ? "Let in" : "Approved"
+                  : profile.vetting_status === "rejected" ? "Rejected" : "Pending review"}
               </span>
             </p>
             <p className="mt-0.5 truncate text-[12px] text-secondary">{profile.email}</p>
@@ -53,7 +61,7 @@ export default async function VettingReviewPage({
             {!approved && (
               <form action={approve}>
                 <Cta type="submit" className="!h-[44px] px-7 text-[14px] whitespace-nowrap">
-                  Accept into the network
+                  {isCoach ? "Let in" : "Accept into the network"}
                 </Cta>
               </form>
             )}

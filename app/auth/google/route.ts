@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     error || !data.url ? new URL("/signin?error=google", origin) : data.url,
   );
   applyCookies(response);
-  // Their answer to the terms checkbox, held until the callback can write it
+  // Their agreement from the sign-up page, held until the callback can write it
   // against an account that exists.
   if (searchParams.get("accepted") === "1") {
     response.cookies.set(TERMS_COOKIE, "1", {

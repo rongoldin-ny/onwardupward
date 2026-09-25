@@ -7,17 +7,11 @@ export default function GoogleButton({
   label = "Continue with Google",
   next,
   accepted = false,
-  disabled = false,
-  onBlockedClick,
 }: {
   label?: string;
   next?: string;
-  /** Records that they ticked the terms box — see lib/terms.ts. */
+  /** Records that they agreed to the Terms at sign-up — see lib/terms.ts. */
   accepted?: boolean;
-  /** Held back until something is answered first — see SignUpConsent. */
-  disabled?: boolean;
-  /** Called instead of navigating, so the page can say what's missing. */
-  onBlockedClick?: () => void;
 }) {
   const params = new URLSearchParams();
   if (next) params.set("next", next);
@@ -25,17 +19,6 @@ export default function GoogleButton({
   const href = params.size > 0 ? `/auth/google?${params}` : "/auth/google";
   const className =
     "flex h-[52px] w-full items-center justify-center gap-3 rounded-full bg-cream text-[15px] font-bold text-on-gold hover:bg-cream";
-
-  // A real button rather than a dead link: clicking it should tell you why
-  // nothing happened, not silently do nothing.
-  if (disabled) {
-    return (
-      <button type="button" aria-disabled onClick={onBlockedClick} className={`${className} opacity-50`}>
-        <GoogleMark />
-        {label}
-      </button>
-    );
-  }
 
   return (
     <a href={href} className={className}>
