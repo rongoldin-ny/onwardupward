@@ -312,7 +312,11 @@ export async function finishOnboarding(formData: FormData) {
       location_country: str(formData, "country") ?? user.location_country,
       location_state: str(formData, "state") ?? user.location_state,
       location_city: str(formData, "city") ?? user.location_city,
-      allow_coach_contact: formData.get("allow_coach_contact") === "on",
+      // Coaches aren't asked during onboarding, so theirs keeps its default.
+      allow_coach_contact:
+        user.role === "coach"
+          ? user.allow_coach_contact
+          : formData.get("allow_coach_contact") === "on",
       onboarding_complete: true,
     })
     .eq("id", user.id);
@@ -323,7 +327,7 @@ export async function finishOnboarding(formData: FormData) {
 
   // Members and coaches finishing now join the waitlist: flag them (admin
   // client — the privilege trigger keeps members from touching the flag),
-  // tell Ron, and show them the waitlist screen instead of the app.
+  // tell Ron, sign them out, and show them the waitlist screen instead of the app.
   const joining =
     (user.role === "candidate" || user.role === "coach") &&
     !user.waitlisted_at &&
@@ -334,6 +338,8 @@ export async function finishOnboarding(formData: FormData) {
       .update({ waitlisted_at: new Date().toISOString() })
       .eq("id", user.id);
     await notifyWaitlistSignup(user, formData);
+    // Nothing to use until they're let in, so don't leave them signed in.
+    await supabase.auth.signOut();
     redirect("/waitlist?joined=1");
   }
   redirect("/dashboard");
