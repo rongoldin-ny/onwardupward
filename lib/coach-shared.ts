@@ -41,7 +41,7 @@ export type CoachRow = {
   pricing_on_call: boolean;
   credentials: string | null;
   source: string | null;
-  status: "draft" | "unclaimed" | "pending" | "approved";
+  status: "draft" | "unclaimed" | "pending" | "approved" | "rejected";
   created_at: string;
   updated_at: string;
 };
