@@ -1,8 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import { ArrowLeft, Check, LoaderCircle } from "lucide-react";
+import { backToRoles } from "@/app/actions/auth";
 import { saveCoachAttributes } from "@/app/actions/coaches";
 import { importFromLinks, finishOnboarding } from "@/app/actions/onboarding";
 import { MenteeChips } from "@/components/CoachFormFields";
@@ -29,7 +29,6 @@ const COACH_STEP = {
 
 type Props = {
   profile: Profile;
-  exitHref?: string;
 };
 
 /**
@@ -37,8 +36,7 @@ type Props = {
  * their coaching attributes. All fields live in one form the whole time so
  * the final save carries everything, whichever step it's submitted from.
  */
-export default function OnboardingWizard({ profile, exitHref = "/role" }: Props) {
-  const router = useRouter();
+export default function OnboardingWizard({ profile }: Props) {
   const isCoach = profile.role === "coach";
   const steps = isCoach ? [...BASE_STEPS, COACH_STEP] : BASE_STEPS;
   const lastStep = steps.length - 1;
@@ -115,7 +113,13 @@ export default function OnboardingWizard({ profile, exitHref = "/role" }: Props)
     }
     finish(new FormData(formRef.current ?? undefined), false);
   };
-  const back = () => (step === 0 ? router.push(exitHref) : (setError(null), setStep(step - 1)));
+  const back = () => {
+    setError(null);
+    // Step 1 goes back to the role picker. A server redirect, same as the
+    // picker's own Continue — the client-side push here never landed.
+    if (step === 0) startTransition(() => backToRoles());
+    else setStep(step - 1);
+  };
 
   const p = profileData;
 
@@ -124,7 +128,13 @@ export default function OnboardingWizard({ profile, exitHref = "/role" }: Props)
     <div className="flex flex-1 flex-col px-7 pt-7 pb-8">
       <header>
         <div className="relative flex items-center justify-center">
-          <button type="button" onClick={back} aria-label="Back" className="absolute left-0 text-cream">
+          {/* 44px tap target around the 20px icon, pulled left so the icon stays put. */}
+          <button
+            type="button"
+            onClick={back}
+            aria-label="Back"
+            className="absolute -left-3 flex h-11 w-11 items-center justify-center text-cream"
+          >
             <ArrowLeft size={20} strokeWidth={1.5} />
           </button>
           <p className="eyebrow text-secondary">Step {step + 1} of {steps.length}</p>

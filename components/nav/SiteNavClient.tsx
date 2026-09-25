@@ -19,6 +19,17 @@ const NAV_ITEMS = [
  */
 const OWN_CHROME = /^\/(profile|p\/[^/]+|coaches\/[^/]+)\/?$/;
 
+/**
+ * Sign-up (role picker, onboarding wizard) and the waitlist get a bare nav:
+ * nothing to wander off to mid-sign-up, and nothing a waitlisted member can
+ * open yet. The waitlist screen carries its own sign-out, so it gets none.
+ */
+const SIGNUP_FLOW = /^\/(role|onboarding|waitlist)(\/|$)/;
+
+export function inSignupFlow(pathname: string, waitlisted: boolean): boolean {
+  return waitlisted || SIGNUP_FLOW.test(pathname);
+}
+
 function isActive(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
@@ -28,14 +39,42 @@ export default function SiteNavClient({
   photoUrl,
   profileHref,
   isVetter,
+  waitlisted,
 }: {
   userId: string;
   photoUrl: string | null;
   profileHref: string;
   isVetter: boolean;
+  waitlisted: boolean;
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+
+  if (inSignupFlow(pathname, waitlisted)) {
+    if (pathname.startsWith("/waitlist")) return null;
+    return (
+      <nav className="fixed top-5 right-5 z-40 flex items-center gap-6 md:right-7">
+        {isVetter && (
+          <span className="hidden items-center gap-6 md:flex">
+            <Link href="/members" className="text-[14px] font-bold text-secondary">
+              Members
+            </Link>
+            <Link href="/admin/waitlist" className="text-[14px] font-bold text-gold">
+              Admin
+            </Link>
+          </span>
+        )}
+        <button
+          type="button"
+          onClick={() => signOut()}
+          className="flex h-9 items-center text-[14px] font-bold text-secondary"
+        >
+          Sign out
+        </button>
+      </nav>
+    );
+  }
+
   // Admins also get the Members directory (next to Coaches) and the Admin area.
   const items = isVetter
     ? [NAV_ITEMS[0], { href: "/members", label: "Members" }, ...NAV_ITEMS.slice(1), { href: "/admin/waitlist", label: "Admin" }]

@@ -8,9 +8,10 @@ import type { Profile } from "@/lib/db";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { labelForRoleType } from "@/lib/taxonomy";
 import { requireVetter } from "@/lib/vetting";
-import { Avatar, Eyebrow, Logo, PageFrame, Tag } from "@/components/ui";
+import { Avatar, Cta, Eyebrow, Logo, PageFrame, Tag } from "@/components/ui";
 import ReviewActions from "@/components/admin/ReviewActions";
 import AdminTabs from "../AdminTabs";
+import { letInFromWaitlist } from "./actions";
 
 export const metadata = { title: "Waitlist — onward/upward" };
 
@@ -18,7 +19,7 @@ export const metadata = { title: "Waitlist — onward/upward" };
 export default async function WaitlistPage() {
   await requireVetter();
 
-  const [{ data: memberRows }, pendingCoaches, pendingClaims] = await Promise.all([
+  const [{ data: memberRows }, pendingCoaches, pendingClaims, { data: waitingCoachRows }] = await Promise.all([
     supabaseAdmin()
       .from("profiles")
       .select("*")
@@ -28,9 +29,19 @@ export default async function WaitlistPage() {
       .order("updated_at", { ascending: false }),
     getPendingCoaches(),
     getPendingClaims(),
+    supabaseAdmin()
+      .from("profiles")
+      .select("*")
+      .eq("role", "coach")
+      .not("waitlisted_at", "is", null)
+      .order("waitlisted_at", { ascending: false }),
   ]);
   const members = (memberRows ?? []) as Profile[];
-  const total = members.length + pendingCoaches.length + pendingClaims.length;
+  // Waitlisted coaches with a submitted card are let in by approving it above;
+  // these skipped the coaching step, so there's nothing to approve but them.
+  const submitted = new Set(pendingCoaches.map((c) => c.profile_id));
+  const waitingCoaches = ((waitingCoachRows ?? []) as Profile[]).filter((p) => !submitted.has(p.id));
+  const total = members.length + pendingCoaches.length + pendingClaims.length + waitingCoaches.length;
 
   return (
     <PageFrame size="wide">
@@ -216,6 +227,39 @@ export default async function WaitlistPage() {
               </p>
             )}
           </div>
+
+          {waitingCoaches.length > 0 && (
+            <>
+              <Eyebrow className="mt-9">Coaches without a card ({waitingCoaches.length})</Eyebrow>
+              <div className="mt-3 space-y-3">
+                {waitingCoaches.map((p) => (
+                  <div key={p.id} className="rounded-[20px] border border-border-1 bg-surface-2 p-4">
+                    <div className="flex items-center gap-4">
+                      <Avatar id={p.id} src={p.photo_url} size={48} />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-[16px] font-bold text-cream">
+                          {p.name ?? p.email ?? "Unnamed"}
+                        </p>
+                        <p className="mt-0.5 truncate text-[13px] text-secondary">
+                          {p.email ?? "No email on file"}
+                        </p>
+                      </div>
+                      <Link
+                        href={`/candidate/${p.id}`}
+                        aria-label="View full profile"
+                        className="shrink-0 text-gold"
+                      >
+                        <ArrowRight size={17} strokeWidth={1.5} />
+                      </Link>
+                    </div>
+                    <form action={letInFromWaitlist.bind(null, p.id)} className="mt-4">
+                      <Cta type="submit">Let in</Cta>
+                    </form>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </main>
       </div>
     </PageFrame>

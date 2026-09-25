@@ -19,7 +19,10 @@ export async function approveCandidate(profileId: string): Promise<void> {
   if (!data) redirect("/admin/waitlist");
 
   if (data.vetting_status !== "approved") {
-    await admin.from("profiles").update({ vetting_status: "approved" }).eq("id", profileId);
+    await admin
+      .from("profiles")
+      .update({ vetting_status: "approved", waitlisted_at: null })
+      .eq("id", profileId);
 
     if (data.email) {
       const firstName = (data.name ?? "there").split(" ")[0];

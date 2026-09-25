@@ -29,6 +29,17 @@ export async function chooseRole(role: "candidate" | "recruiter" | "coach") {
   redirect("/onboarding");
 }
 
+/**
+ * Step 1's back arrow: back to the role picker to choose again. A server
+ * redirect, like the picker's own Continue, rather than a client-side push.
+ */
+export async function backToRoles() {
+  const user = await currentUser();
+  if (!user) redirect("/signin");
+  if (user.onboarding_complete) redirect(homeFor(user));
+  redirect("/role");
+}
+
 export async function signOut() {
   const supabase = await supabaseServer();
   await supabase.auth.signOut();

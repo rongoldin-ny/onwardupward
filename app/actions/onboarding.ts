@@ -5,7 +5,8 @@ import { requireUser, homeFor } from "@/lib/auth";
 import { syncCoachIdentity } from "@/lib/coaches-db";
 import { supabaseServer, supabaseAdmin } from "@/lib/supabase/server";
 import { getWorkHistory, type PortfolioImage, type Profile, type WorkHistoryRow } from "@/lib/db";
-import { emailShell, sendEmail } from "@/lib/email";
+import { emailShell, escapeHtml, sendEmail } from "@/lib/email";
+import { labelForCareerStage, labelForRoleType } from "@/lib/taxonomy";
 import { triggerAutoFillThenEnrich } from "@/lib/auto-fill";
 import { triggerEnrichment } from "@/lib/enrich";
 import { extractProfile, fetchPortfolioHtml, normalizeUrl } from "@/lib/extract";
@@ -320,24 +321,63 @@ export async function finishOnboarding(formData: FormData) {
   if (!user.onboarding_complete) triggerAutoFillThenEnrich(user.id);
   else triggerEnrichment(user.id); // async — does not block navigation
 
-  // First completion of a pending application → tell the vetting inbox.
-  if (user.vetting_status === "pending" && !user.onboarding_complete) {
-    await sendEmail({
-      to: "r@rongoldin.com",
-      subject: `New member application: ${user.name ?? user.email ?? "unnamed"}`,
-      html: emailShell(
-        "A new member wants in.",
-        `<p><strong style="color:#efe9dd">${user.name ?? "An unnamed candidate"}</strong> (${
-          user.email ?? "no email"
-        }) just finished their profile and is waiting for review.</p>`,
-        {
-          label: "Review their profile",
-          url: `https://onwardupward.io/admin/vetting/${user.id}`,
-        },
-      ),
-    });
+  // Members and coaches finishing now join the waitlist: flag them (admin
+  // client — the privilege trigger keeps members from touching the flag),
+  // tell Ron, and show them the waitlist screen instead of the app.
+  const joining =
+    (user.role === "candidate" || user.role === "coach") &&
+    !user.waitlisted_at &&
+    user.vetting_status !== "approved";
+  if (joining) {
+    await supabaseAdmin()
+      .from("profiles")
+      .update({ waitlisted_at: new Date().toISOString() })
+      .eq("id", user.id);
+    await notifyWaitlistSignup(user, formData);
+    redirect("/waitlist?joined=1");
   }
   redirect("/dashboard");
+}
+
+/** One email per waitlist sign-up, with enough to judge them at a glance. */
+async function notifyWaitlistSignup(user: Profile, formData: FormData) {
+  const isCoach = user.role === "coach";
+  const roleType = str(formData, "role_type") ?? user.role_type;
+  const who = user.name ?? user.email ?? "Someone";
+  const location = [
+    str(formData, "city") ?? user.location_city,
+    str(formData, "state") ?? user.location_state,
+    str(formData, "country") ?? user.location_country,
+  ]
+    .filter(Boolean)
+    .join(", ");
+  const rows: [string, string | null][] = [
+    ["Joining as", isCoach ? "Coach" : "Member"],
+    ["Email", user.email],
+    ["LinkedIn", user.linkedin_url],
+    ["Portfolio", user.portfolio_url],
+    ["Résumé", user.resume_url ? "Uploaded" : null],
+    ["Career stage", labelForCareerStage(str(formData, "career_stage") ?? user.career_stage) || null],
+    ["Type of work", roleType ? labelForRoleType(roleType) : null],
+    ["Location", location || null],
+    ["Coaching offering", isCoach ? str(formData, "offering") : null],
+  ];
+  const list = rows
+    .filter(([, v]) => v)
+    .map(
+      ([k, v]) =>
+        `<p style="margin:0 0 6px"><span style="color:#8a8474">${k}:</span> <span style="color:#efe9dd">${escapeHtml(v!)}</span></p>`,
+    )
+    .join("");
+  await sendEmail({
+    to: "r@rongoldin.com",
+    subject: `New waitlist sign-up: ${who}${isCoach ? " (coach)" : ""}`,
+    html: emailShell(
+      "Someone joined the waitlist.",
+      `<p style="margin:0 0 14px"><strong style="color:#efe9dd">${escapeHtml(who)}</strong> just finished onboarding and is waiting to be let in.</p>${list}`,
+      { label: "Review the waitlist", url: "https://onwardupward.io/admin/waitlist" },
+    ),
+  });
 }
 
 export async function saveRecruiterSearch(formData: FormData): Promise<{ error?: string }> {

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Schibsted_Grotesk } from "next/font/google";
 import PageViewTracker from "@/components/PageViewTracker";
-import { currentUser } from "@/lib/auth";
+import { currentUser, onWaitlist } from "@/lib/auth";
 import SiteNav from "@/components/nav/SiteNav";
 import SiteFooter from "@/components/nav/SiteFooter";
 import "./globals.css";
@@ -31,7 +31,7 @@ export default async function RootLayout({
         <PageViewTracker />
         <SiteNav />
         {children}
-        <SiteFooter signedIn={!!user} />
+        <SiteFooter signedIn={!!user} waitlisted={!!user && onWaitlist(user)} />
       </body>
     </html>
   );

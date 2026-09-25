@@ -19,6 +19,7 @@ export const currentUser = cache(async (): Promise<Profile | null> => {
 /** Where a signed-in user's "home" is, per PRD §7.2. */
 export function homeFor(user: Profile): string {
   if (user.role === "admin") return "/admin";
+  if (onWaitlist(user)) return "/waitlist";
   if (!user.onboarding_complete) return "/onboarding";
   if (user.role === "candidate") return "/dashboard";
   if (user.role === "coach") return "/coach";
@@ -33,9 +34,26 @@ export async function signInPath(): Promise<string> {
     : "/signin";
 }
 
+/**
+ * Finished onboarding but not let in yet. Admins and the vetting account are
+ * never held back, so a stray flag can't lock out the people who clear it.
+ */
+export function onWaitlist(user: Profile): boolean {
+  return (
+    !!user.waitlisted_at &&
+    user.role !== "admin" &&
+    (user.email ?? "").toLowerCase() !== "r@rongoldin.com"
+  );
+}
+
+/**
+ * Every signed-in page and action goes through here, so this is where the
+ * waitlist holds people at /waitlist until they're let in.
+ */
 export async function requireUser(): Promise<Profile> {
   const user = await currentUser();
   if (!user) redirect(await signInPath());
+  if (onWaitlist(user)) redirect("/waitlist");
   return user;
 }
 

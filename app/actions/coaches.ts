@@ -89,6 +89,9 @@ export async function saveCoachAttributes(
   if (substackRaw && !substackUrl) return { error: "That newsletter link doesn't look right." };
 
   const existing = await getCoachByProfileId(user.id);
+  // Submitting from the onboarding wizard: the waitlist email that follows
+  // already covers it, so don't send Ron two.
+  const notify = user.onboarding_complete;
   const row = {
     profile_id: user.id,
     full_name: user.name ?? existing?.full_name ?? "Unnamed",
@@ -129,7 +132,7 @@ export async function saveCoachAttributes(
       return { error: `Couldn't save your coaching card — ${error.message}` };
     }
     saved = data as CoachRow;
-    if (becomesPending) await notifyCoachApplication(user);
+    if (becomesPending && notify) await notifyCoachApplication(user);
   } else {
     const { data, error } = await admin
       .from("coaches")
@@ -141,7 +144,7 @@ export async function saveCoachAttributes(
       return { error: `Couldn't save your coaching card — ${error.message}` };
     }
     saved = data as CoachRow;
-    if (submit) await notifyCoachApplication(user);
+    if (submit && notify) await notifyCoachApplication(user);
   }
 
   // A coach account's first listing save completes their onboarding.
@@ -181,6 +184,10 @@ export async function approveCoach(coachId: string): Promise<void> {
 
   if (data.status !== "approved") {
     await admin.from("coaches").update({ status: "approved" }).eq("id", coachId);
+    // Approving the card is also what lets a waitlisted coach in.
+    if (data.profile_id) {
+      await admin.from("profiles").update({ waitlisted_at: null }).eq("id", data.profile_id);
+    }
     if (data.email) {
       const firstName = String(data.full_name ?? "there").split(" ")[0];
       await sendEmail({

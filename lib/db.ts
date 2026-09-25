@@ -57,6 +57,8 @@ export type Profile = {
   vetting_status: "pending" | "approved" | "rejected";
   /** Set when an admin removes the member; archived profiles are hidden everywhere. */
   archived_at: string | null;
+  /** Set when they finish onboarding during the waitlist; cleared when an admin lets them in. */
+  waitlisted_at: string | null;
   last_digest_sent_at: string | null;
   last_sign_in_at: string | null;
   created_at: string;
