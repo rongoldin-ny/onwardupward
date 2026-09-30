@@ -69,6 +69,7 @@ export const TARGET_MENTEE_OPTIONS = [
   "Senior ICs",
   "Managers & leads",
   "Directors & execs",
+  "Founders",
 ] as const;
 
 /**
@@ -157,6 +158,7 @@ export function coachLevels(c: CoachRow): string[] {
   if (/\bic\b|ics\b|senior designer|craft/i.test(text)) out.push("Senior ICs");
   if (/early|junior|career chang|grads|students|first role|aspiring/i.test(text))
     out.push("Early career");
+  if (/founder/i.test(text)) out.push("Founders");
   return out;
 }
 
