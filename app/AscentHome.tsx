@@ -119,8 +119,9 @@ export default function AscentHome() {
 
         <p className="open-note reveal">
           Currently open to <span className="gold">product managers</span>,{" "}
-          <span className="gold">product and content designers</span>, and{" "}
-          <span className="gold">user researchers</span> at all levels. More
+          <span className="gold">product and content designers</span>,{" "}
+          <span className="gold">user researchers</span>, and{" "}
+          <span className="gold">founders</span> at all levels. More
           coming soon.
         </p>
 
