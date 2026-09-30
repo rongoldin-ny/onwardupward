@@ -7,14 +7,11 @@ export const ROLE_TYPES = [
 
 /**
  * Coaching practices that aren't one of the platform's member role types.
- * A member is never a "startup founder" in our taxonomy — these describe what
- * a coach works on, which is a different axis from who they work with
- * (TARGET_MENTEE_OPTIONS, where "Directors & execs" and "Founders" live).
+ * These describe what a coach works on, which is a different axis from who
+ * they work with (TARGET_MENTEE_OPTIONS, where "Directors & execs" and
+ * "Founders" live — founder coaching is expressed there, not here).
  */
-export const COACHING_SPECIALTIES = [
-  { value: "executive_coaching", label: "Executive" },
-  { value: "founder_coaching", label: "Startup founder" },
-];
+export const COACHING_SPECIALTIES = [{ value: "executive_coaching", label: "Executive" }];
 
 /** Everything a coach can say they specialize in. */
 export const COACH_SPECIALTIES = [...ROLE_TYPES, ...COACHING_SPECIALTIES];
