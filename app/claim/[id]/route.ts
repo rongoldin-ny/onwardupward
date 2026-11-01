@@ -23,7 +23,7 @@ export async function GET(
     sameSite: "lax",
     secure: origin.startsWith("https://"),
     path: "/",
-    maxAge: 60 * 60, // an hour is plenty to finish a Google signup
+    maxAge: 60 * 60, // an hour is plenty to finish signing up
   });
   return response;
 }

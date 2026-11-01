@@ -3,7 +3,7 @@ import { LegalDoc, LegalList, LegalSection } from "@/components/legal/LegalDoc";
 
 export const metadata = { title: "Terms of Service — onward/upward" };
 
-const UPDATED = "September 16, 2026";
+const UPDATED = "November 1, 2026";
 
 const SECTIONS: [string, string][] = [
   ["agreement", "Agreeing to these terms"],
@@ -58,7 +58,7 @@ export default function TermsPage() {
       <LegalSection id="eligibility" title="Who can use onward/upward">
         <LegalList>
           <li>You must be at least 18 and able to form a binding contract.</li>
-          <li>You sign in with a Google account and are responsible for keeping it secure.</li>
+          <li>You sign in with a Google account or an email and password, and are responsible for keeping them secure.</li>
           <li>You may have one account, and the information you provide must be accurate and about you.</li>
           <li>
             If you use onward/upward on behalf of a company, you confirm you&apos;re authorized to accept
