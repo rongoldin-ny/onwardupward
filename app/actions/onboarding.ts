@@ -2,7 +2,8 @@
 
 import { redirect } from "next/navigation";
 import { requireUser, homeFor } from "@/lib/auth";
-import { syncCoachIdentity } from "@/lib/coaches-db";
+import { aiBasicsFromSources, type AiBasicsResult } from "@/lib/ai-fill";
+import { getCoachByProfileId, syncCoachIdentity } from "@/lib/coaches-db";
 import { supabaseServer, supabaseAdmin } from "@/lib/supabase/server";
 import { getWorkHistory, type PortfolioImage, type Profile, type WorkHistoryRow } from "@/lib/db";
 import { emailShell, escapeHtml, sendEmail } from "@/lib/email";
@@ -24,12 +25,17 @@ export type ImportResult = {
   found: string[];
   profile?: Profile;
   work?: WorkHistoryRow[];
+  /** Answers for the coaching step, which aren't saved until they finish it. */
+  coaching?: Pick<AiBasicsResult, "offering" | "target_mentees" | "best_for" | "booking_url" | "pricing">;
 };
 
 /**
  * Import-first onboarding: save the candidate's links, then try to pre-fill
  * the rest of the profile from their portfolio site. Only ever fills fields
  * the candidate hasn't set themselves — the wizard shows everything for review.
+ * The questions on the later steps are pre-filled from Claude's confident
+ * answers alone; extractProfile's guesses are fine for a profile they'll edit,
+ * but not for an answer they might click straight past.
  */
 export async function importFromLinks(formData: FormData): Promise<ImportResult> {
   const user = await requireUser();
@@ -82,6 +88,14 @@ export async function importFromLinks(formData: FormData): Promise<ImportResult>
   const html = portfolio
     ? await fetchPortfolioHtml(portfolio, portfolioPassword ?? user.portfolio_password)
     : null;
+
+  const patch: Record<string, unknown> = {};
+  const set = (column: keyof Profile, value: unknown, current: unknown, label: string) => {
+    if (value === undefined || value === null || current) return;
+    patch[column] = value;
+    found.push(label);
+  };
+
   if (html || resumeText) {
     // The heuristic extractor runs on visible text, so a résumé's plain text
     // works through the same patterns; portfolio wins ties, résumé fills gaps.
@@ -90,33 +104,14 @@ export async function importFromLinks(formData: FormData): Promise<ImportResult>
       const extracted = {
         name: extractions.find((e) => e.name)?.name,
         bio: extractions.find((e) => e.bio)?.bio,
-        roleType: extractions.find((e) => e.roleType)?.roleType,
-        careerStage: extractions.find((e) => e.careerStage)?.careerStage,
-        city: extractions.find((e) => e.city)?.city,
-        state: extractions.find((e) => e.state)?.state,
-        country: extractions.find((e) => e.country)?.country,
         industries: extractions.find((e) => e.industries.length > 0)?.industries ?? [],
         work: extractions.find((e) => e.work.length > 0)?.work ?? [],
       };
-      const patch: Record<string, unknown> = {};
-      const set = (column: keyof Profile, value: unknown, current: unknown, label: string) => {
-        if (value === undefined || value === null || current) return;
-        patch[column] = value;
-        found.push(label);
-      };
       set("name", extracted.name, user.name, "name");
       set("bio", extracted.bio, user.bio, "bio");
-      set("role_type", extracted.roleType, user.role_type, "role");
-      set("career_stage", extracted.careerStage, user.career_stage, "career stage");
-      set("location_city", extracted.city, user.location_city, "city");
-      set("location_state", extracted.state, user.location_state, "state");
-      set("location_country", extracted.country, user.location_country, "country");
       if (extracted.industries.length > 0 && user.industries.length === 0) {
         patch.industries = extracted.industries;
         found.push("industries");
-      }
-      if (Object.keys(patch).length > 0) {
-        await supabase.from("profiles").update(patch).eq("id", user.id);
       }
 
       if (extracted.work.length > 0 && (await getWorkHistory(user.id)).length === 0) {
@@ -133,8 +128,38 @@ export async function importFromLinks(formData: FormData): Promise<ImportResult>
     }
   }
 
+  const basics = await aiBasicsFromSources({
+    portfolioHtml: html,
+    linkedinUrl: linkedin,
+    resumeText,
+  });
+  if (basics) {
+    set("role_type", basics.role_type, user.role_type, "area of expertise");
+    set("career_stage", basics.career_stage, user.career_stage, "career stage");
+    set("location_city", basics.location_city, user.location_city, "city");
+    set("location_state", basics.location_state, user.location_state, "state");
+    set("location_country", basics.location_country, user.location_country, "country");
+  }
+  if (Object.keys(patch).length > 0) {
+    await supabase.from("profiles").update(patch).eq("id", user.id);
+  }
+
+  const coaching =
+    basics && (user.role === "coach" || (await getCoachByProfileId(user.id)))
+      ? {
+          offering: basics.offering,
+          target_mentees: basics.target_mentees,
+          best_for: basics.best_for,
+          booking_url: basics.booking_url,
+          pricing: basics.pricing,
+        }
+      : undefined;
+  if (coaching && (coaching.offering || coaching.target_mentees.length > 0)) {
+    found.push("coaching details");
+  }
+
   const { data: fresh } = await supabase.from("profiles").select("*").eq("id", user.id).single();
-  return { found, profile: fresh as Profile, work: await getWorkHistory(user.id) };
+  return { found, profile: fresh as Profile, work: await getWorkHistory(user.id), coaching };
 }
 
 export async function saveBasics(formData: FormData): Promise<{ error?: string }> {
@@ -312,11 +337,7 @@ export async function finishOnboarding(formData: FormData) {
       location_country: str(formData, "country") ?? user.location_country,
       location_state: str(formData, "state") ?? user.location_state,
       location_city: str(formData, "city") ?? user.location_city,
-      // Coaches aren't asked during onboarding, so theirs keeps its default.
-      allow_coach_contact:
-        user.role === "coach"
-          ? user.allow_coach_contact
-          : formData.get("allow_coach_contact") === "on",
+      allow_coach_contact: formData.get("allow_coach_contact") === "on",
       onboarding_complete: true,
     })
     .eq("id", user.id);
@@ -347,7 +368,8 @@ export async function finishOnboarding(formData: FormData) {
 
 /** One email per waitlist sign-up, with enough to judge them at a glance. */
 async function notifyWaitlistSignup(user: Profile, formData: FormData) {
-  const isCoach = user.role === "coach";
+  const isMember = user.role === "candidate";
+  const isCoach = !isMember || !!(await getCoachByProfileId(user.id));
   const roleType = str(formData, "role_type") ?? user.role_type;
   const who = user.name ?? user.email ?? "Someone";
   const location = [
@@ -358,13 +380,13 @@ async function notifyWaitlistSignup(user: Profile, formData: FormData) {
     .filter(Boolean)
     .join(", ");
   const rows: [string, string | null][] = [
-    ["Joining as", isCoach ? "Coach" : "Member"],
+    ["Joining as", isMember ? (isCoach ? "Member and coach" : "Member") : "Coach"],
     ["Email", user.email],
     ["LinkedIn", user.linkedin_url],
     ["Portfolio", user.portfolio_url],
     ["Résumé", user.resume_url ? "Uploaded" : null],
     ["Career stage", labelForCareerStage(str(formData, "career_stage") ?? user.career_stage) || null],
-    ["Type of work", roleType ? labelForRoleType(roleType) : null],
+    ["Area of expertise", roleType ? labelForRoleType(roleType) : null],
     ["Location", location || null],
     ["Coaching offering", isCoach ? str(formData, "offering") : null],
   ];

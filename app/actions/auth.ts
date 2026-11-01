@@ -1,31 +1,33 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { supabaseServer } from "@/lib/supabase/server";
+import { supabaseAdmin, supabaseServer } from "@/lib/supabase/server";
 import { currentUser, homeFor } from "@/lib/auth";
+import { discardCoachDraft, startCoachDraft } from "@/lib/coaches-db";
 
 // Sign-in and sign-up both run through Google OAuth — see
 // app/auth/google/route.ts (start) and app/auth/callback/route.ts (return).
 
-export async function chooseRole(role: "candidate" | "recruiter" | "coach") {
+export async function chooseRoles(picked: ("candidate" | "coach")[]) {
   const user = await currentUser();
   if (!user) redirect("/signin");
   if (user.onboarding_complete) redirect(homeFor(user));
+  const seeking = picked.includes("candidate");
+  const coaching = picked.includes("coach");
+  if (!seeking && !coaching) redirect("/role");
+  // Someone doing both is a member with a coaching card, the same as a member
+  // who adds one later: only members get matched with coaches, and an approved
+  // card already lets them work as a coach (see lib/viewer-access.ts).
   // role_chosen is what the OAuth callback reads to tell a brand-new account
   // from someone who picked 'candidate' on purpose — `role` alone can't say,
-  // since that's also the column default.
-  if (role === "coach") {
-    // The privilege trigger only allows self-serve candidate/recruiter
-    // switches; the coach role is granted through the admin client.
-    const { supabaseAdmin } = await import("@/lib/supabase/server");
-    await supabaseAdmin()
-      .from("profiles")
-      .update({ role: "coach", role_chosen: true })
-      .eq("id", user.id);
-  } else {
-    const supabase = await supabaseServer();
-    await supabase.from("profiles").update({ role, role_chosen: true }).eq("id", user.id);
-  }
+  // since that's also the column default. The admin client because the
+  // privilege trigger doesn't allow self-serve moves to or from coach.
+  await supabaseAdmin()
+    .from("profiles")
+    .update({ role: seeking ? "candidate" : "coach", role_chosen: true })
+    .eq("id", user.id);
+  if (seeking && coaching) await startCoachDraft(user);
+  else if (seeking) await discardCoachDraft(user.id);
   redirect("/onboarding");
 }
 

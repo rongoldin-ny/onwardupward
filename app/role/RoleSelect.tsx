@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Check } from "lucide-react";
-import { chooseRole } from "@/app/actions/auth";
+import { chooseRoles } from "@/app/actions/auth";
 import { Cta, Logo, PageFrame } from "@/components/ui";
 
 const roles = [
@@ -18,10 +18,14 @@ const roles = [
   },
 ] as const;
 
-export default function RoleSelect({ initial = "candidate" }: { initial?: "candidate" | "coach" }) {
-  // Coming back from step 1 of onboarding, their earlier pick is preselected.
-  const [selected, setSelected] = useState<"candidate" | "coach">(initial);
+export type RoleChoice = (typeof roles)[number]["id"];
+
+export default function RoleSelect({ initial }: { initial: RoleChoice[] }) {
+  const [selected, setSelected] = useState<RoleChoice[]>(initial);
   const [pending, startTransition] = useTransition();
+
+  const toggle = (id: RoleChoice) =>
+    setSelected(selected.includes(id) ? selected.filter((r) => r !== id) : [...selected, id]);
 
   return (
     <PageFrame size="narrow" centered>
@@ -34,15 +38,17 @@ export default function RoleSelect({ initial = "candidate" }: { initial?: "candi
         <h1 className="text-[38px] leading-[1.08] font-black tracking-[-0.02em] text-cream">
           What brings you here?
         </h1>
+        <p className="mt-3 text-[17px] text-secondary">Pick all that apply.</p>
 
         <div className="mt-9 space-y-4">
           {roles.map((role) => {
-            const isSelected = selected === role.id;
+            const isSelected = selected.includes(role.id);
             return (
               <button
                 key={role.id}
                 type="button"
-                onClick={() => setSelected(role.id)}
+                aria-pressed={isSelected}
+                onClick={() => toggle(role.id)}
                 className={`w-full rounded-[20px] border bg-surface-2 p-5 text-left ${
                   isSelected ? "border-gold-active" : "border-border-1"
                 }`}
@@ -69,8 +75,9 @@ export default function RoleSelect({ initial = "candidate" }: { initial?: "candi
 
       <footer className="mt-auto pt-10">
         <Cta
-          disabled={pending}
-          onClick={() => startTransition(() => chooseRole(selected))}
+          disabled={pending || selected.length === 0}
+          className="disabled:opacity-40"
+          onClick={() => startTransition(() => chooseRoles(selected))}
         >
           {pending ? "One moment…" : "Continue"}
         </Cta>

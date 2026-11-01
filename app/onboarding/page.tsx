@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { requireUser, homeFor } from "@/lib/auth";
+import { getCoachByProfileId } from "@/lib/coaches-db";
 import { supabaseServer } from "@/lib/supabase/server";
 import OnboardingWizard from "./OnboardingWizard";
 import RecruiterWizard from "./RecruiterWizard";
@@ -27,5 +28,6 @@ export default async function OnboardingPage() {
     );
   }
 
-  return <OnboardingWizard profile={user} />;
+  const coaching = user.role === "coach" || !!(await getCoachByProfileId(user.id));
+  return <OnboardingWizard profile={user} coaching={coaching} />;
 }
