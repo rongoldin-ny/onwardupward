@@ -10,7 +10,7 @@ const CURRENT = "ou:route:current";
 const PREVIOUS = "ou:route:previous";
 
 /** Screens that only bounce a signed-in user onward — never a close target. */
-const PASS_THROUGH = /^\/(signin|signup|auth|onboarding|role|claim)(\/|$)/;
+const PASS_THROUGH = /^\/(signin|signup|forgot-password|reset-password|auth|onboarding|role|claim)(\/|$)/;
 
 function storage(): Storage | null {
   try {

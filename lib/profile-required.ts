@@ -43,7 +43,7 @@ export type ChecklistItem = { label: string; done: boolean };
  * only for a face, a background and somewhere to look them up.
  *
  * Both bars keep the email: it's the only way anyone gets contacted, and
- * while Google hands it over at signup, nothing in the schema guarantees it,
+ * while every sign-up hands it over, nothing in the schema guarantees it,
  * so the check stays rather than trusting that it's always there.
  *
  * `isCoach`: whether the profile has a coach listing (any status). It's a

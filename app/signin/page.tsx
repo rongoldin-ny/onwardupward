@@ -2,12 +2,16 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { currentUser, homeFor } from "@/lib/auth";
 import { greeting } from "@/lib/greeting";
+import { OrDivider } from "@/components/AuthFields";
 import GoogleButton from "@/components/GoogleButton";
 import { Logo, PageFrame } from "@/components/ui";
+import { safeNext } from "@/lib/arrival";
+import SignInForm from "./SignInForm";
 
 const errors: Record<string, string> = {
   "google-cancelled": "You cancelled the Google sign-in — try again when you're ready.",
   google: "We couldn't complete that sign-in. Try again.",
+  link: "That link has expired or was opened in a different browser. If you were confirming your email, try signing in.",
 };
 
 export default async function SignInPage({
@@ -45,8 +49,12 @@ export default async function SignInPage({
           )}
 
           <div className="mt-9">
-            <GoogleButton next={next?.startsWith("/") ? next : undefined} />
+            <GoogleButton next={safeNext(next)} />
           </div>
+
+          <OrDivider />
+
+          <SignInForm next={safeNext(next)} />
 
           <p className="mt-5 text-[13px] leading-[1.5] text-muted">
             By continuing you agree to our{" "}
