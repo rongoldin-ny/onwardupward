@@ -36,7 +36,7 @@ export default function IdentityPanel({ view, ver }: { view: ProfileView; ver: n
           <Labeled label="Email" pill={pill("email")}>
             <p className="px-1 text-[14px] text-body-2">
               {p.email ?? "—"}
-              <span className="text-muted"> · from your Google account</span>
+              <span className="text-muted"> · the one you signed up with</span>
             </p>
           </Labeled>
           <Labeled label="Location">

@@ -2,7 +2,7 @@ import { LegalDoc, LegalList, LegalSection } from "@/components/legal/LegalDoc";
 
 export const metadata = { title: "Privacy Policy — onward/upward" };
 
-const UPDATED = "September 16, 2026";
+const UPDATED = "November 1, 2026";
 
 const SECTIONS: [string, string][] = [
   ["who-we-are", "Who we are"],
@@ -61,7 +61,8 @@ export default function PrivacyPage() {
         <LegalList>
           <li>
             <strong>Account details.</strong> When you sign in with Google, we receive your name, email
-            address and profile photo.
+            address and profile photo. When you sign up with an email address, you give us your name,
+            email address and a password, which is stored only in hashed form.
           </li>
           <li>
             <strong>Your profile.</strong> Location, role, career stage, background, LinkedIn,
@@ -227,7 +228,7 @@ export default function PrivacyPage() {
           <li><strong>Vercel</strong>: website hosting</li>
           <li><strong>Anthropic</strong>: AI processing</li>
           <li><strong>Resend</strong>: email delivery</li>
-          <li><strong>Google</strong>: sign-in</li>
+          <li><strong>Google</strong>: sign-in, if you choose it</li>
         </LegalList>
       </LegalSection>
 
