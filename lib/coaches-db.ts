@@ -69,6 +69,31 @@ export async function getCoachByProfileId(profileId: string): Promise<CoachRow |
   return (data as CoachRow) ?? null;
 }
 
+/**
+ * A member who also wants to coach has a coaching card from the moment they
+ * say so: that's how sign-up remembers to ask them the coaching questions.
+ */
+export async function startCoachDraft(user: {
+  id: string;
+  name: string | null;
+  email: string | null;
+  photo_url: string | null;
+}): Promise<void> {
+  if (await getCoachByProfileId(user.id)) return;
+  await supabaseAdmin().from("coaches").insert({
+    profile_id: user.id,
+    full_name: user.name ?? "Unnamed",
+    email: user.email,
+    photo_url: user.photo_url,
+    status: "draft",
+  });
+}
+
+/** They changed their mind at the role picker. Only ever drops an unsubmitted card. */
+export async function discardCoachDraft(profileId: string): Promise<void> {
+  await supabaseAdmin().from("coaches").delete().eq("profile_id", profileId).eq("status", "draft");
+}
+
 export type ClaimProfile = { id: string; name: string | null; email: string | null; photo_url: string | null };
 export type PendingClaim = { id: string; createdAt: string; coach: CoachRow; profile: ClaimProfile };
 

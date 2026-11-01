@@ -23,6 +23,9 @@ export const CAREER_STAGES = [
   { value: "early_management", label: "Early Management" },
   { value: "senior_management", label: "Senior Management" },
   { value: "director_plus", label: "Director+ / VP / C-Suite" },
+  { value: "founder", label: "Entrepreneur / Founder" },
+  { value: "consultant", label: "Consultant" },
+  { value: "retired", label: "Retired" },
 ];
 
 export const COUNTRIES = [

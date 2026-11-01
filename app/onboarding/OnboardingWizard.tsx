@@ -4,7 +4,7 @@ import { useRef, useState, useTransition } from "react";
 import { ArrowLeft, Check, LoaderCircle } from "lucide-react";
 import { backToRoles } from "@/app/actions/auth";
 import { saveCoachAttributes } from "@/app/actions/coaches";
-import { importFromLinks, finishOnboarding } from "@/app/actions/onboarding";
+import { importFromLinks, finishOnboarding, type ImportResult } from "@/app/actions/onboarding";
 import { MenteeChips } from "@/components/CoachFormFields";
 import { Cta, PageFrame } from "@/components/ui";
 import {
@@ -16,9 +16,15 @@ import {
   TextField,
 } from "@/components/fields";
 import type { Profile } from "@/lib/db";
+import ReadingProfile, { READING_MIN_MS } from "./ReadingProfile";
 
 const BASE_STEPS = [
-  { title: "Start with your links.", subtitle: "We'll pull in what we can from your portfolio, résumé, or LinkedIn.", required: true },
+  {
+    title: "Start with your links.",
+    subtitle:
+      "We'll use these to create a profile that matches you with other members: coaches, mentees, even job opportunities down the line.",
+    required: true,
+  },
   { title: "A little more about you.", subtitle: "Where you are in your career, and in the world.", required: true },
 ];
 const COACH_STEP = {
@@ -29,15 +35,20 @@ const COACH_STEP = {
 
 type Props = {
   profile: Profile;
+  /** They said they want to coach, whether or not they're also here as a member. */
+  coaching: boolean;
 };
+
+/** "a, b and c" */
+const joinList = (items: string[]) =>
+  items.length > 1 ? `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}` : items[0];
 
 /**
  * Every role shares the same short signup; coaches get one extra step for
  * their coaching attributes. All fields live in one form the whole time so
  * the final save carries everything, whichever step it's submitted from.
  */
-export default function OnboardingWizard({ profile }: Props) {
-  const isCoach = profile.role === "coach";
+export default function OnboardingWizard({ profile, coaching: isCoach }: Props) {
   const steps = isCoach ? [...BASE_STEPS, COACH_STEP] : BASE_STEPS;
   const lastStep = steps.length - 1;
 
@@ -48,10 +59,12 @@ export default function OnboardingWizard({ profile }: Props) {
   const [importedNote, setImportedNote] = useState<string | null>(null);
   // Chosen résumé file name, for the upload field's filled state.
   const [resumeName, setResumeName] = useState<string | null>(null);
-  // What step 1 is reading, e.g. "your résumé and portfolio" — shown while it works.
-  const [readingWhat, setReadingWhat] = useState<string | null>(null);
+  // What step 1 is reading, e.g. "your résumé and website" — shown while it works.
+  const [readingWhat, setReadingWhat] = useState("your links");
   const [outreach, setOutreach] = useState(profile.allow_coach_contact ?? true);
   const [mentees, setMentees] = useState<string[]>([]);
+  // Coaching answers step 1 found, for the coaching step's defaults.
+  const [coachPrefill, setCoachPrefill] = useState<ImportResult["coaching"]>();
   const formRef = useRef<HTMLFormElement>(null);
 
   function finish(formData: FormData, withCoach: boolean) {
@@ -78,20 +91,27 @@ export default function OnboardingWizard({ profile }: Props) {
       const resume = formData.get("resume");
       const sources = [
         resume instanceof File && resume.size > 0 ? "résumé" : null,
-        String(formData.get("portfolio_url") ?? "").trim() ? "portfolio" : null,
+        String(formData.get("portfolio_url") ?? "").trim() ? "website" : null,
+        String(formData.get("linkedin_url") ?? "").trim() ? "LinkedIn" : null,
       ].filter(Boolean) as string[];
-      const what = sources.length > 0 ? `your ${sources.join(" and ")}` : null;
+      const what = sources.length > 0 ? `your ${joinList(sources)}` : "your links";
       setReadingWhat(what);
       startTransition(async () => {
+        const started = Date.now();
         const result = await importFromLinks(formData);
         if (result.error) {
           setError(result.error);
           return;
         }
+        await new Promise((done) => setTimeout(done, READING_MIN_MS - (Date.now() - started)));
         if (result.profile) setProfileData(result.profile);
+        if (result.coaching) {
+          setCoachPrefill(result.coaching);
+          setMentees(result.coaching.target_mentees);
+        }
         setImportedNote(
           result.found.length > 0
-            ? `From ${what ?? "your links"} we pre-filled: ${result.found.join(", ")}. Check it over — everything can be edited.`
+            ? `From ${what} we pre-filled: ${result.found.join(", ")}. Check it over — everything can be edited.`
             : null,
         );
         setStep(1);
@@ -103,18 +123,14 @@ export default function OnboardingWizard({ profile }: Props) {
       // form, and the browser can't point at a required field on a hidden step.
       const missing = [
         ["career_stage", "career stage"],
-        ["role_type", "type of work"],
+        ["role_type", "area of expertise"],
         ["country", "country"],
         ["city", "city"],
       ]
         .filter(([name]) => !String(formData.get(name) ?? "").trim())
         .map(([, label]) => label);
       if (missing.length > 0) {
-        const list =
-          missing.length > 1
-            ? `${missing.slice(0, -1).join(", ")} and ${missing[missing.length - 1]}`
-            : missing[0];
-        setError(`Add your ${list} to continue.`);
+        setError(`Add your ${joinList(missing)} to continue.`);
         return;
       }
     }
@@ -142,6 +158,7 @@ export default function OnboardingWizard({ profile }: Props) {
   };
 
   const p = profileData;
+  const reading = pending && step === 0;
 
   return (
     <PageFrame size="narrow" centered>
@@ -152,8 +169,9 @@ export default function OnboardingWizard({ profile }: Props) {
           <button
             type="button"
             onClick={back}
+            disabled={reading}
             aria-label="Back"
-            className="absolute -left-3 flex h-11 w-11 items-center justify-center text-cream"
+            className="absolute -left-3 flex h-11 w-11 items-center justify-center text-cream disabled:opacity-40"
           >
             <ArrowLeft size={20} strokeWidth={1.5} />
           </button>
@@ -170,6 +188,9 @@ export default function OnboardingWizard({ profile }: Props) {
       </header>
 
       <main className="mt-10 flex-1">
+        {reading && <ReadingProfile what={readingWhat} />}
+        {/* Hidden, not unmounted: the form has to stay put while step 1 reads. */}
+        <div className={reading ? "hidden" : ""}>
         <h1 className="text-[34px] leading-[1.08] font-black tracking-[-0.02em] text-cream">
           {steps[step].title}
         </h1>
@@ -199,12 +220,12 @@ export default function OnboardingWizard({ profile }: Props) {
               />
               <TextField
                 name="portfolio_url"
-                placeholder="Your portfolio URL"
+                placeholder="Personal website / portfolio"
                 defaultValue={p.portfolio_url ?? ""}
               />
               <TextField
                 name="portfolio_password"
-                placeholder="Portfolio password, if it has one"
+                placeholder="Portfolio password (if relevant)"
                 defaultValue={p.portfolio_password ?? ""}
               />
               <label
@@ -236,29 +257,11 @@ export default function OnboardingWizard({ profile }: Props) {
                 </span>
               </label>
               <p className="pt-1 text-[13px] leading-[1.5] text-secondary">
-                Add at least one of LinkedIn, your résumé, or your portfolio and
-                we&apos;ll pull in your name, bio, roles, experience, and location —
-                you review everything before it goes live. If your portfolio is
-                password-protected, the password lets us read it too; on your profile,
-                only coaches can see it.
+                Add at least one and we&apos;ll fill in what we can — you review
+                everything before it goes live. On your profile, only coaches can see
+                your password.
               </p>
             </fieldset>
-            {pending && step === 0 && (
-              <div
-                role="status"
-                className="mt-6 flex items-start gap-3 rounded-[16px] border border-gold-border bg-gold-tint px-5 py-4"
-              >
-                <LoaderCircle size={18} strokeWidth={2} className="mt-0.5 shrink-0 animate-spin text-gold" />
-                <div>
-                  <p className="text-[14px] font-bold text-gold">
-                    {readingWhat ? `Reading ${readingWhat}…` : "Saving your links…"}
-                  </p>
-                  <p className="mt-1 text-[13px] leading-[1.5] text-secondary">
-                    Pulling in your name, role, experience and location — this takes a few seconds.
-                  </p>
-                </div>
-              </div>
-            )}
           </div>
 
           <div key={`about-${p.updated_at}`} className={step === 1 ? "space-y-4" : "hidden"}>
@@ -270,7 +273,7 @@ export default function OnboardingWizard({ profile }: Props) {
             />
             <SelectField
               name="role_type"
-              placeholder="Type of work"
+              placeholder="Area of expertise"
               options={ROLE_TYPES}
               defaultValue={p.role_type ?? ""}
             />
@@ -294,36 +297,45 @@ export default function OnboardingWizard({ profile }: Props) {
                 className="min-w-0 flex-1"
               />
             </div>
-            {/* Members only: it's about being approached as a mentee, which
-                isn't why someone signs up to coach. */}
-            {!isCoach && (
-              <label className="flex cursor-pointer items-start gap-3 rounded-[20px] border border-border-1 bg-surface-2 p-5">
-                <input
-                  type="checkbox"
-                  name="allow_coach_contact"
-                  checked={outreach}
-                  onChange={(e) => setOutreach(e.target.checked)}
-                  className="mt-0.5 h-5 w-5 shrink-0 accent-[#E8C987]"
-                />
-                <span className="text-[14px] leading-[1.5] text-secondary">
-                  Allow coaches to contact me. They message you through onward/upward — your
-                  email address stays private either way.
-                </span>
-              </label>
-            )}
+            <label className="flex cursor-pointer items-start gap-3 rounded-[20px] border border-border-1 bg-surface-2 p-5">
+              <input
+                type="checkbox"
+                name="allow_coach_contact"
+                checked={outreach}
+                onChange={(e) => setOutreach(e.target.checked)}
+                className="mt-0.5 h-5 w-5 shrink-0 accent-[#E8C987]"
+              />
+              <span className="text-[14px] leading-[1.5] text-secondary">
+                Allow {isCoach ? "other coaches" : "coaches"} to contact me. They message you
+                through onward/upward — your email address stays private either way.
+              </span>
+            </label>
           </div>
 
           {isCoach && (
-            <div className={step === 2 ? "space-y-5" : "hidden"}>
+            <div key={coachPrefill ? "prefilled" : "blank"} className={step === 2 ? "space-y-5" : "hidden"}>
               <TextArea
                 name="offering"
                 rows={3}
                 placeholder="Your offering — what a session with you covers"
+                defaultValue={coachPrefill?.offering ?? ""}
               />
               <MenteeChips value={mentees} onChange={setMentees} />
-              <TextField name="best_for" placeholder="Best for — one line on who gets the most from you" />
-              <TextField name="booking_url" placeholder="Booking link — Calendly, website, or an email address" />
-              <TextField name="pricing" placeholder="Pricing — a number or a range is fine (optional)" />
+              <TextField
+                name="best_for"
+                placeholder="Best for — one line on who gets the most from you"
+                defaultValue={coachPrefill?.best_for ?? ""}
+              />
+              <TextField
+                name="booking_url"
+                placeholder="Booking link — Calendly, website, or an email address"
+                defaultValue={coachPrefill?.booking_url ?? ""}
+              />
+              <TextField
+                name="pricing"
+                placeholder="Pricing — a number or a range is fine (optional)"
+                defaultValue={coachPrefill?.pricing ?? ""}
+              />
             </div>
           )}
 
@@ -334,7 +346,7 @@ export default function OnboardingWizard({ profile }: Props) {
               {pending ? (
                 <span className="inline-flex items-center gap-2">
                   <LoaderCircle size={16} strokeWidth={2.25} className="animate-spin" />
-                  {step === 0 ? (readingWhat ? "Reading…" : "Saving…") : "Saving…"}
+                  Saving…
                 </span>
               ) : step === lastStep ? (
                 "Finish"
@@ -353,6 +365,7 @@ export default function OnboardingWizard({ profile }: Props) {
             )}
           </div>
         </form>
+        </div>
       </main>
     </div>
     </PageFrame>
