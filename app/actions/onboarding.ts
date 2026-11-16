@@ -38,7 +38,7 @@ export type ImportResult = {
  * but not for an answer they might click straight past.
  */
 export async function importFromLinks(formData: FormData): Promise<ImportResult> {
-  const user = await requireUser();
+  const user = await requireUser({ allowUnfinished: true });
   const supabase = await supabaseServer();
   const linkedinRaw = str(formData, "linkedin_url");
   const portfolioRaw = str(formData, "portfolio_url");
@@ -327,9 +327,11 @@ export async function savePhoto(formData: FormData): Promise<{ error?: string }>
 }
 
 export async function finishOnboarding(formData: FormData) {
-  const user = await requireUser();
+  const user = await requireUser({ allowUnfinished: true });
   const supabase = await supabaseServer();
-  await supabase
+  // The admin client: onboarding_complete is trigger-guarded, so nobody can
+  // mark themselves finished (and skip the waitlist) from the browser.
+  await supabaseAdmin()
     .from("profiles")
     .update({
       career_stage: str(formData, "career_stage") ?? user.career_stage,
@@ -406,36 +408,4 @@ async function notifyWaitlistSignup(user: Profile, formData: FormData) {
       { label: "Review the waitlist", url: "https://onwardupward.io/admin/waitlist" },
     ),
   });
-}
-
-export async function saveRecruiterSearch(formData: FormData): Promise<{ error?: string }> {
-  const user = await requireUser();
-  const companies = formData
-    .getAll("companies")
-    .map(String)
-    .map((s) => s.trim())
-    .filter(Boolean);
-  const roleTypes = formData.getAll("role_types").map(String);
-  const stages = formData.getAll("career_stages").map(String);
-  if (companies.length === 0 || roleTypes.length === 0 || stages.length === 0) {
-    return { error: "Everything on this step is required." };
-  }
-  const supabase = await supabaseServer();
-  await supabase.from("recruiter_profiles").upsert({
-    id: user.id,
-    company_names: companies,
-    target_role_types: roleTypes,
-    target_career_stages: stages,
-  });
-  await supabase.from("profiles").update({ onboarding_complete: true }).eq("id", user.id);
-  redirect("/subscribe");
-}
-
-export async function subscribe() {
-  const user = await requireUser();
-  if (user.role !== "recruiter") redirect(homeFor(user));
-  // Mock Stripe per PRD §7.4 — just flip the flag. Must use the admin client:
-  // a trigger blocks users from granting themselves is_paid.
-  await supabaseAdmin().from("profiles").update({ is_paid: true }).eq("id", user.id);
-  redirect("/search");
 }

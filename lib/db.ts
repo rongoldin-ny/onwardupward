@@ -21,7 +21,7 @@ export type NotificationPrefs = {
 
 export type Profile = {
   id: string;
-  role: "candidate" | "recruiter" | "coach" | "admin";
+  role: "candidate" | "coach" | "admin";
   name: string | null;
   email: string | null;
   photo_url: string | null;

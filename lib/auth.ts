@@ -20,10 +20,9 @@ export const currentUser = cache(async (): Promise<Profile | null> => {
 export function homeFor(user: Profile): string {
   if (user.role === "admin") return "/admin";
   if (onWaitlist(user)) return WAITLISTED;
-  if (!user.onboarding_complete) return "/onboarding";
-  if (user.role === "candidate") return "/dashboard";
+  if (!user.onboarding_complete) return user.role_chosen ? "/onboarding" : "/role";
   if (user.role === "coach") return "/coach";
-  return user.is_paid ? "/search" : "/subscribe";
+  return "/dashboard";
 }
 
 /** Sign-in url that remembers where the visitor was actually headed. */
@@ -42,36 +41,36 @@ const WAITLISTED = "/auth/waitlisted";
  * never held back, so a stray flag can't lock out the people who clear it.
  */
 export function onWaitlist(user: Profile): boolean {
-  return (
-    !!user.waitlisted_at &&
-    user.role !== "admin" &&
-    (user.email ?? "").toLowerCase() !== "r@rongoldin.com"
-  );
+  return !!user.waitlisted_at && !isOperator(user);
+}
+
+/** Admins and the vetting account: never held at the waitlist or the wizard. */
+function isOperator(user: Profile): boolean {
+  return user.role === "admin" || (user.email ?? "").toLowerCase() === "r@rongoldin.com";
 }
 
 /**
  * Every signed-in page and action goes through here, so this is where the
  * waitlist signs people out and holds them at /waitlist until they're let in.
+ *
+ * It also holds anyone who hasn't finished sign-up at the role picker or the
+ * wizard. Finishing the wizard is what puts someone on the waitlist, so an
+ * account that abandons it must not reach the app by typing a url. Only the
+ * wizard's own page and actions pass `allowUnfinished`.
  */
-export async function requireUser(): Promise<Profile> {
+export async function requireUser(
+  { allowUnfinished = false }: { allowUnfinished?: boolean } = {},
+): Promise<Profile> {
   const user = await currentUser();
   if (!user) redirect(await signInPath());
   if (onWaitlist(user)) redirect(WAITLISTED);
+  if (!allowUnfinished && !user.onboarding_complete && !isOperator(user)) redirect(homeFor(user));
   return user;
 }
 
 export async function requireCandidate(): Promise<Profile> {
   const user = await requireUser();
   if (user.role !== "candidate") redirect(homeFor(user));
-  return user;
-}
-
-export async function requirePaidRecruiter(): Promise<Profile> {
-  const user = await requireUser();
-  if (user.role === "admin") return user; // admins can see everything
-  if (user.role !== "recruiter") redirect(homeFor(user));
-  if (!user.onboarding_complete) redirect("/onboarding");
-  if (!user.is_paid) redirect("/subscribe");
   return user;
 }
 

@@ -11,7 +11,7 @@ export default async function AdminPage() {
   const [{ data: profiles }, { data: events }, { data: queries }] = await Promise.all([
     supabase
       .from("profiles")
-      .select("id, name, email, role, created_at, is_paid, last_sign_in_at")
+      .select("id, name, email, role, created_at, last_sign_in_at")
       .order("created_at", { ascending: false }),
     supabase
       .from("analytics_events")
@@ -62,7 +62,6 @@ export default async function AdminPage() {
                 </p>
                 <span className="eyebrow shrink-0 text-gold">
                   {u.role}
-                  {u.role === "recruiter" && (u.is_paid ? " · paid" : " · unpaid")}
                 </span>
               </div>
               <p className="mt-2 text-[12.5px] text-secondary">

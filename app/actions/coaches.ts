@@ -55,7 +55,8 @@ async function notifyCoachApplication(user: {
 export async function saveCoachAttributes(
   formData: FormData,
 ): Promise<{ error?: string; coach?: CoachRow }> {
-  const user = await requireUser();
+  // Step 3 of the sign-up wizard saves the card before sign-up is finished.
+  const user = await requireUser({ allowUnfinished: true });
   if (user.role !== "candidate" && user.role !== "coach") {
     return { error: "Coach listings are for members and coaches." };
   }
@@ -147,10 +148,6 @@ export async function saveCoachAttributes(
     if (submit && notify) await notifyCoachApplication(user);
   }
 
-  // A coach account's first listing save completes their onboarding.
-  if (user.role === "coach" && !user.onboarding_complete) {
-    await admin.from("profiles").update({ onboarding_complete: true }).eq("id", user.id);
-  }
   return { coach: saved };
 }
 

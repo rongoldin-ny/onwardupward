@@ -43,8 +43,7 @@ function Row({
 export default async function SettingsPage() {
   const user = await requireUser();
   const isCandidate = user.role === "candidate";
-  const isRecruiter = user.role === "recruiter";
-  const coachListing = isRecruiter ? null : await getCoachByProfileId(user.id);
+  const coachListing = await getCoachByProfileId(user.id);
 
   return (
     <PageFrame size="narrow">
@@ -66,18 +65,16 @@ export default async function SettingsPage() {
 
           <Eyebrow className="mt-9">Profile</Eyebrow>
           <div className="mt-3 overflow-hidden rounded-[20px] border border-border-1 bg-surface-2">
-            {!isRecruiter && (
-              <Row
-                href="/settings/photo"
-                icon={<ImageIcon size={16} strokeWidth={1.5} />}
-                label="Change photo"
-              />
-            )}
             <Row
-              href={isRecruiter ? "/settings/search" : "/profile"}
+              href="/settings/photo"
+              icon={<ImageIcon size={16} strokeWidth={1.5} />}
+              label="Change photo"
+            />
+            <Row
+              href="/profile"
               icon={<UserRound size={16} strokeWidth={1.5} />}
-              label={isRecruiter ? "Your search" : "Your profile"}
-              sub={isRecruiter ? "Your search preferences" : "View and edit everything others see"}
+              label="Your profile"
+              sub="View and edit everything others see"
             />
             {isCandidate && !coachListing && (
               <Row

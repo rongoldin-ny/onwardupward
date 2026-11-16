@@ -55,6 +55,9 @@ export async function approveClaim(claimId: string): Promise<void> {
   // The listing is theirs now, so the account becomes a coach account — a
   // claim approved days later shouldn't drop them back at the role picker.
   if (profile) await adoptClaimant(profile, { becomesCoach: true });
+  // Approving the claim is the vetting: let them in if they'd been waitlisted
+  // while it was in review.
+  await admin.from("profiles").update({ waitlisted_at: null }).eq("id", claim.profile_id);
   await admin.from("coach_claims").update({ status: "approved" }).eq("id", claimId);
   // Only one person can own a slot — clear out any other pending requests for it.
   await admin
