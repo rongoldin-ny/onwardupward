@@ -43,13 +43,22 @@ function anon() {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+/**
+ * Every account, read from profiles (same ids and emails as auth.users).
+ * Not auth.admin.listUsers: on this project it 500s ("Database error finding
+ * users") once a page reaches an account row Supabase can't read.
+ */
 async function allUsers() {
-  const users: { id: string; email?: string }[] = [];
-  for (let page = 1; ; page++) {
-    const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 200 });
+  const users: { id: string; email: string | null }[] = [];
+  for (let from = 0; ; from += 500) {
+    const { data, error } = await admin
+      .from("profiles")
+      .select("id, email")
+      .order("created_at")
+      .range(from, from + 499);
     if (error) throw error;
-    users.push(...data.users);
-    if (data.users.length < 200) return users;
+    users.push(...(data ?? []));
+    if ((data ?? []).length < 500) return users;
   }
 }
 
