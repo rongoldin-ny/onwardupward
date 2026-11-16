@@ -32,8 +32,8 @@ export async function approveCandidate(profileId: string): Promise<void> {
         html: emailShell(
           `${firstName}, you're in.`,
           `<p>Your profile has been reviewed and accepted. You're now part of a
-           growth network for people in tech — visible to vetted recruiters,
-           hiring managers and coaches.</p>
+           growth network for people in tech, with coaches matched to where you
+           hope to grow.</p>
            <p style="margin-top:12px">While you're here, browse the bench of
            <a href="https://onwardupward.io/coaches" style="color:#e8c987">design
            leadership coaches</a> who've made the climb you're on.</p>`,

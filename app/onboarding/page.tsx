@@ -1,32 +1,14 @@
 import { redirect } from "next/navigation";
 import { requireUser, homeFor } from "@/lib/auth";
 import { getCoachByProfileId } from "@/lib/coaches-db";
-import { supabaseServer } from "@/lib/supabase/server";
 import OnboardingWizard from "./OnboardingWizard";
-import RecruiterWizard from "./RecruiterWizard";
 
 // Finishing sign-up kicks off Claude auto fill (fetches the portfolio, mirrors
 // images) and enrichment post-response via after(); give them room to finish.
 export const maxDuration = 300;
 export default async function OnboardingPage() {
-  const user = await requireUser();
+  const user = await requireUser({ allowUnfinished: true });
   if (user.onboarding_complete) redirect(homeFor(user));
-
-  if (user.role === "recruiter") {
-    const supabase = await supabaseServer();
-    const { data: rp } = await supabase
-      .from("recruiter_profiles")
-      .select("*")
-      .eq("id", user.id)
-      .maybeSingle();
-    return (
-      <RecruiterWizard
-        initialCompanies={(rp?.company_names as string[]) ?? []}
-        initialRoleTypes={(rp?.target_role_types as string[]) ?? []}
-        initialStages={(rp?.target_career_stages as string[]) ?? []}
-      />
-    );
-  }
 
   const coaching = user.role === "coach" || !!(await getCoachByProfileId(user.id));
   return <OnboardingWizard profile={user} coaching={coaching} />;

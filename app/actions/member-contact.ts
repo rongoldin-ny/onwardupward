@@ -46,8 +46,8 @@ export async function contactMember(
   // One note per member per day, DAILY_LIMIT overall, off the send events
   // themselves — a coach working through the directory shouldn't be able to
   // turn it into a mailing list.
-  // Tagged kind, so the recruiter messaging in app/actions/engage.ts — which
-  // logs message_sent too — doesn't eat into a coach's allowance.
+  // Tagged kind, so other message_sent events don't eat into a coach's
+  // allowance.
   const { data: recent } = await admin
     .from("analytics_events")
     .select("target_profile_id")

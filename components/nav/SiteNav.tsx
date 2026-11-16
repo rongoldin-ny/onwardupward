@@ -13,13 +13,12 @@ export default async function SiteNav() {
   if (!user) return null;
 
   const isVetter = user.role === "admin" || (user.email ?? "").toLowerCase() === "r@rongoldin.com";
-  const profileHref = user.role === "recruiter" ? "/settings/search" : "/profile";
 
   return (
     <SiteNavClient
       userId={user.id}
       photoUrl={user.photo_url}
-      profileHref={profileHref}
+      profileHref="/profile"
       isVetter={isVetter}
       waitlisted={onWaitlist(user)}
     />

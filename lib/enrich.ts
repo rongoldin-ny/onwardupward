@@ -7,7 +7,7 @@ import { getProfileById, type Profile, type WorkHistoryRow } from "./db";
 /**
  * AI profile enrichment (PRD §9), backed by Claude. Produces a prose summary
  * plus a JSON signal block, stored together in profiles.ai_bio — the column
- * recruiters' free-text search matches against.
+ * free-text search matches against.
  *
  * When ANTHROPIC_API_KEY is missing or the API call fails, falls back to the
  * original heuristic generator so enrichment never blocks or breaks a save.

@@ -170,26 +170,3 @@ export async function saveCoachContact(allowed: boolean): Promise<{ error?: stri
     .eq("id", user.id);
   return error ? { error: "Couldn't save — try again." } : {};
 }
-
-/** Recruiter settings variant of the onboarding step — saves without redirecting. */
-export async function saveRecruiterPrefs(formData: FormData): Promise<{ error?: string }> {
-  const user = await requireUser();
-  const companies = formData
-    .getAll("companies")
-    .map(String)
-    .map((s) => s.trim())
-    .filter(Boolean);
-  const roleTypes = formData.getAll("role_types").map(String);
-  const stages = formData.getAll("career_stages").map(String);
-  if (companies.length === 0 || roleTypes.length === 0 || stages.length === 0) {
-    return { error: "Company, roles, and career stages are all required." };
-  }
-  const supabase = await supabaseServer();
-  await supabase.from("recruiter_profiles").upsert({
-    id: user.id,
-    company_names: companies,
-    target_role_types: roleTypes,
-    target_career_stages: stages,
-  });
-  return {};
-}

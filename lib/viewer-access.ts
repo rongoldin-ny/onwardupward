@@ -5,7 +5,7 @@ import { isVetter } from "./vetting";
 /**
  * What a signed-in viewer may see on someone else's profile. Portfolio
  * passwords are for coaches (anyone with an approved coach listing) and
- * admins; résumés the owner chose to share go to coaches and hiring managers.
+ * admins; résumés the owner chose to share go to coaches.
  */
 export async function accessFor(viewer: Profile | null) {
   if (!viewer) {
@@ -21,6 +21,6 @@ export async function accessFor(viewer: Profile | null) {
     isAdmin: admin,
     isCoach,
     canSeePortfolioPassword: admin || isCoach,
-    canSeePublicResume: isCoach || viewer.role === "recruiter",
+    canSeePublicResume: isCoach,
   };
 }

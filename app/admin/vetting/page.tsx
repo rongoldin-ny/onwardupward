@@ -36,7 +36,7 @@ export default async function VettingQueuePage() {
               : `${pending.length} waiting for review.`}
           </h1>
           <p className="mt-3 text-[15px] text-secondary">
-            New members stay invisible to recruiters and public links until you
+            New members stay off the directory and public links until you
             let them in.
           </p>
 

@@ -165,18 +165,6 @@ export default function AscentHome() {
           </div>
         </section>
 
-        {/* <section className="recruiter reveal">
-          <div className="recruiter-body">
-            <div className="level-tag">FOR RECRUITERS &amp; HIRING MANAGERS</div>
-            <h2>A more visual way to discover talent and make connections.</h2>
-            <p>
-              Connect with self-aware, growth-oriented candidates that are on an
-              upward trajectory.
-            </p>
-          </div>
-          <Link className="btn-ghost" href="/signup">Search the network →</Link>
-        </section> */}
-
         <section className="manifesto reveal">
           <p>
             Onward/Upward is{" "}

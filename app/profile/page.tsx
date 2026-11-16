@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import ProfilePage from "@/components/profile/ProfilePage";
 import { requireUser } from "@/lib/auth";
 import { getCoachReviews } from "@/lib/coach-reviews-db";
@@ -15,7 +14,6 @@ export default async function MyProfilePage({
   searchParams: Promise<{ side?: string; welcome?: string }>;
 }) {
   const user = await requireUser();
-  if (user.role === "recruiter") redirect("/settings/search");
   const { side, welcome } = await searchParams;
   const [view, communitySkills] = await Promise.all([
     toProfileView(user, { isOwner: true }),
