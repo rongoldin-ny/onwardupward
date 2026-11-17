@@ -5,6 +5,7 @@ import { requestPasswordReset, type AuthState } from "@/app/actions/auth";
 import { AuthNotice } from "@/components/AuthFields";
 import { TextField } from "@/components/fields";
 import { Cta } from "@/components/ui";
+import Turnstile from "@/components/Turnstile";
 
 export default function ForgotForm() {
   const [state, formAction, pending] = useActionState<AuthState, FormData>(
@@ -24,6 +25,7 @@ export default function ForgotForm() {
         autoComplete="email"
         required
       />
+      <Turnstile resetKey={state} />
       {state.error && <p className="text-[14px] text-gold">{state.error}</p>}
       <Cta type="submit" disabled={pending}>
         {pending ? "Sending…" : "Send reset link"}

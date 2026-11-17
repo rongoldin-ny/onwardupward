@@ -5,6 +5,7 @@ import { signUp, type AuthState } from "@/app/actions/auth";
 import { AuthNotice, PasswordField } from "@/components/AuthFields";
 import { TextField } from "@/components/fields";
 import { Cta } from "@/components/ui";
+import Turnstile from "@/components/Turnstile";
 
 export default function SignUpForm() {
   const [state, formAction, pending] = useActionState<AuthState, FormData>(signUp, {});
@@ -29,6 +30,7 @@ export default function SignUpForm() {
         minLength={8}
         required
       />
+      <Turnstile resetKey={state} />
       {state.error && <p className="text-[14px] text-gold">{state.error}</p>}
       <Cta type="submit" disabled={pending}>
         {pending ? "Joining…" : "Join the waitlist"}

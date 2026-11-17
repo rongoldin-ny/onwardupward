@@ -76,6 +76,9 @@ async function main() {
     await sleep(PAUSE_MS);
     if (error) {
       if (error.status === 429) throw new Error("Rate limited; wait a few minutes and run again.");
+      // With captcha protection on, every attempt fails this way, which would
+      // read as "nobody exposed". Turn it off in Supabase for the run instead.
+      if (error.code === "captcha_failed") throw new Error("Supabase captcha is on; turn it off to run this check.");
       continue; // wrong password, unconfirmed, etc.: not exposed
     }
     exposed.push(user.email!);
