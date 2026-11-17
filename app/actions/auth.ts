@@ -21,13 +21,29 @@ function validEmail(email: string): boolean {
   return /^\S+@\S+\.\S+$/.test(email);
 }
 
+/**
+ * The Turnstile token the form's widget added (components/Turnstile.tsx).
+ * Supabase checks it when captcha protection is on and ignores it when off.
+ */
+function captchaToken(formData: FormData): string | undefined {
+  return String(formData.get("cf-turnstile-response") ?? "") || undefined;
+}
+
+const CAPTCHA_FAILED =
+  "We couldn't confirm you're a person. Wait a moment, tick the box if one appears, and try again.";
+
 export async function signIn(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
   if (!email || !password) return { error: "Enter your email and password." };
 
   const supabase = await supabaseServer();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+    options: { captchaToken: captchaToken(formData) },
+  });
+  if (error?.code === "captcha_failed") return { error: CAPTCHA_FAILED };
   if (error?.code === "email_not_confirmed") {
     return { error: "Confirm your email first — check your inbox for the link we sent." };
   }
@@ -65,8 +81,10 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
       // full_name is the claim Google sends, so handle_new_user seeds it alike.
       data: { full_name: name },
       emailRedirectTo: `${origin}/auth/confirm`,
+      captchaToken: captchaToken(formData),
     },
   });
+  if (error?.code === "captcha_failed") return { error: CAPTCHA_FAILED };
   if (error) {
     return {
       error: error.code === "weak_password" ? error.message : "We couldn't sign you up just now. Try again in a minute.",
@@ -94,9 +112,12 @@ export async function requestPasswordReset(
   if (!validEmail(email)) return { error: "Enter a valid email address." };
   const origin = (await headers()).get("origin") ?? "";
   const supabase = await supabaseServer();
-  await supabase.auth.resetPasswordForEmail(email, {
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${origin}/auth/confirm?next=/reset-password`,
+    captchaToken: captchaToken(formData),
   });
+  // The one failure worth showing: it says nothing about the account.
+  if (error?.code === "captcha_failed") return { error: CAPTCHA_FAILED };
   // Same response either way — don't reveal whether the email has an account.
   return { notice: "If that email has an account, a reset link is on its way." };
 }

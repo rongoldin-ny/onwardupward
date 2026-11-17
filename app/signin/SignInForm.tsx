@@ -6,6 +6,7 @@ import { signIn, type AuthState } from "@/app/actions/auth";
 import { PasswordField } from "@/components/AuthFields";
 import { TextField } from "@/components/fields";
 import { Cta } from "@/components/ui";
+import Turnstile from "@/components/Turnstile";
 
 export default function SignInForm({ next }: { next?: string }) {
   const [state, formAction, pending] = useActionState<AuthState, FormData>(signIn, {});
@@ -27,6 +28,7 @@ export default function SignInForm({ next }: { next?: string }) {
         autoComplete="current-password"
         required
       />
+      <Turnstile resetKey={state} />
       {state.error && <p className="text-[14px] text-gold">{state.error}</p>}
       <p className="text-right text-[14px]">
         <Link href="/forgot-password" className="text-secondary">
